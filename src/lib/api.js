@@ -1,0 +1,134 @@
+const API_BASE = '/api';
+
+async function request(url, options = {}) {
+  const response = await fetch(`${API_BASE}${url}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    },
+    ...options
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'Request failed' }));
+    throw new Error(error.detail || 'Request failed');
+  }
+
+  if (response.status === 204) {
+    return null;
+  }
+
+  return response.json();
+}
+
+// Personal Info
+export async function getPersonalInfo() {
+  return request('/personal-info');
+}
+
+export async function updatePersonalInfo(data) {
+  return request('/personal-info', {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  });
+}
+
+// Work Experiences
+export async function getWorkExperiences() {
+  return request('/work-experiences');
+}
+
+export async function createWorkExperience(data) {
+  return request('/work-experiences', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+}
+
+export async function updateWorkExperience(id, data) {
+  return request(`/work-experiences/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  });
+}
+
+export async function deleteWorkExperience(id) {
+  return request(`/work-experiences/${id}`, {
+    method: 'DELETE'
+  });
+}
+
+// Education
+export async function getEducation() {
+  return request('/education');
+}
+
+export async function createEducation(data) {
+  return request('/education', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+}
+
+export async function updateEducation(id, data) {
+  return request(`/education/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  });
+}
+
+export async function deleteEducation(id) {
+  return request(`/education/${id}`, {
+    method: 'DELETE'
+  });
+}
+
+// Skills
+export async function getSkills() {
+  return request('/skills');
+}
+
+export async function createSkills(names) {
+  return request('/skills', {
+    method: 'POST',
+    body: JSON.stringify({ names })
+  });
+}
+
+export async function deleteSkill(id) {
+  return request(`/skills/${id}`, {
+    method: 'DELETE'
+  });
+}
+
+// Projects
+export async function getProjects() {
+  return request('/projects');
+}
+
+export async function createProject(data) {
+  return request('/projects', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+}
+
+export async function updateProject(id, data) {
+  return request(`/projects/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  });
+}
+
+export async function deleteProject(id) {
+  return request(`/projects/${id}`, {
+    method: 'DELETE'
+  });
+}
+
+// Month input feature detection
+export function supportsMonthInput() {
+  const input = document.createElement('input');
+  input.setAttribute('type', 'month');
+  return input.type === 'month';
+}

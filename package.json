@@ -1,0 +1,26 @@
+{
+  "name": "mycv",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0 <21.0.0"
+  },
+  "scripts": {
+    "build": "npm run build:css && rollup -c",
+    "build:css": "sass src/styles/main.scss:public/build/global.css --style=compressed",
+    "watch": "rollup -c -w",
+    "watch:css": "sass src/styles/main.scss:public/build/global.css --watch",
+    "dev": "npm run build:css && rollup -c -w"
+  },
+  "devDependencies": {
+    "svelte": "^5.0.0",
+    "rollup": "^4.0.0",
+    "rollup-plugin-svelte": "^7.2.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-terser": "^0.4.0",
+    "rollup-plugin-css-only": "^4.5.0",
+    "sass": "^1.80.0"
+  }
+}
