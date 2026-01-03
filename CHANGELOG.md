@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-01-03] - SCSS Architecture Refactor
+
+### Changed
+- Refactored monolithic `main.scss` (1,047 lines) into 16 focused partials
+- Adopted modern Sass module system (`@use`/`@forward` instead of `@import`)
+- Centralized design tokens (colors, typography, spacing) in `_tokens.scss`
+
+### Added
+- `src/styles/components/` directory with 7 component partials
+- `src/styles/views/` directory with 5 view partials
+- File header comments describing each partial's purpose
+- Index files for component and view directories
+
+### Technical
+- Entry point (`main.scss`) reduced to 9 lines of imports
+- All partials use `@use "../tokens" as *` for token access
+- Import order: tokens → reset → layout → utilities → components → views
+- No visual changes (pure code refactor)
+
+---
+
 ## [2026-01-03] - PDF Export
 
 ### Added

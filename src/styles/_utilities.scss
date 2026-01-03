@@ -1,0 +1,41 @@
+// _utilities.scss
+// Utility classes for states, indicators, and animations
+
+@use "tokens" as *;
+
+// Success indicator
+.saved-indicator {
+  color: $color-success;
+  font-size: 14px;
+  animation: fadeIn 0.2s ease-in;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.saved-indicator.fading {
+  animation: fadeOut 0.5s ease-out forwards;
+}
+
+// Empty state
+.empty-state {
+  padding: $spacing-section;
+  text-align: center;
+  color: rgba($color-text, 0.6);
+}
+
+// Loading skeleton
+.skeleton {
+  height: 20px;
+  background: linear-gradient(90deg, $color-border 25%, #efefef 50%, $color-border 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 2px;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}

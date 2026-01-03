@@ -1,0 +1,20 @@
+// _tokens.scss
+// Design tokens - centralized variables for colors, typography, and spacing
+
+// Colors
+$color-text: #1a1a1a;
+$color-background: #ffffff;
+$color-border: #e0e0e0;
+$color-primary: #0066cc;
+$color-error: #cc0000;
+$color-success: #008800;
+
+// Typography
+$font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+$font-size-body: 16px;
+$font-size-heading: 20px;
+
+// Spacing
+$spacing-grid: 16px;
+$spacing-section: 24px;
+$spacing-field: 12px;

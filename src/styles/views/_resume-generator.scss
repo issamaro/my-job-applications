@@ -1,0 +1,85 @@
+// views/_resume-generator.scss
+// Resume generator view - JD input, progress bar, and actions
+
+@use "../tokens" as *;
+
+.resume-generator {
+  padding: 0;
+}
+
+.jd-input {
+  h2 {
+    margin-bottom: $spacing-grid;
+  }
+
+  .instructions {
+    color: rgba($color-text, 0.7);
+    margin-bottom: $spacing-section;
+  }
+
+  textarea {
+    min-height: 200px;
+
+    &.dimmed {
+      opacity: 0.6;
+      background: rgba(0, 0, 0, 0.02);
+    }
+  }
+}
+
+.jd-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.char-counter {
+  font-size: 14px;
+  color: rgba($color-text, 0.6);
+
+  &.valid {
+    color: $color-success;
+  }
+}
+
+.generator-actions {
+  margin-top: $spacing-section;
+}
+
+.loading-actions {
+  margin-top: $spacing-grid;
+}
+
+// Progress Bar
+.progress-container {
+  margin: $spacing-section 0;
+}
+
+.progress-status {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.progress-bar {
+  height: 4px;
+  background: $color-border;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 100%;
+  background: $color-primary;
+  animation: progress 2s ease-in-out infinite;
+}
+
+@keyframes progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

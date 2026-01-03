@@ -1,0 +1,38 @@
+// components/_buttons.scss
+// Button component styles
+
+@use "../tokens" as *;
+
+.btn {
+  padding: 8px $spacing-grid;
+  font-size: $font-size-body;
+  font-family: inherit;
+  border: 1px solid $color-border;
+  border-radius: 2px;
+  background: $color-background;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 1px;
+  }
+}
+
+.btn-primary {
+  color: #fff;
+  background: $color-primary;
+  border-color: $color-primary;
+
+  &:hover {
+    background: #0052a3; // Darker blue for hover
+  }
+}
+
+.btn-add {
+  padding: 4px 8px;
+  font-size: 14px;
+}

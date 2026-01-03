@@ -1,0 +1,121 @@
+// components/_forms.scss
+// Form elements, inputs, validation, checkbox, and required indicator styles
+
+@use "../tokens" as *;
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-field;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-row-inline {
+  display: flex;
+  gap: $spacing-grid;
+  align-items: flex-start;
+
+  .form-row {
+    flex: 1;
+  }
+}
+
+label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+input,
+textarea,
+select {
+  padding: 8px;
+  font-size: $font-size-body;
+  font-family: inherit;
+  border: 1px solid $color-border;
+  border-radius: 2px;
+  background: $color-background;
+  width: 100%;
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: -1px;
+    border-color: $color-primary;
+  }
+
+  &.error {
+    border-color: $color-error;
+  }
+}
+
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  gap: $spacing-grid;
+  align-items: center;
+  margin-top: $spacing-grid;
+}
+
+.delete-link {
+  margin-left: auto;
+  color: $color-error;
+  font-size: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+
+  &:hover {
+    text-decoration: none;
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+// Error messages
+.error-message {
+  color: $color-error;
+  font-size: 14px;
+}
+
+.form-error {
+  padding: $spacing-grid;
+  margin-bottom: $spacing-grid;
+  color: $color-error;
+  background: rgba($color-error, 0.05);
+  border: 1px solid rgba($color-error, 0.2);
+  border-radius: 2px;
+}
+
+// Checkbox
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  input[type="checkbox"] {
+    width: auto;
+  }
+}
+
+// Required indicator
+.required::after {
+  content: " *";
+  color: $color-error;
+}
+
+// Accessibility
+[aria-required="true"] + .error-message {
+  margin-top: 4px;
+}

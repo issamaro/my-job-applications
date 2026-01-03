@@ -1,0 +1,57 @@
+// components/_lists.scss
+// Item list and item component styles
+
+@use "../tokens" as *;
+
+.item-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  padding: $spacing-grid;
+  border-bottom: 1px solid $color-border;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.item-title {
+  font-weight: 600;
+}
+
+.item-subtitle {
+  color: rgba($color-text, 0.7);
+  font-size: 14px;
+}
+
+.item-description {
+  margin-top: 8px;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.edit-btn {
+  padding: 4px 8px;
+  font-size: 14px;
+  color: $color-primary;
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}

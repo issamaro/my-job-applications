@@ -1,0 +1,33 @@
+// components/_dialogs.scss
+// Modal dialog component styles
+
+@use "../tokens" as *;
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+
+.dialog {
+  max-width: 400px;
+  padding: $spacing-section;
+  background: $color-background;
+  border-radius: 2px;
+}
+
+.dialog-title {
+  margin: 0 0 $spacing-grid;
+  font-size: $font-size-heading;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: $spacing-grid;
+  justify-content: flex-end;
+  margin-top: $spacing-section;
+}

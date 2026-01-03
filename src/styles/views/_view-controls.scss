@@ -1,0 +1,71 @@
+// views/_view-controls.scss
+// View mode toggle, profile incomplete state, and download controls
+
+@use "../tokens" as *;
+
+// Profile Incomplete
+.profile-incomplete {
+  text-align: center;
+  padding: $spacing-section * 2;
+  border: 1px solid $color-border;
+  border-radius: 2px;
+
+  p {
+    margin-bottom: $spacing-section;
+  }
+}
+
+// View Mode Toggle
+.view-mode-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-section;
+  flex-wrap: wrap;
+  gap: $spacing-grid;
+}
+
+.view-mode-toggle {
+  display: flex;
+  gap: 0;
+}
+
+.view-mode-btn {
+  padding: 8px $spacing-grid;
+  font-size: $font-size-body;
+  font-family: inherit;
+  color: $color-text;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+
+  &:hover {
+    color: $color-primary;
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+
+  &.active {
+    border-bottom-color: $color-primary;
+    color: $color-primary;
+  }
+}
+
+.preview-controls {
+  display: flex;
+  gap: $spacing-grid;
+  align-items: center;
+}
+
+.download-btn {
+  min-width: 120px;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}

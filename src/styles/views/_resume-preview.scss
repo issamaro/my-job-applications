@@ -1,0 +1,265 @@
+// views/_resume-preview.scss
+// Resume preview view - display, sections, editing, work items, projects
+
+@use "../tokens" as *;
+
+.resume-preview {
+  hr {
+    border: none;
+    border-top: 1px solid $color-border;
+    margin: $spacing-section 0;
+  }
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-grid;
+}
+
+.back-link {
+  color: $color-primary;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: $font-size-body;
+  font-family: inherit;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.match-score {
+  font-size: $font-size-heading;
+  font-weight: bold;
+
+  &.score-high {
+    color: $color-success;
+  }
+
+  &.score-medium {
+    color: $color-text;
+  }
+
+  &.score-low {
+    color: #cc6600;
+  }
+}
+
+.preview-title {
+  h2 {
+    margin-bottom: 4px;
+  }
+}
+
+.preview-date {
+  color: rgba($color-text, 0.6);
+  font-size: 14px;
+  margin: 0;
+}
+
+.section-heading {
+  margin-bottom: $spacing-grid;
+}
+
+// Personal Info Preview
+.personal-info-preview {
+  margin-bottom: $spacing-section;
+  padding: $spacing-grid;
+  border: 1px solid $color-border;
+  border-radius: 2px;
+
+  h4 {
+    margin-bottom: 4px;
+  }
+
+  .contact-line {
+    font-size: 14px;
+    color: rgba($color-text, 0.7);
+    margin-bottom: 4px;
+  }
+
+  .summary {
+    margin-top: $spacing-grid;
+    font-size: 14px;
+  }
+}
+
+// Resume Section
+.resume-section {
+  margin-bottom: $spacing-grid;
+  border: 1px solid $color-border;
+  border-radius: 2px;
+}
+
+.resume-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-grid;
+  border-bottom: 1px solid $color-border;
+}
+
+.section-title-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+
+  h4 {
+    margin: 0;
+  }
+
+  &:hover {
+    color: $color-primary;
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.toggle-btn {
+  padding: 4px 8px;
+  font-size: 14px;
+  font-family: monospace;
+  background: none;
+  border: 1px solid $color-border;
+  border-radius: 2px;
+  cursor: pointer;
+
+  &.on {
+    color: $color-success;
+    border-color: rgba($color-success, 0.3);
+  }
+
+  &.off {
+    color: rgba($color-text, 0.5);
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.resume-section-content {
+  padding: $spacing-grid;
+}
+
+.section-hidden {
+  color: rgba($color-text, 0.5);
+  font-style: italic;
+}
+
+// Work List
+.work-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-grid;
+}
+
+.work-item {
+  padding-bottom: $spacing-grid;
+  border-bottom: 1px solid $color-border;
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.work-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.work-number {
+  font-weight: 600;
+  color: rgba($color-text, 0.5);
+}
+
+.work-title {
+  font-weight: 600;
+}
+
+.work-dates {
+  font-size: 14px;
+  color: rgba($color-text, 0.6);
+  margin: 4px 0;
+}
+
+.work-description {
+  font-size: 14px;
+  white-space: pre-wrap;
+  margin: 8px 0;
+}
+
+.work-footer {
+  display: flex;
+  align-items: center;
+  gap: $spacing-grid;
+  font-size: 14px;
+}
+
+.match-reasons {
+  color: $color-success;
+}
+
+.inline-edit {
+  margin-top: 8px;
+
+  textarea {
+    margin-bottom: 8px;
+  }
+}
+
+.edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+// Project Item
+.project-item {
+  margin-bottom: $spacing-grid;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.project-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.project-description {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.project-tech {
+  font-size: 14px;
+  color: rgba($color-text, 0.6);
+}
+
+.preview-actions {
+  margin-top: $spacing-section;
+}

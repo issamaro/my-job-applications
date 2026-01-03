@@ -1,0 +1,8 @@
+// views/_index.scss
+// Forward all view partials
+
+@forward "resume-generator";
+@forward "requirements-analysis";
+@forward "resume-preview";
+@forward "history";
+@forward "view-controls";

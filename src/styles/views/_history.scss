@@ -1,0 +1,90 @@
+// views/_history.scss
+// Resume history view - section, list, and item styles
+
+@use "../tokens" as *;
+
+.history-section {
+  margin-top: $spacing-section;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: $spacing-grid;
+  background: none;
+  border: 1px solid $color-border;
+  border-radius: 2px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+
+  h3 {
+    margin: 0;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.history-content {
+  border: 1px solid $color-border;
+  border-top: none;
+  border-radius: 0 0 2px 2px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-grid;
+  border-bottom: 1px solid $color-border;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.history-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  padding: 0;
+
+  &:hover .history-title {
+    color: $color-primary;
+    text-decoration: underline;
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.history-title {
+  font-weight: 600;
+}
+
+.history-meta {
+  font-size: 14px;
+  color: rgba($color-text, 0.6);
+}

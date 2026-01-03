@@ -1,0 +1,10 @@
+// components/_index.scss
+// Forward all component partials
+
+@forward "sections";
+@forward "buttons";
+@forward "forms";
+@forward "tags";
+@forward "dialogs";
+@forward "tabs";
+@forward "lists";
