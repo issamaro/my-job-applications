@@ -10,8 +10,8 @@
 - [x] Code implemented
 - [x] Tests passing (59/59)
 - [x] Documentation updated (CHANGELOG.md)
-- [x] Workbench to be archived
-- [x] Git commit to be created
+- [x] Workbench archived
+- [x] Git commit created
 
 ---
 
@@ -54,7 +54,8 @@ Job-Tailored Resume Generation enables users to paste a job description and rece
 
 ## Commit Reference
 
-**To be created:** See git commit after archival
+**Hash:** c0bfdbd9496109620c194939df1a5a166b30be6c
+**Message:** feat: Job-Tailored Resume Generation
 
 ---
 
