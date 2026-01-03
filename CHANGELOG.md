@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-01-03] - My Job Applications (Unified View)
+
+### Added
+- Expandable resumes inside job items (click to see all resumes for a job)
+- Resume linkage: generating from a loaded job links to that job's resumes
+- Auto-expand first (most recent) job on page load
+- Delete resume from within expanded job item
+
+### Changed
+- Renamed "Saved Job Descriptions" to "My Job Applications"
+- Consolidated Resume History into Job Applications (one unified view)
+- Title auto-updates from "Untitled Job" when generating resume
+
+### Removed
+- Separate "History" section (functionality moved to expandable job items)
+- ResumeHistory.svelte component
+- _history.scss styles (moved to _saved-jobs.scss)
+
+### Technical
+- Backend: `job_description_id` parameter in generate endpoint
+- Frontend: Expand/collapse toggle with on-demand resume fetching
+- 5 new tests for job linkage behavior
+
+---
+
 ## [2026-01-03] - SCSS Architecture Refactor
 
 ### Changed

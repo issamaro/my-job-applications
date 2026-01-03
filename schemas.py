@@ -158,6 +158,7 @@ class Project(BaseModel):
 # Resume Generation schemas
 class ResumeGenerateRequest(BaseModel):
     job_description: str
+    job_description_id: int | None = None  # Optional: link to existing JD
 
     @field_validator("job_description")
     @classmethod

@@ -18,7 +18,7 @@ class ProfileIncompleteError(Exception):
 
 
 class ResumeGeneratorService:
-    async def generate(self, job_description: str) -> GeneratedResumeResponse:
+    async def generate(self, job_description: str, job_description_id: int | None = None) -> GeneratedResumeResponse:
         if not profile_service.has_work_experience():
             raise ProfileIncompleteError(
                 "Your profile needs work experience before you can generate a tailored resume."
@@ -35,15 +35,46 @@ class ResumeGeneratorService:
             company_name = llm_result.get("company_name", "Unknown Company")
             title = f"{job_title} at {company_name}"
 
-            cursor = conn.execute(
-                """
-                INSERT INTO job_descriptions (raw_text, parsed_data, title, company_name, updated_at, is_saved)
-                VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, 1)
-                """,
-                (job_description, json.dumps(llm_result.get("job_analysis", {})), title, company_name),
-            )
-            conn.commit()
-            jd_id = cursor.lastrowid
+            if job_description_id:
+                # Link to existing JD - verify it exists
+                cursor = conn.execute(
+                    "SELECT id, title FROM job_descriptions WHERE id = ?",
+                    (job_description_id,)
+                )
+                existing = cursor.fetchone()
+                if not existing:
+                    raise ValueError(f"Job description with id {job_description_id} not found")
+
+                jd_id = job_description_id
+
+                # Update title only if still "Untitled Job"
+                if existing["title"] == "Untitled Job":
+                    conn.execute(
+                        """
+                        UPDATE job_descriptions
+                        SET title = ?, company_name = ?, updated_at = CURRENT_TIMESTAMP
+                        WHERE id = ?
+                        """,
+                        (title, company_name, jd_id)
+                    )
+                else:
+                    # Just update timestamp
+                    conn.execute(
+                        "UPDATE job_descriptions SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                        (jd_id,)
+                    )
+                conn.commit()
+            else:
+                # Create new JD (existing behavior)
+                cursor = conn.execute(
+                    """
+                    INSERT INTO job_descriptions (raw_text, parsed_data, title, company_name, updated_at, is_saved)
+                    VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, 1)
+                    """,
+                    (job_description, json.dumps(llm_result.get("job_analysis", {})), title, company_name),
+                )
+                conn.commit()
+                jd_id = cursor.lastrowid
 
             resume_content = llm_result.get("resume", {})
             if profile_dict.get("personal_info"):

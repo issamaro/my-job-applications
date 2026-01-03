@@ -134,10 +134,14 @@ export function supportsMonthInput() {
 }
 
 // Resume Generation
-export async function generateResume(jobDescription) {
+export async function generateResume(jobDescription, jobDescriptionId = null) {
+  const body = { job_description: jobDescription };
+  if (jobDescriptionId) {
+    body.job_description_id = jobDescriptionId;
+  }
   return request('/resumes/generate', {
     method: 'POST',
-    body: JSON.stringify({ job_description: jobDescription })
+    body: JSON.stringify(body)
   });
 }
 

@@ -2,7 +2,6 @@
   import JobDescriptionInput from './JobDescriptionInput.svelte';
   import ProgressBar from './ProgressBar.svelte';
   import ResumePreview from './ResumePreview.svelte';
-  import ResumeHistory from './ResumeHistory.svelte';
   import SavedJobsList from './SavedJobsList.svelte';
   import { generateResume, getResume, getCompleteProfile, createJobDescription, updateJobDescription } from '../lib/api.js';
 
@@ -12,7 +11,6 @@
   let error = $state(null);
   let loadingStatus = $state('Analyzing job description...');
   let abortController = $state(null);
-  let historyRef = $state(null);
   let savedJobsRef = $state(null);
   let profileIncomplete = $state(false);
   let loadedJobId = $state(null);
@@ -57,10 +55,9 @@
     abortController = new AbortController();
 
     try {
-      const result = await generateResume(jobDescription);
+      const result = await generateResume(jobDescription, loadedJobId);
       currentResume = result;
       view = 'preview';
-      historyRef?.refresh();
       savedJobsRef?.refresh();
     } catch (e) {
       if (e.name === 'AbortError') {
@@ -104,7 +101,7 @@
     handleGenerate();
   }
 
-  async function handleHistorySelect(id) {
+  async function handleSelectResume(id) {
     try {
       const resume = await getResume(id);
       currentResume = resume;
@@ -195,12 +192,9 @@
     <SavedJobsList
       bind:this={savedJobsRef}
       onLoad={handleLoadJob}
+      onSelectResume={handleSelectResume}
       selectedId={loadedJobId}
     />
-
-    <hr />
-
-    <ResumeHistory bind:this={historyRef} onSelect={handleHistorySelect} />
 
   {:else if view === 'loading'}
     <JobDescriptionInput

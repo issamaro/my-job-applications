@@ -3,10 +3,11 @@
   import SavedJobItem from './SavedJobItem.svelte';
   import { getJobDescriptions, deleteJobDescription, getJobDescription } from '../lib/api.js';
 
-  let { onLoad, selectedId = null } = $props();
+  let { onLoad, onSelectResume, selectedId = null } = $props();
 
   let jobs = $state([]);
   let loading = $state(true);
+  let error = $state(null);
   let collapsed = $state(false);
   let deleteId = $state(null);
   let deleteResumeCount = $state(0);
@@ -16,10 +17,12 @@
   });
 
   async function loadJobs() {
+    error = null;
     try {
       jobs = await getJobDescriptions();
     } catch (e) {
       console.error('Failed to load job descriptions:', e);
+      error = 'Could not load job applications. Please refresh the page.';
     } finally {
       loading = false;
     }
@@ -63,7 +66,7 @@
     onclick={() => collapsed = !collapsed}
     aria-expanded={!collapsed}
   >
-    <h3>Saved Job Descriptions</h3>
+    <h3>My Job Applications</h3>
     <span class="collapse-toggle">{collapsed ? '[+]' : '[-]'}</span>
   </button>
 
@@ -73,18 +76,23 @@
       <div class="skeleton"></div>
       <div class="skeleton"></div>
       <div class="skeleton"></div>
+    {:else if error}
+      <div class="error-state">
+        <p>{error}</p>
+      </div>
     {:else if jobs.length === 0}
       <div class="empty-state">
-        <p>No saved job descriptions yet.</p>
-        <p class="hint">Paste a job description above and click "Save" to keep it for later.</p>
+        <p>No job applications yet. Paste a job description above to get started.</p>
       </div>
     {:else}
-      {#each jobs as job}
+      {#each jobs as job, index}
         <SavedJobItem
           {job}
           selected={selectedId === job.id}
+          autoExpand={index === 0}
           onLoad={handleLoad}
           onDelete={confirmDelete}
+          {onSelectResume}
         />
       {/each}
     {/if}
@@ -94,8 +102,8 @@
 
 {#if deleteId}
 <ConfirmDialog
-  title="Delete Job Description?"
-  message={`This will also delete ${deleteResumeCount} generated resume${deleteResumeCount !== 1 ? 's' : ''} linked to this job description. This action cannot be undone.`}
+  title="Delete Job Application?"
+  message={`This will delete the job description and ${deleteResumeCount} generated resume${deleteResumeCount !== 1 ? 's' : ''}. This cannot be undone.`}
   onConfirm={handleDelete}
   onCancel={() => deleteId = null}
 />

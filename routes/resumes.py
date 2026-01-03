@@ -17,7 +17,10 @@ router = APIRouter(prefix="/api/resumes", tags=["resumes"])
 @router.post("/generate", response_model=GeneratedResumeResponse)
 async def generate_resume(request: ResumeGenerateRequest):
     try:
-        result = await resume_generator_service.generate(request.job_description)
+        result = await resume_generator_service.generate(
+            request.job_description,
+            request.job_description_id
+        )
         return result
     except ProfileIncompleteError as e:
         raise HTTPException(status_code=400, detail=str(e))
