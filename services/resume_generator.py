@@ -30,12 +30,17 @@ class ResumeGeneratorService:
         llm_result = await llm_service.analyze_and_generate(job_description, profile_dict)
 
         with get_db() as conn:
+            # Build title from LLM result
+            job_title = llm_result.get("job_title", "Untitled")
+            company_name = llm_result.get("company_name", "Unknown Company")
+            title = f"{job_title} at {company_name}"
+
             cursor = conn.execute(
                 """
-                INSERT INTO job_descriptions (raw_text, parsed_data)
-                VALUES (?, ?)
+                INSERT INTO job_descriptions (raw_text, parsed_data, title, company_name, updated_at, is_saved)
+                VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, 1)
                 """,
-                (job_description, json.dumps(llm_result.get("job_analysis", {}))),
+                (job_description, json.dumps(llm_result.get("job_analysis", {})), title, company_name),
             )
             conn.commit()
             jd_id = cursor.lastrowid
@@ -135,20 +140,14 @@ class ResumeGeneratorService:
 
     def delete_resume(self, resume_id: int) -> bool:
         with get_db() as conn:
+            # Only delete the resume, NOT the JD
+            # JD may have other resumes linked or user may want to keep it
             cursor = conn.execute(
-                "SELECT job_description_id FROM generated_resumes WHERE id = ?",
+                "DELETE FROM generated_resumes WHERE id = ?",
                 (resume_id,),
             )
-            row = cursor.fetchone()
-            if row is None:
-                return False
-
-            jd_id = row["job_description_id"]
-
-            conn.execute("DELETE FROM generated_resumes WHERE id = ?", (resume_id,))
-            conn.execute("DELETE FROM job_descriptions WHERE id = ?", (jd_id,))
             conn.commit()
-            return True
+            return cursor.rowcount > 0
 
     def _row_to_response(
         self, row: dict, job_analysis: dict | None = None

@@ -3,7 +3,8 @@
   import ProgressBar from './ProgressBar.svelte';
   import ResumePreview from './ResumePreview.svelte';
   import ResumeHistory from './ResumeHistory.svelte';
-  import { generateResume, getResume, getCompleteProfile } from '../lib/api.js';
+  import SavedJobsList from './SavedJobsList.svelte';
+  import { generateResume, getResume, getCompleteProfile, createJobDescription, updateJobDescription } from '../lib/api.js';
 
   let view = $state('input');
   let jobDescription = $state('');
@@ -12,7 +13,11 @@
   let loadingStatus = $state('Analyzing job description...');
   let abortController = $state(null);
   let historyRef = $state(null);
+  let savedJobsRef = $state(null);
   let profileIncomplete = $state(false);
+  let loadedJobId = $state(null);
+  let loadedJobTitle = $state(null);
+  let saving = $state(false);
 
   const statusMessages = [
     'Analyzing job description...',
@@ -56,6 +61,7 @@
       currentResume = result;
       view = 'preview';
       historyRef?.refresh();
+      savedJobsRef?.refresh();
     } catch (e) {
       if (e.name === 'AbortError') {
         view = 'input';
@@ -111,6 +117,46 @@
   function goToProfile() {
     window.dispatchEvent(new CustomEvent('switchTab', { detail: 'profile' }));
   }
+
+  function handleLoadJob(id, rawText, title) {
+    jobDescription = rawText;
+    loadedJobId = id;
+    loadedJobTitle = title;
+    error = null;
+  }
+
+  function handleClearLoaded() {
+    loadedJobId = null;
+    loadedJobTitle = null;
+    jobDescription = '';
+    error = null;
+  }
+
+  async function handleSaveJob() {
+    if (jobDescription.trim().length < 100) {
+      error = 'Job description must be at least 100 characters';
+      return;
+    }
+
+    saving = true;
+    error = null;
+
+    try {
+      if (loadedJobId) {
+        await updateJobDescription(loadedJobId, { raw_text: jobDescription });
+      } else {
+        const result = await createJobDescription(jobDescription);
+        loadedJobId = result.id;
+        loadedJobTitle = result.title;
+      }
+      savedJobsRef?.refresh();
+    } catch (e) {
+      error = 'Could not save. Please try again.';
+      console.error('Failed to save job description:', e);
+    } finally {
+      saving = false;
+    }
+  }
 </script>
 
 <div class="resume-generator">
@@ -125,21 +171,32 @@
     <JobDescriptionInput
       value={jobDescription}
       {error}
+      {saving}
+      {loadedJobId}
+      {loadedJobTitle}
       onInput={(val) => {
         jobDescription = val;
         error = null;
       }}
+      onSave={handleSaveJob}
+      onClear={handleClearLoaded}
     />
 
     <div class="generator-actions">
       <button
         class="btn btn-primary"
         onclick={handleGenerate}
-        disabled={jobDescription.trim().length < 100}
+        disabled={jobDescription.trim().length < 100 || saving}
       >
         Generate Resume
       </button>
     </div>
+
+    <SavedJobsList
+      bind:this={savedJobsRef}
+      onLoad={handleLoadJob}
+      selectedId={loadedJobId}
+    />
 
     <hr />
 

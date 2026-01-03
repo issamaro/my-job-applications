@@ -7,6 +7,7 @@ DATABASE = "app.db"
 @contextmanager
 def get_db():
     conn = sqlite3.connect(DATABASE)
+    conn.execute("PRAGMA foreign_keys = ON")  # Enable FK cascade
     conn.row_factory = sqlite3.Row
     try:
         yield conn
@@ -92,4 +93,39 @@ def init_db():
 
             CREATE INDEX IF NOT EXISTS idx_generated_resumes_created
             ON generated_resumes(created_at DESC);
+        """)
+
+        # Migrations for Saved Job Descriptions feature
+        # Add new columns to job_descriptions (idempotent with try/except)
+        migrations = [
+            "ALTER TABLE job_descriptions ADD COLUMN title TEXT DEFAULT 'Untitled Job'",
+            "ALTER TABLE job_descriptions ADD COLUMN company_name TEXT",
+            "ALTER TABLE job_descriptions ADD COLUMN updated_at TEXT",
+            "ALTER TABLE job_descriptions ADD COLUMN is_saved INTEGER DEFAULT 1",
+            "ALTER TABLE generated_resumes ADD COLUMN jd_version_id INTEGER",
+        ]
+        for sql in migrations:
+            try:
+                conn.execute(sql)
+            except sqlite3.OperationalError:
+                pass  # Column already exists
+
+        # Backfill updated_at from created_at
+        conn.execute("""
+            UPDATE job_descriptions SET updated_at = created_at WHERE updated_at IS NULL
+        """)
+
+        # Create version history table with FK CASCADE
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS job_description_versions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                job_description_id INTEGER NOT NULL,
+                raw_text TEXT NOT NULL,
+                version_number INTEGER NOT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (job_description_id) REFERENCES job_descriptions(id) ON DELETE CASCADE
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_job_description_versions_jd_id
+            ON job_description_versions(job_description_id);
         """)

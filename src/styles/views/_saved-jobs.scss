@@ -1,0 +1,177 @@
+// views/_saved-jobs.scss
+// Saved job descriptions panel - collapsible list with inline editing
+
+@use "../tokens" as *;
+
+.saved-jobs-section {
+  margin-top: $spacing-section;
+}
+
+.saved-jobs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: $spacing-grid;
+  background: none;
+  border: 1px solid $color-border;
+  border-radius: 2px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+
+  h3 {
+    margin: 0;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.saved-jobs-content {
+  border: 1px solid $color-border;
+  border-top: none;
+  border-radius: 0 0 2px 2px;
+}
+
+.saved-job-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: $spacing-grid;
+  border-bottom: 1px solid $color-border;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &.selected {
+    border-left: 3px solid $color-primary;
+    background: rgba($color-primary, 0.02);
+  }
+}
+
+.job-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.job-title-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  padding: 0;
+
+  &:hover .job-title {
+    color: $color-primary;
+    text-decoration: underline;
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.job-content {
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &:hover {
+    .job-preview {
+      color: rgba($color-text, 0.85);
+    }
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.job-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.job-title {
+  font-weight: 600;
+}
+
+.title-input {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid $color-primary;
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: inherit;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba($color-primary, 0.2);
+  }
+}
+
+.job-preview {
+  margin: 0;
+  font-size: 14px;
+  color: rgba($color-text, 0.7);
+  line-height: 1.4;
+}
+
+.job-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+  color: rgba($color-text, 0.6);
+}
+
+.icon-btn {
+  background: none;
+  border: none;
+  color: $color-primary;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.empty-state {
+  padding: $spacing-section;
+  text-align: center;
+  color: rgba($color-text, 0.6);
+
+  p {
+    margin: 0 0 8px;
+  }
+
+  .hint {
+    font-size: 14px;
+  }
+}

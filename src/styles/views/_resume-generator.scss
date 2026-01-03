@@ -83,3 +83,44 @@
     transform: translateX(100%);
   }
 }
+
+// Loaded JD indicator
+.loaded-indicator {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: $spacing-grid;
+  background: rgba($color-primary, 0.05);
+  border-left: 3px solid $color-primary;
+  border-radius: 2px;
+}
+
+.loaded-badge {
+  font-size: 14px;
+  color: $color-primary;
+}
+
+.clear-link {
+  background: none;
+  border: none;
+  color: rgba($color-text, 0.6);
+  cursor: pointer;
+  font-size: 14px;
+
+  &:hover {
+    color: $color-text;
+    text-decoration: underline;
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.button-row {
+  display: flex;
+  gap: $spacing-grid;
+  margin-top: $spacing-grid;
+}

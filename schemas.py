@@ -255,3 +255,64 @@ class CompleteProfile(BaseModel):
     education: list[dict] = []
     skills: list[dict] = []
     projects: list[dict] = []
+
+
+# Job Description schemas
+class JobDescriptionCreate(BaseModel):
+    raw_text: str = Field(..., min_length=100)
+
+    @field_validator("raw_text")
+    @classmethod
+    def validate_length(cls, v: str) -> str:
+        if len(v.strip()) < 100:
+            raise ValueError("Job description must be at least 100 characters")
+        return v.strip()
+
+
+class JobDescriptionUpdate(BaseModel):
+    title: str | None = Field(None, max_length=100)
+    raw_text: str | None = None
+
+    @field_validator("raw_text")
+    @classmethod
+    def validate_length(cls, v: str | None) -> str | None:
+        if v is not None and len(v.strip()) < 100:
+            raise ValueError("Job description must be at least 100 characters")
+        return v.strip() if v else v
+
+
+class JobDescriptionListItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    company_name: str | None = None
+    raw_text_preview: str
+    resume_count: int
+    created_at: str
+    updated_at: str
+
+
+class JobDescriptionResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    company_name: str | None = None
+    raw_text: str
+    resume_count: int
+    created_at: str
+    updated_at: str
+
+
+class JobDescriptionWithResumes(JobDescriptionResponse):
+    resumes: list[ResumeHistoryItem] = []
+
+
+class JobDescriptionVersion(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    version_number: int
+    raw_text: str
+    created_at: str
