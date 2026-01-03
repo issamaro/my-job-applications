@@ -412,3 +412,580 @@ textarea {
 [aria-required="true"] + .error-message {
   margin-top: 4px;
 }
+
+// Tab Navigation
+.tab-nav {
+  display: flex;
+  gap: $spacing-grid;
+}
+
+.tab-btn {
+  padding: 8px $spacing-grid;
+  font-size: $font-size-body;
+  font-family: inherit;
+  color: $color-text;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+
+  &:hover {
+    color: $color-primary;
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+
+  &.active {
+    border-bottom-color: $color-primary;
+    color: $color-primary;
+  }
+}
+
+// Resume Generator
+.resume-generator {
+  padding: 0;
+}
+
+.jd-input {
+  h2 {
+    margin-bottom: $spacing-grid;
+  }
+
+  .instructions {
+    color: rgba($color-text, 0.7);
+    margin-bottom: $spacing-section;
+  }
+
+  textarea {
+    min-height: 200px;
+
+    &.dimmed {
+      opacity: 0.6;
+      background: rgba(0, 0, 0, 0.02);
+    }
+  }
+}
+
+.jd-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.char-counter {
+  font-size: 14px;
+  color: rgba($color-text, 0.6);
+
+  &.valid {
+    color: $color-success;
+  }
+}
+
+.generator-actions {
+  margin-top: $spacing-section;
+}
+
+.loading-actions {
+  margin-top: $spacing-grid;
+}
+
+// Progress Bar
+.progress-container {
+  margin: $spacing-section 0;
+}
+
+.progress-status {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.progress-bar {
+  height: 4px;
+  background: $color-border;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 100%;
+  background: $color-primary;
+  animation: progress 2s ease-in-out infinite;
+}
+
+@keyframes progress {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+// Requirements Analysis
+.requirements-card {
+  border: 1px solid $color-border;
+  border-radius: 2px;
+  margin-bottom: $spacing-section;
+}
+
+.requirements-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: $spacing-grid;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+
+  h3 {
+    margin: 0;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: -2px;
+  }
+}
+
+.collapse-toggle {
+  font-family: monospace;
+  color: rgba($color-text, 0.6);
+}
+
+.requirements-content {
+  padding: $spacing-grid;
+  border-top: 1px solid $color-border;
+}
+
+.requirement-section {
+  margin-bottom: $spacing-grid;
+
+  h4 {
+    font-size: 14px;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.requirement-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  font-size: 14px;
+  background: rgba($color-primary, 0.1);
+  border: 1px solid rgba($color-primary, 0.3);
+  border-radius: 2px;
+
+  &.matched {
+    color: $color-success;
+    background: rgba($color-success, 0.1);
+    border-color: rgba($color-success, 0.3);
+  }
+
+  &.unmatched {
+    color: $color-error;
+    background: rgba($color-error, 0.05);
+    border-color: rgba($color-error, 0.2);
+  }
+}
+
+.match-indicator {
+  font-weight: bold;
+
+  &.matched {
+    color: $color-success;
+  }
+
+  &:not(.matched) {
+    color: $color-error;
+  }
+}
+
+// Resume Preview
+.resume-preview {
+  hr {
+    border: none;
+    border-top: 1px solid $color-border;
+    margin: $spacing-section 0;
+  }
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-grid;
+}
+
+.back-link {
+  color: $color-primary;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: $font-size-body;
+  font-family: inherit;
+  padding: 0;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.match-score {
+  font-size: $font-size-heading;
+  font-weight: bold;
+
+  &.score-high {
+    color: $color-success;
+  }
+
+  &.score-medium {
+    color: $color-text;
+  }
+
+  &.score-low {
+    color: #cc6600;
+  }
+}
+
+.preview-title {
+  h2 {
+    margin-bottom: 4px;
+  }
+}
+
+.preview-date {
+  color: rgba($color-text, 0.6);
+  font-size: 14px;
+  margin: 0;
+}
+
+.section-heading {
+  margin-bottom: $spacing-grid;
+}
+
+// Personal Info Preview
+.personal-info-preview {
+  margin-bottom: $spacing-section;
+  padding: $spacing-grid;
+  border: 1px solid $color-border;
+  border-radius: 2px;
+
+  h4 {
+    margin-bottom: 4px;
+  }
+
+  .contact-line {
+    font-size: 14px;
+    color: rgba($color-text, 0.7);
+    margin-bottom: 4px;
+  }
+
+  .summary {
+    margin-top: $spacing-grid;
+    font-size: 14px;
+  }
+}
+
+// Resume Section
+.resume-section {
+  margin-bottom: $spacing-grid;
+  border: 1px solid $color-border;
+  border-radius: 2px;
+}
+
+.resume-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-grid;
+  border-bottom: 1px solid $color-border;
+}
+
+.section-title-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+
+  h4 {
+    margin: 0;
+  }
+
+  &:hover {
+    color: $color-primary;
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.toggle-btn {
+  padding: 4px 8px;
+  font-size: 14px;
+  font-family: monospace;
+  background: none;
+  border: 1px solid $color-border;
+  border-radius: 2px;
+  cursor: pointer;
+
+  &.on {
+    color: $color-success;
+    border-color: rgba($color-success, 0.3);
+  }
+
+  &.off {
+    color: rgba($color-text, 0.5);
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.resume-section-content {
+  padding: $spacing-grid;
+}
+
+.section-hidden {
+  color: rgba($color-text, 0.5);
+  font-style: italic;
+}
+
+// Work List
+.work-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-grid;
+}
+
+.work-item {
+  padding-bottom: $spacing-grid;
+  border-bottom: 1px solid $color-border;
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.work-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.work-number {
+  font-weight: 600;
+  color: rgba($color-text, 0.5);
+}
+
+.work-title {
+  font-weight: 600;
+}
+
+.work-dates {
+  font-size: 14px;
+  color: rgba($color-text, 0.6);
+  margin: 4px 0;
+}
+
+.work-description {
+  font-size: 14px;
+  white-space: pre-wrap;
+  margin: 8px 0;
+}
+
+.work-footer {
+  display: flex;
+  align-items: center;
+  gap: $spacing-grid;
+  font-size: 14px;
+}
+
+.match-reasons {
+  color: $color-success;
+}
+
+.inline-edit {
+  margin-top: 8px;
+
+  textarea {
+    margin-bottom: 8px;
+  }
+}
+
+.edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+// Project Item
+.project-item {
+  margin-bottom: $spacing-grid;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.project-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.project-description {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.project-tech {
+  font-size: 14px;
+  color: rgba($color-text, 0.6);
+}
+
+.preview-actions {
+  margin-top: $spacing-section;
+}
+
+// History
+.history-section {
+  margin-top: $spacing-section;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: $spacing-grid;
+  background: none;
+  border: 1px solid $color-border;
+  border-radius: 2px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+
+  h3 {
+    margin: 0;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.02);
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.history-content {
+  border: 1px solid $color-border;
+  border-top: none;
+  border-radius: 0 0 2px 2px;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-grid;
+  border-bottom: 1px solid $color-border;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.history-item-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  padding: 0;
+
+  &:hover .history-title {
+    color: $color-primary;
+    text-decoration: underline;
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.history-title {
+  font-weight: 600;
+}
+
+.history-meta {
+  font-size: 14px;
+  color: rgba($color-text, 0.6);
+}
+
+// Profile Incomplete
+.profile-incomplete {
+  text-align: center;
+  padding: $spacing-section * 2;
+  border: 1px solid $color-border;
+  border-radius: 2px;
+
+  p {
+    margin-bottom: $spacing-section;
+  }
+}

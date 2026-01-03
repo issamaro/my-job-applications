@@ -132,3 +132,36 @@ export function supportsMonthInput() {
   input.setAttribute('type', 'month');
   return input.type === 'month';
 }
+
+// Resume Generation
+export async function generateResume(jobDescription) {
+  return request('/resumes/generate', {
+    method: 'POST',
+    body: JSON.stringify({ job_description: jobDescription })
+  });
+}
+
+export async function getResumes() {
+  return request('/resumes');
+}
+
+export async function getResume(id) {
+  return request(`/resumes/${id}`);
+}
+
+export async function updateResume(id, resume) {
+  return request(`/resumes/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ resume })
+  });
+}
+
+export async function deleteResume(id) {
+  return request(`/resumes/${id}`, {
+    method: 'DELETE'
+  });
+}
+
+export async function getCompleteProfile() {
+  return request('/profile/complete');
+}

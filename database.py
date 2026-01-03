@@ -70,4 +70,26 @@ def init_db():
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
+
+            CREATE TABLE IF NOT EXISTS job_descriptions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                raw_text TEXT NOT NULL,
+                parsed_data TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS generated_resumes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                job_description_id INTEGER NOT NULL,
+                job_title TEXT,
+                company_name TEXT,
+                match_score REAL,
+                resume_content TEXT NOT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (job_description_id) REFERENCES job_descriptions(id)
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_generated_resumes_created
+            ON generated_resumes(created_at DESC);
         """)

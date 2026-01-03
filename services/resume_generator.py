@@ -1,0 +1,189 @@
+import json
+from database import get_db
+from services.profile import profile_service
+from services.llm import llm_service
+from schemas import (
+    GeneratedResumeResponse,
+    JobAnalysis,
+    ResumeContent,
+    ResumeWorkExperience,
+    ResumeSkill,
+    ResumeEducation,
+    ResumeProject,
+)
+
+
+class ProfileIncompleteError(Exception):
+    pass
+
+
+class ResumeGeneratorService:
+    async def generate(self, job_description: str) -> GeneratedResumeResponse:
+        if not profile_service.has_work_experience():
+            raise ProfileIncompleteError(
+                "Your profile needs work experience before you can generate a tailored resume."
+            )
+
+        profile = profile_service.get_complete()
+        profile_dict = profile.model_dump()
+
+        llm_result = await llm_service.analyze_and_generate(job_description, profile_dict)
+
+        with get_db() as conn:
+            cursor = conn.execute(
+                """
+                INSERT INTO job_descriptions (raw_text, parsed_data)
+                VALUES (?, ?)
+                """,
+                (job_description, json.dumps(llm_result.get("job_analysis", {}))),
+            )
+            conn.commit()
+            jd_id = cursor.lastrowid
+
+            resume_content = llm_result.get("resume", {})
+            if profile_dict.get("personal_info"):
+                resume_content["personal_info"] = profile_dict["personal_info"]
+
+            cursor = conn.execute(
+                """
+                INSERT INTO generated_resumes
+                (job_description_id, job_title, company_name, match_score, resume_content)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (
+                    jd_id,
+                    llm_result.get("job_title"),
+                    llm_result.get("company_name"),
+                    llm_result.get("match_score"),
+                    json.dumps(resume_content),
+                ),
+            )
+            conn.commit()
+            resume_id = cursor.lastrowid
+
+            cursor = conn.execute(
+                "SELECT * FROM generated_resumes WHERE id = ?", (resume_id,)
+            )
+            row = cursor.fetchone()
+
+            return self._row_to_response(dict(row), llm_result.get("job_analysis"))
+
+    def get_resume(self, resume_id: int) -> GeneratedResumeResponse | None:
+        with get_db() as conn:
+            cursor = conn.execute(
+                """
+                SELECT gr.*, jd.parsed_data as job_analysis_data
+                FROM generated_resumes gr
+                JOIN job_descriptions jd ON gr.job_description_id = jd.id
+                WHERE gr.id = ?
+                """,
+                (resume_id,),
+            )
+            row = cursor.fetchone()
+            if row is None:
+                return None
+
+            row_dict = dict(row)
+            job_analysis = None
+            if row_dict.get("job_analysis_data"):
+                job_analysis = json.loads(row_dict["job_analysis_data"])
+
+            return self._row_to_response(row_dict, job_analysis)
+
+    def get_history(self) -> list[dict]:
+        with get_db() as conn:
+            cursor = conn.execute(
+                """
+                SELECT id, job_title, company_name, match_score, created_at
+                FROM generated_resumes
+                ORDER BY created_at DESC
+                """
+            )
+            return [dict(row) for row in cursor.fetchall()]
+
+    def update_resume(
+        self, resume_id: int, resume_content: ResumeContent
+    ) -> GeneratedResumeResponse | None:
+        with get_db() as conn:
+            cursor = conn.execute(
+                "SELECT id FROM generated_resumes WHERE id = ?", (resume_id,)
+            )
+            if cursor.fetchone() is None:
+                return None
+
+            cursor = conn.execute(
+                "SELECT resume_content FROM generated_resumes WHERE id = ?", (resume_id,)
+            )
+            existing = cursor.fetchone()
+            existing_content = json.loads(existing["resume_content"]) if existing else {}
+
+            new_content = resume_content.model_dump()
+            if existing_content.get("personal_info"):
+                new_content["personal_info"] = existing_content["personal_info"]
+
+            conn.execute(
+                """
+                UPDATE generated_resumes
+                SET resume_content = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+                """,
+                (json.dumps(new_content), resume_id),
+            )
+            conn.commit()
+
+            return self.get_resume(resume_id)
+
+    def delete_resume(self, resume_id: int) -> bool:
+        with get_db() as conn:
+            cursor = conn.execute(
+                "SELECT job_description_id FROM generated_resumes WHERE id = ?",
+                (resume_id,),
+            )
+            row = cursor.fetchone()
+            if row is None:
+                return False
+
+            jd_id = row["job_description_id"]
+
+            conn.execute("DELETE FROM generated_resumes WHERE id = ?", (resume_id,))
+            conn.execute("DELETE FROM job_descriptions WHERE id = ?", (jd_id,))
+            conn.commit()
+            return True
+
+    def _row_to_response(
+        self, row: dict, job_analysis: dict | None = None
+    ) -> GeneratedResumeResponse:
+        resume_content = json.loads(row["resume_content"]) if row.get("resume_content") else {}
+
+        work_experiences = [
+            ResumeWorkExperience(**we) for we in resume_content.get("work_experiences", [])
+        ]
+        skills = [ResumeSkill(**s) for s in resume_content.get("skills", [])]
+        education = [ResumeEducation(**e) for e in resume_content.get("education", [])]
+        projects = [ResumeProject(**p) for p in resume_content.get("projects", [])]
+
+        resume = ResumeContent(
+            personal_info=resume_content.get("personal_info"),
+            summary=resume_content.get("summary"),
+            work_experiences=work_experiences,
+            skills=skills,
+            education=education,
+            projects=projects,
+        )
+
+        job_analysis_obj = None
+        if job_analysis:
+            job_analysis_obj = JobAnalysis(**job_analysis)
+
+        return GeneratedResumeResponse(
+            id=row["id"],
+            job_title=row.get("job_title"),
+            company_name=row.get("company_name"),
+            match_score=row.get("match_score"),
+            job_analysis=job_analysis_obj,
+            resume=resume,
+            created_at=row.get("created_at"),
+        )
+
+
+resume_generator_service = ResumeGeneratorService()

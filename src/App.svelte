@@ -1,39 +1,32 @@
 <script>
-  import Section from './components/Section.svelte';
-  import PersonalInfo from './components/PersonalInfo.svelte';
-  import WorkExperience from './components/WorkExperience.svelte';
-  import Education from './components/Education.svelte';
-  import Skills from './components/Skills.svelte';
-  import Projects from './components/Projects.svelte';
+  import TabNav from './components/TabNav.svelte';
+  import ProfileEditor from './components/ProfileEditor.svelte';
+  import ResumeGenerator from './components/ResumeGenerator.svelte';
 
-  let workExperienceRef = $state(null);
-  let educationRef = $state(null);
-  let skillsRef = $state(null);
-  let projectsRef = $state(null);
+  let activeTab = $state('profile');
+
+  function handleTabChange(tab) {
+    activeTab = tab;
+  }
+
+  $effect(() => {
+    function handleSwitchTab(e) {
+      activeTab = e.detail;
+    }
+    window.addEventListener('switchTab', handleSwitchTab);
+    return () => window.removeEventListener('switchTab', handleSwitchTab);
+  });
 </script>
 
 <div class="container">
   <header class="header">
     <h1>MyCV</h1>
+    <TabNav {activeTab} onTabChange={handleTabChange} />
   </header>
 
-  <Section title="Personal Info">
-    <PersonalInfo />
-  </Section>
-
-  <Section title="Work Experience" onAdd={() => workExperienceRef?.add()}>
-    <WorkExperience bind:this={workExperienceRef} />
-  </Section>
-
-  <Section title="Education" onAdd={() => educationRef?.add()}>
-    <Education bind:this={educationRef} />
-  </Section>
-
-  <Section title="Skills" onAdd={() => skillsRef?.add()}>
-    <Skills bind:this={skillsRef} />
-  </Section>
-
-  <Section title="Projects" onAdd={() => projectsRef?.add()}>
-    <Projects bind:this={projectsRef} />
-  </Section>
+  {#if activeTab === 'profile'}
+    <ProfileEditor />
+  {:else if activeTab === 'resume'}
+    <ResumeGenerator />
+  {/if}
 </div>

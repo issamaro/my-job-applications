@@ -153,3 +153,105 @@ class Project(BaseModel):
     end_date: str | None = None
     created_at: str | None = None
     updated_at: str | None = None
+
+
+# Resume Generation schemas
+class ResumeGenerateRequest(BaseModel):
+    job_description: str
+
+    @field_validator("job_description")
+    @classmethod
+    def validate_length(cls, v: str) -> str:
+        if len(v.strip()) < 100:
+            raise ValueError("Job description must be at least 100 characters")
+        return v.strip()
+
+
+class SkillMatch(BaseModel):
+    name: str
+    matched: bool
+
+
+class JobAnalysis(BaseModel):
+    required_skills: list[SkillMatch] = []
+    preferred_skills: list[SkillMatch] = []
+    experience_years: dict | None = None
+    education: dict | None = None
+
+
+class ResumeWorkExperience(BaseModel):
+    id: int
+    company: str
+    title: str
+    start_date: str
+    end_date: str | None = None
+    description: str | None = None
+    match_reasons: list[str] = []
+    included: bool = True
+    order: int = 0
+
+
+class ResumeSkill(BaseModel):
+    name: str
+    matched: bool
+    included: bool = True
+
+
+class ResumeEducation(BaseModel):
+    id: int
+    institution: str
+    degree: str
+    field_of_study: str | None = None
+    graduation_year: int | None = None
+    included: bool = True
+
+
+class ResumeProject(BaseModel):
+    id: int
+    name: str
+    description: str | None = None
+    technologies: str | None = None
+    included: bool = False
+
+
+class ResumeContent(BaseModel):
+    personal_info: dict | None = None
+    summary: str | None = None
+    work_experiences: list[ResumeWorkExperience] = []
+    skills: list[ResumeSkill] = []
+    education: list[ResumeEducation] = []
+    projects: list[ResumeProject] = []
+
+
+class GeneratedResumeResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    job_title: str | None = None
+    company_name: str | None = None
+    match_score: float | None = None
+    job_analysis: JobAnalysis | None = None
+    resume: ResumeContent | None = None
+    created_at: str | None = None
+
+
+class ResumeHistoryItem(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    job_title: str | None = None
+    company_name: str | None = None
+    match_score: float | None = None
+    created_at: str | None = None
+
+
+class ResumeUpdateRequest(BaseModel):
+    resume: ResumeContent
+
+
+class CompleteProfile(BaseModel):
+    personal_info: dict | None = None
+    work_experiences: list[dict] = []
+    education: list[dict] = []
+    skills: list[dict] = []
+    projects: list[dict] = []
