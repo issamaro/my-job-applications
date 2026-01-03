@@ -165,3 +165,24 @@ export async function deleteResume(id) {
 export async function getCompleteProfile() {
   return request('/profile/complete');
 }
+
+export async function downloadResumePdf(id, template = 'classic') {
+  const response = await fetch(`${API_BASE}/resumes/${id}/pdf?template=${template}`);
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: 'PDF generation failed' }));
+    throw new Error(error.detail || 'PDF generation failed');
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+
+  const disposition = response.headers.get('Content-Disposition');
+  const match = disposition?.match(/filename="(.+)"/);
+  a.download = match?.[1] || 'resume.pdf';
+
+  a.click();
+  URL.revokeObjectURL(url);
+}

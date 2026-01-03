@@ -1,0 +1,223 @@
+/* Base CSS for PDF Resume Templates */
+
+/* Page Configuration - US Letter, ATS-friendly margins */
+@page {
+    size: letter;
+    margin: 0.75in;
+}
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    line-height: 1.4;
+    color: #1a1a1a;
+}
+
+/* Prevent page breaks inside elements */
+.job, .project, section {
+    page-break-inside: avoid;
+}
+
+/* Classic Template Styles */
+.template-classic {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+}
+
+.template-classic header {
+    text-align: center;
+    margin-bottom: 16pt;
+}
+
+.template-classic .name {
+    font-size: 18pt;
+    text-transform: uppercase;
+    letter-spacing: 1pt;
+    margin-bottom: 4pt;
+}
+
+.template-classic .contact {
+    font-size: 10pt;
+    color: #333;
+    margin-bottom: 2pt;
+}
+
+.template-classic section {
+    margin-bottom: 12pt;
+}
+
+.template-classic h2 {
+    font-size: 12pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5pt;
+    border-bottom: 1px solid #1a1a1a;
+    padding-bottom: 2pt;
+    margin-bottom: 8pt;
+}
+
+.template-classic .job {
+    margin-bottom: 10pt;
+}
+
+.template-classic .job-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4pt;
+    margin-bottom: 4pt;
+}
+
+.template-classic .job-title {
+    font-weight: bold;
+}
+
+.template-classic .job-company {
+    font-style: italic;
+}
+
+.template-classic .job-dates {
+    margin-left: auto;
+    font-size: 10pt;
+    color: #333;
+}
+
+.template-classic .job-description {
+    font-size: 10pt;
+    white-space: pre-wrap;
+}
+
+.template-classic .skills p {
+    font-size: 10pt;
+}
+
+.template-classic .education p {
+    font-size: 10pt;
+    margin-bottom: 4pt;
+}
+
+.template-classic .project {
+    margin-bottom: 8pt;
+}
+
+.template-classic .project-name {
+    font-weight: bold;
+    font-size: 10pt;
+}
+
+.template-classic .project p {
+    font-size: 10pt;
+}
+
+.template-classic .technologies {
+    font-style: italic;
+    color: #333;
+}
+
+/* Modern Template Styles */
+.template-modern {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10pt;
+}
+
+.template-modern header {
+    text-align: left;
+    margin-bottom: 16pt;
+    border-bottom: 2px solid #0066cc;
+    padding-bottom: 8pt;
+}
+
+.template-modern .name {
+    font-size: 20pt;
+    font-weight: bold;
+    color: #0066cc;
+    margin-bottom: 4pt;
+}
+
+.template-modern .contact {
+    font-size: 9pt;
+    color: #333;
+    margin-bottom: 2pt;
+}
+
+.template-modern section {
+    margin-bottom: 12pt;
+}
+
+.template-modern h2 {
+    font-size: 11pt;
+    font-weight: bold;
+    color: #0066cc;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 2pt;
+    margin-bottom: 8pt;
+}
+
+.template-modern .job {
+    margin-bottom: 10pt;
+}
+
+.template-modern .job-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4pt;
+    margin-bottom: 4pt;
+}
+
+.template-modern .job-title {
+    font-weight: bold;
+}
+
+.template-modern .job-company {
+    color: #333;
+}
+
+.template-modern .job-dates {
+    margin-left: auto;
+    font-size: 9pt;
+    color: #666;
+}
+
+.template-modern .job-description {
+    font-size: 9pt;
+    white-space: pre-wrap;
+}
+
+.template-modern .skills-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6pt;
+}
+
+.template-modern .skill-item {
+    display: inline-block;
+    padding: 2pt 6pt;
+    background: #f0f0f0;
+    border-radius: 2pt;
+    font-size: 9pt;
+}
+
+.template-modern .education p {
+    font-size: 9pt;
+    margin-bottom: 4pt;
+}
+
+.template-modern .project {
+    margin-bottom: 8pt;
+}
+
+.template-modern .project-name {
+    font-weight: bold;
+    font-size: 9pt;
+}
+
+.template-modern .project p {
+    font-size: 9pt;
+}
+
+.template-modern .technologies {
+    color: #666;
+}

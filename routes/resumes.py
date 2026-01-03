@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import Response
 from schemas import (
     ResumeGenerateRequest,
     GeneratedResumeResponse,
@@ -8,6 +9,7 @@ from schemas import (
 )
 from services.resume_generator import resume_generator_service, ProfileIncompleteError
 from services.profile import profile_service
+from services.pdf_generator import pdf_generator_service
 
 router = APIRouter(prefix="/api/resumes", tags=["resumes"])
 
@@ -55,6 +57,38 @@ async def delete_resume(resume_id: int):
     if not deleted:
         raise HTTPException(status_code=404, detail="Resume not found")
     return None
+
+
+@router.get("/{resume_id}/pdf")
+async def export_resume_pdf(
+    resume_id: int,
+    template: str = Query(default="classic", pattern="^(classic|modern)$")
+):
+    resume = resume_generator_service.get_resume(resume_id)
+    if resume is None:
+        raise HTTPException(status_code=404, detail="Resume not found")
+
+    try:
+        pdf_bytes = pdf_generator_service.generate_pdf(
+            resume.resume.model_dump() if resume.resume else {},
+            template
+        )
+        filename = pdf_generator_service.generate_filename(
+            resume.resume.model_dump() if resume.resume else {},
+            resume.company_name
+        )
+
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"'
+            }
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception:
+        raise HTTPException(status_code=500, detail="Could not generate PDF")
 
 
 profile_router = APIRouter(prefix="/api/profile", tags=["profile"])

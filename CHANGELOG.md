@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-01-03] - PDF Export
+
+### Added
+- PDF export functionality with ATS-friendly output
+- Two resume templates: Classic (serif, centered) and Modern (sans-serif, left-aligned)
+- View mode toggle (Edit/Preview) in resume preview
+- Template selector with live preview
+- Download PDF button with loading state
+- Toast notifications for success/error feedback
+- New API endpoint: GET /api/resumes/{id}/pdf?template=classic|modern
+- PDF generation service using WeasyPrint + Jinja2
+- Comprehensive test coverage (20 new tests)
+
+### Dependencies
+- weasyprint >=62.0 (HTML/CSS to PDF)
+- jinja2 >=3.1.0 (template rendering)
+
+### Notes
+- Requires `export DYLD_FALLBACK_LIBRARY_PATH="/opt/homebrew/lib"` on macOS
+
+---
+
 ## [2026-01-03] - Job-Tailored Resume Generation
 
 ### Added

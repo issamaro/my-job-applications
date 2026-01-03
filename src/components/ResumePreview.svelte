@@ -1,7 +1,10 @@
 <script>
   import RequirementsAnalysis from './RequirementsAnalysis.svelte';
   import ResumeSection from './ResumeSection.svelte';
-  import { updateResume } from '../lib/api.js';
+  import TemplateSelector from './TemplateSelector.svelte';
+  import PdfPreview from './PdfPreview.svelte';
+  import Toast from './Toast.svelte';
+  import { updateResume, downloadResumePdf } from '../lib/api.js';
 
   let { resume, jobAnalysis, jobTitle, companyName, matchScore, createdAt, onBack, onRegenerate } = $props();
 
@@ -10,6 +13,12 @@
   let editValue = $state('');
   let saving = $state(false);
   let savedId = $state(null);
+
+  let viewMode = $state('edit');
+  let selectedTemplate = $state('classic');
+  let isExporting = $state(false);
+  let toastMessage = $state(null);
+  let toastType = $state('success');
 
   $effect(() => {
     if (resume) {
@@ -84,6 +93,20 @@
       }));
     }
   }
+
+  async function handleDownloadPdf() {
+    isExporting = true;
+    try {
+      await downloadResumePdf(resume.id || 1, selectedTemplate);
+      toastType = 'success';
+      toastMessage = 'PDF downloaded';
+    } catch (e) {
+      toastType = 'error';
+      toastMessage = 'Could not generate PDF. Please try again.';
+    } finally {
+      isExporting = false;
+    }
+  }
 </script>
 
 <div class="resume-preview">
@@ -107,6 +130,47 @@
 
   <hr />
 
+  <div class="view-mode-container">
+    <div class="view-mode-toggle" role="tablist" aria-label="View mode">
+      <button
+        type="button"
+        class="view-mode-btn"
+        class:active={viewMode === 'edit'}
+        onclick={() => viewMode = 'edit'}
+        role="tab"
+        aria-selected={viewMode === 'edit'}
+      >
+        Edit
+      </button>
+      <button
+        type="button"
+        class="view-mode-btn"
+        class:active={viewMode === 'preview'}
+        onclick={() => viewMode = 'preview'}
+        role="tab"
+        aria-selected={viewMode === 'preview'}
+      >
+        Preview
+      </button>
+    </div>
+
+    {#if viewMode === 'preview'}
+    <div class="preview-controls">
+      <TemplateSelector bind:selected={selectedTemplate} />
+      <button
+        type="button"
+        class="btn btn-primary download-btn"
+        onclick={handleDownloadPdf}
+        disabled={isExporting}
+        aria-live="polite"
+      >
+        {isExporting ? 'Generating...' : 'Download PDF'}
+      </button>
+    </div>
+    {/if}
+  </div>
+
+  {#if viewMode === 'edit'}
   <h3 class="section-heading">Resume Preview</h3>
 
   {#if resumeData}
@@ -225,6 +289,9 @@
       {/snippet}
     </ResumeSection>
   {/if}
+  {:else}
+  <PdfPreview {resumeData} template={selectedTemplate} />
+  {/if}
 
   <hr />
 
@@ -234,3 +301,5 @@
     </button>
   </div>
 </div>
+
+<Toast bind:message={toastMessage} type={toastType} />
