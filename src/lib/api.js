@@ -233,3 +233,21 @@ export async function restoreJobDescriptionVersion(jdId, versionId) {
     method: 'POST'
   });
 }
+
+// Photos
+export async function getPhoto() {
+  return request('/photos');
+}
+
+export async function uploadPhoto(imageData) {
+  return request('/photos', {
+    method: 'PUT',
+    body: JSON.stringify({ image_data: imageData })
+  });
+}
+
+export async function deletePhoto() {
+  return request('/photos', {
+    method: 'DELETE'
+  });
+}

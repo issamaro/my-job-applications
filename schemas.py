@@ -29,6 +29,7 @@ class PersonalInfo(BaseModel):
     location: str | None = None
     linkedin_url: str | None = None
     summary: str | None = None
+    photo: str | None = None
     updated_at: str | None = None
 
 
@@ -317,3 +318,22 @@ class JobDescriptionVersion(BaseModel):
     version_number: int
     raw_text: str
     created_at: str
+
+
+# Photo schemas
+class PhotoUpload(BaseModel):
+    image_data: str = Field(..., description="Base64 encoded image data URL")
+
+    @field_validator("image_data")
+    @classmethod
+    def validate_image_data(cls, v: str) -> str:
+        if not re.match(r"^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$", v):
+            raise ValueError("Invalid image data format")
+        # 10MB file becomes ~13.3MB as base64, allow 15MB for safety
+        if len(v) > 15_000_000:
+            raise ValueError("Image data too large")
+        return v
+
+
+class PhotoResponse(BaseModel):
+    image_data: str | None = None

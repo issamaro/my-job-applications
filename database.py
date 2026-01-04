@@ -103,6 +103,8 @@ def init_db():
             "ALTER TABLE job_descriptions ADD COLUMN updated_at TEXT",
             "ALTER TABLE job_descriptions ADD COLUMN is_saved INTEGER DEFAULT 1",
             "ALTER TABLE generated_resumes ADD COLUMN jd_version_id INTEGER",
+            # Photo Management feature
+            "ALTER TABLE personal_info ADD COLUMN photo TEXT",
         ]
         for sql in migrations:
             try:

@@ -1,5 +1,6 @@
 <script>
   import { getPersonalInfo, updatePersonalInfo } from '../lib/api.js';
+  import PhotoUpload from './PhotoUpload.svelte';
 
   let data = $state({
     full_name: '',
@@ -7,7 +8,8 @@
     phone: '',
     location: '',
     linkedin_url: '',
-    summary: ''
+    summary: '',
+    photo: null
   });
   let loading = $state(true);
   let saving = $state(false);
@@ -85,7 +87,10 @@
     <div class="form-error">{error}</div>
   {/if}
 
-  <form class="form" onsubmit={(e) => e.preventDefault()}>
+  <div class="personal-info-layout">
+    <PhotoUpload bind:photo={data.photo} />
+
+    <form class="form personal-info-form" onsubmit={(e) => e.preventDefault()}>
     <div class="form-row">
       <label for="full_name" class="required">Name</label>
       <input
@@ -160,5 +165,25 @@
     {#if saved}
       <span class="saved-indicator" class:fading={!saving}>Saved</span>
     {/if}
-  </form>
+    </form>
+  </div>
 {/if}
+
+<style>
+  .personal-info-layout {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .personal-info-form {
+    flex: 1;
+  }
+
+  @media (max-width: 600px) {
+    .personal-info-layout {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+</style>

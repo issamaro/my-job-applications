@@ -13,6 +13,9 @@
     "watch:css": "sass src/styles/main.scss:public/build/global.css --watch",
     "dev": "npm run build:css && rollup -c -w"
   },
+  "dependencies": {
+    "cropperjs": "^2.0.0"
+  },
   "devDependencies": {
     "svelte": "^5.0.0",
     "rollup": "^4.0.0",
