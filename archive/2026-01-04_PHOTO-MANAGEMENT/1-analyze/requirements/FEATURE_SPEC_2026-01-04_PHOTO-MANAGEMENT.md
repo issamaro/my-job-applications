@@ -1,7 +1,7 @@
 # Feature Spec: Photo Management System
 
 **Date:** 2026-01-04
-**Source:** backlog/refined/photo-management.md
+**Source:** backlog/done/photo-management.md
 **Status:** Draft
 
 ---
