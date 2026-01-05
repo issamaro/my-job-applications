@@ -72,8 +72,16 @@
       } else if (e.message.includes("doesn't appear to be")) {
         error = "This doesn't appear to be a job description. Please paste a complete job posting.";
         view = 'input';
+      } else if (e.message.includes('truncated')) {
+        error = 'The job description is too long for processing. Try removing non-essential details.';
+        view = 'input';
+      } else if (e.message.includes('busy')) {
+        error = 'AI service is busy. Please try again in a moment.';
+        view = 'input';
       } else {
-        error = 'Could not generate resume. Please try again.';
+        // Show actual error message for debugging
+        error = e.message || 'Could not generate resume. Please try again.';
+        console.error('Resume generation error:', e);
         view = 'input';
       }
     } finally {

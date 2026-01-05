@@ -27,6 +27,10 @@ class ResumeGeneratorService:
         profile = profile_service.get_complete()
         profile_dict = profile.model_dump()
 
+        # Remove photo from profile to avoid sending huge base64 data to LLM
+        if profile_dict.get("personal_info") and "photo" in profile_dict["personal_info"]:
+            del profile_dict["personal_info"]["photo"]
+
         llm_result = await llm_service.analyze_and_generate(job_description, profile_dict)
 
         with get_db() as conn:

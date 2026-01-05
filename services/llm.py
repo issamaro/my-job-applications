@@ -1,7 +1,10 @@
 import os
 import json
+import logging
 import anthropic
 from anthropic import AsyncAnthropic
+
+logger = logging.getLogger(__name__)
 
 
 _client: AsyncAnthropic | None = None
@@ -122,7 +125,7 @@ class LLMService:
         try:
             message = await client.messages.create(
                 model="claude-sonnet-4-20250514",
-                max_tokens=4096,
+                max_tokens=8192,
                 system=SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": user_prompt}],
             )
@@ -140,13 +143,24 @@ class LLMService:
             return result
 
         except anthropic.APIConnectionError as e:
+            logger.error(f"API connection error: {e}")
             raise ConnectionError(f"Could not connect to AI service: {e}")
-        except anthropic.RateLimitError:
+        except anthropic.RateLimitError as e:
+            logger.error(f"Rate limit error: {e}")
             raise RuntimeError("AI service is busy, please try again later")
         except anthropic.APIStatusError as e:
-            raise RuntimeError(f"AI service error: {e.status_code}")
+            logger.error(f"API status error: {e.status_code} - {e.message}")
+            raise RuntimeError(f"AI service error: {e.status_code} - {e.message}")
         except json.JSONDecodeError as e:
+            logger.error(f"JSON decode error: {e}")
+            logger.error(f"Response text (last 500 chars): {response_text[-500:] if response_text else 'None'}")
+            # Log truncation hint if response seems cut off
+            if response_text and not response_text.rstrip().endswith("}"):
+                raise ValueError("AI response was truncated. Try a shorter job description.")
             raise ValueError(f"Invalid response from AI service: {e}")
+        except Exception as e:
+            logger.error(f"Unexpected error in LLM service: {type(e).__name__}: {e}")
+            raise
 
 
 llm_service = LLMService()

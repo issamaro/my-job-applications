@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import Response
 from schemas import (
@@ -10,6 +11,8 @@ from schemas import (
 from services.resume_generator import resume_generator_service, ProfileIncompleteError
 from services.profile import profile_service
 from services.pdf_generator import pdf_generator_service
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/resumes", tags=["resumes"])
 
@@ -25,11 +28,17 @@ async def generate_resume(request: ResumeGenerateRequest):
     except ProfileIncompleteError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except ConnectionError as e:
+        logger.error(f"Connection error: {e}")
         raise HTTPException(status_code=503, detail=str(e))
     except RuntimeError as e:
+        logger.error(f"Runtime error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     except ValueError as e:
+        logger.error(f"Value error: {e}")
         raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Unexpected error generating resume: {type(e).__name__}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("", response_model=list[ResumeHistoryItem])
