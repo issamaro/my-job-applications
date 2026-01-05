@@ -251,3 +251,11 @@ export async function deletePhoto() {
     method: 'DELETE'
   });
 }
+
+// Profile Import
+export async function importProfile(data) {
+  return request('/profile/import', {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  });
+}

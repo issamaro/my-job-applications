@@ -10,6 +10,7 @@ from routes import personal_info, work_experiences, education, skills, projects
 from routes.resumes import router as resumes_router, profile_router
 from routes.job_descriptions import router as job_descriptions_router
 from routes.photos import router as photos_router
+from routes.profile_import import router as profile_import_router
 
 
 @asynccontextmanager
@@ -30,6 +31,7 @@ app.include_router(resumes_router)
 app.include_router(profile_router)
 app.include_router(job_descriptions_router)
 app.include_router(photos_router)
+app.include_router(profile_import_router)
 
 # Serve static files
 app.mount("/", StaticFiles(directory="public", html=True), name="public")

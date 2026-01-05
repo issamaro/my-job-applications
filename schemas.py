@@ -337,3 +337,90 @@ class PhotoUpload(BaseModel):
 
 class PhotoResponse(BaseModel):
     image_data: str | None = None
+
+
+# Profile Import schemas
+class PersonalInfoImport(BaseModel):
+    full_name: str
+    email: str
+    phone: str | None = None
+    location: str | None = None
+    linkedin_url: str | None = None
+    summary: str | None = None
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        if not re.match(r"^[^@]+@[^@]+\.[^@]+$", v):
+            raise ValueError("Invalid email address")
+        return v
+
+
+class WorkExperienceImport(BaseModel):
+    company: str
+    title: str
+    start_date: str
+    end_date: str | None = None
+    is_current: bool = False
+    description: str | None = None
+    location: str | None = None
+
+    @field_validator("start_date", "end_date")
+    @classmethod
+    def validate_date_format(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        if not re.match(r"^\d{4}-(0[1-9]|1[0-2])$", v):
+            raise ValueError("Invalid date format. Use YYYY-MM")
+        return v
+
+
+class EducationImport(BaseModel):
+    institution: str
+    degree: str
+    field_of_study: str | None = None
+    graduation_year: int | None = None
+    gpa: float | None = None
+    notes: str | None = None
+
+    @field_validator("graduation_year")
+    @classmethod
+    def validate_graduation_year(cls, v: int | None) -> int | None:
+        if v is not None and (v < 1900 or v > 2100):
+            raise ValueError("Graduation year must be between 1900 and 2100")
+        return v
+
+
+class SkillImport(BaseModel):
+    name: str
+
+
+class ProjectImport(BaseModel):
+    name: str
+    description: str | None = None
+    technologies: str | None = None
+    url: str | None = None
+    start_date: str | None = None
+    end_date: str | None = None
+
+    @field_validator("start_date", "end_date")
+    @classmethod
+    def validate_date_format(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        if not re.match(r"^\d{4}-(0[1-9]|1[0-2])$", v):
+            raise ValueError("Invalid date format. Use YYYY-MM")
+        return v
+
+
+class ProfileImport(BaseModel):
+    personal_info: PersonalInfoImport
+    work_experiences: list[WorkExperienceImport] = []
+    education: list[EducationImport] = []
+    skills: list[SkillImport] = []
+    projects: list[ProjectImport] = []
+
+
+class ProfileImportResponse(BaseModel):
+    message: str
+    counts: dict[str, int]

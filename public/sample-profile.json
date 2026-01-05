@@ -1,0 +1,60 @@
+{
+  "personal_info": {
+    "full_name": "Jane Doe",
+    "email": "jane.doe@example.com",
+    "phone": "+1 (555) 123-4567",
+    "location": "San Francisco, CA",
+    "linkedin_url": "https://linkedin.com/in/janedoe",
+    "summary": "Experienced software engineer with 5+ years of expertise in building scalable web applications. Passionate about clean code, user experience, and continuous learning."
+  },
+  "work_experiences": [
+    {
+      "company": "Tech Corp Inc.",
+      "title": "Senior Software Engineer",
+      "start_date": "2021-03",
+      "end_date": null,
+      "is_current": true,
+      "description": "Lead development of microservices architecture serving 10M+ users. Mentored junior developers and established coding standards.",
+      "location": "San Francisco, CA"
+    },
+    {
+      "company": "StartupXYZ",
+      "title": "Software Engineer",
+      "start_date": "2019-06",
+      "end_date": "2021-02",
+      "is_current": false,
+      "description": "Built and maintained RESTful APIs using Python and FastAPI. Implemented CI/CD pipelines reducing deployment time by 60%.",
+      "location": "Remote"
+    }
+  ],
+  "education": [
+    {
+      "institution": "University of California, Berkeley",
+      "degree": "Bachelor of Science",
+      "field_of_study": "Computer Science",
+      "graduation_year": 2019,
+      "gpa": 3.8,
+      "notes": "Dean's List, Computer Science Honor Society"
+    }
+  ],
+  "skills": [
+    { "name": "Python" },
+    { "name": "JavaScript" },
+    { "name": "TypeScript" },
+    { "name": "React" },
+    { "name": "FastAPI" },
+    { "name": "PostgreSQL" },
+    { "name": "Docker" },
+    { "name": "AWS" }
+  ],
+  "projects": [
+    {
+      "name": "Open Source CLI Tool",
+      "description": "A command-line tool for automating development workflows. Featured on Product Hunt with 500+ GitHub stars.",
+      "technologies": "Python, Click, Rich",
+      "url": "https://github.com/janedoe/cli-tool",
+      "start_date": "2022-06",
+      "end_date": "2022-12"
+    }
+  ]
+}

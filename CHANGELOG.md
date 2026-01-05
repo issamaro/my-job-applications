@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-01-05] - Import JSON Profile
+
+### Added
+- Import JSON button in Profile Editor
+- ImportModal component with drag-drop file upload
+- Frontend JSON validation (syntax, schema, required fields)
+- Preview state showing item counts before import
+- Sample JSON download for schema reference
+- PUT /api/profile/import endpoint with atomic transaction
+- 9 new tests for import functionality
+
+### Technical
+- Two-layer validation (frontend + backend Pydantic)
+- Atomic clear+insert preserving profile photo
+- Full accessibility support (ARIA, keyboard navigation)
+- SASS styles using design tokens
+
+---
+
 ## [2026-01-03] - My Job Applications (Unified View)
 
 ### Added

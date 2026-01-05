@@ -1,0 +1,187 @@
+// components/_import-modal.scss
+// Import modal component styles
+
+@use "../tokens" as *;
+
+.import-modal {
+  max-width: 480px;
+  width: 90%;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-grid;
+
+  .dialog-title {
+    margin: 0;
+  }
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: rgba($color-text, 0.6);
+  padding: 0;
+  line-height: 1;
+
+  &:hover {
+    color: $color-text;
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+}
+
+.drop-zone {
+  border: 2px dashed $color-border;
+  border-radius: 2px;
+  padding: 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+
+  &:hover,
+  &.dragging {
+    border-color: $color-primary;
+    background: rgba($color-primary, 0.02);
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+
+  &.error {
+    border-color: $color-error;
+  }
+}
+
+.file-input {
+  display: none;
+}
+
+.drop-text {
+  margin: 0;
+  color: rgba($color-text, 0.7);
+}
+
+.error-messages {
+  margin-top: $spacing-grid;
+}
+
+.error-message {
+  color: $color-error;
+  font-size: 14px;
+  margin: 4px 0;
+}
+
+.sample-link {
+  margin-top: $spacing-grid;
+  text-align: center;
+
+  a {
+    color: $color-primary;
+    font-size: 14px;
+
+    &:hover {
+      text-decoration: none;
+    }
+
+    &:focus {
+      outline: 2px solid $color-primary;
+      outline-offset: 2px;
+    }
+  }
+}
+
+.validating-state,
+.importing-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px;
+  gap: $spacing-grid;
+}
+
+.spinner {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba($color-primary, 0.3);
+  border-top-color: $color-primary;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.spinner-small {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.preview-state {
+  padding: $spacing-grid 0;
+}
+
+.preview-counts {
+  h3 {
+    margin: 0 0 $spacing-field;
+    font-size: $font-size-body;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: $spacing-section;
+    font-size: 14px;
+  }
+
+  li {
+    margin: 4px 0;
+  }
+}
+
+.warning-box {
+  margin-top: $spacing-grid;
+  padding: $spacing-field;
+  background: rgba(204, 102, 0, 0.05);
+  border: 1px solid rgba(204, 102, 0, 0.2);
+  border-radius: 2px;
+}
+
+.warning-text {
+  margin: 0;
+  color: #c60;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.photo-note {
+  margin: 8px 0 0;
+  color: rgba($color-text, 0.7);
+  font-size: 14px;
+}
+
+// Profile header (in ProfileEditor)
+.profile-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: $spacing-grid;
+}
