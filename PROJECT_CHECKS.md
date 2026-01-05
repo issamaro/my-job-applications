@@ -162,16 +162,24 @@ curl -s http://localhost:8000/api/job-descriptions
 **When to run:** After environment changes, on new machines
 
 ```bash
-# Check WeasyPrint can import
-source venv/bin/activate
-python -c "from weasyprint import HTML; print('WeasyPrint: OK')"
+# Check system libraries installed (macOS)
+brew list pango gdk-pixbuf glib cairo || brew install pango gdk-pixbuf glib cairo
 
-# If fails on macOS:
-brew list pango || brew install pango
-export DYLD_FALLBACK_LIBRARY_PATH="/opt/homebrew/lib"
+# Check WeasyPrint can import (with DYLD set)
+source .venv/bin/activate
+DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib python -c "from weasyprint import HTML; print('WeasyPrint: OK')"
+
+# Test actual PDF generation (uses subprocess pattern)
+python -c "
+from services.pdf_generator import pdf_generator_service
+pdf = pdf_generator_service.generate_pdf({'personal_info': {'full_name': 'Test'}}, 'classic')
+print(f'PDF generated: {len(pdf)} bytes')
+"
 ```
 
-**Expected output:** "WeasyPrint: OK"
+**Expected output:** "WeasyPrint: OK" and "PDF generated: XXXX bytes"
+
+**Architecture Note:** PDF generation uses a subprocess pattern (`services/pdf_subprocess.py`) to bypass macOS SIP restrictions on DYLD_* environment variables. Never import WeasyPrint directly in the uvicorn process.
 
 ---
 
@@ -225,7 +233,8 @@ echo "=== All checks passed ==="
 | Symptom | Likely Cause | Fix |
 |---------|--------------|-----|
 | `ModuleNotFoundError: No module named 'fastapi'` | venv not active or deps missing | `source venv/bin/activate && pip install -r requirements.txt` |
-| `WeasyPrint import error` | Missing system library | `brew install pango && export DYLD_FALLBACK_LIBRARY_PATH="/opt/homebrew/lib"` |
+| `WeasyPrint import error` | Missing system library | `brew install pango gdk-pixbuf glib cairo` |
+| `PDF generation failed` in server | DYLD not set in subprocess | Ensure using `services/pdf_subprocess.py` pattern (see Note 2026-01-05) |
 | `npm ERR! engine` | Wrong Node version | `nvm use 20` |
 | Tests fail with DB errors | Stale test DB | Delete `test_*.db` files |
 | Rollup circular dep warnings | Svelte internals | Safe to ignore if build succeeds |
