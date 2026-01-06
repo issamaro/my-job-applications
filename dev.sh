@@ -46,11 +46,9 @@ if [ -d ".venv" ]; then
     source .venv/bin/activate
 fi
 
-# Install Python dependencies if needed
-if [ -f "requirements.txt" ]; then
-    echo -e "${BLUE}Checking Python dependencies...${NC}"
-    pip install -q -r requirements.txt 2>/dev/null || pip install -r requirements.txt
-fi
+# Sync Python dependencies with uv
+echo -e "${BLUE}Syncing Python dependencies...${NC}"
+uv sync --quiet 2>/dev/null || uv sync
 
 # Install npm dependencies if needed
 if [ ! -d "node_modules" ]; then

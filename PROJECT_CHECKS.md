@@ -9,7 +9,7 @@
 
 ```bash
 # Run all checks in sequence
-source venv/bin/activate && \
+source .venv/bin/activate && \
 python -c "from main import app; print('Backend: OK')" && \
 python -m pytest -v && \
 npm run build && \
@@ -18,18 +18,51 @@ echo "All checks passed"
 
 ---
 
+## Environment Setup
+
+**Expected versions:**
+- Python: 3.13 (see `.python-version`)
+- Node: 20 (see `.nvmrc`)
+
+**Initial setup:**
+```bash
+# Install uv if not already installed
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Create venv and install all dependencies
+uv sync
+
+# Install Node dependencies
+npm install
+```
+
+**Verify setup:**
+```bash
+# Check Python version
+.venv/bin/python --version  # Should show 3.13.x
+
+# Check Node version
+node --version  # Should show v20.x
+
+# Check dependencies
+.venv/bin/python -c "import fastapi; print('Python deps: OK')"
+npm list --depth=0 | head -5
+```
+
+---
+
 ## Individual Checks
 
-### 1. Environment Setup
+### 1. Environment Verification
 
 **When to run:** After cloning, after changing dependencies
 
 ```bash
 # Check Python venv exists
-test -d venv && echo "venv: OK" || echo "venv: MISSING - run 'python3 -m venv venv'"
+test -d .venv && echo ".venv: OK" || echo ".venv: MISSING - run 'uv sync' to create it"
 
 # Check dependencies installed
-source venv/bin/activate
+source .venv/bin/activate
 python -c "import fastapi, pydantic, uvicorn; print('Python deps: OK')"
 
 # Check Node dependencies
@@ -45,7 +78,7 @@ npm list --depth=0 | head -10
 **When to run:** Before any backend work
 
 ```bash
-source venv/bin/activate
+source .venv/bin/activate
 
 # Test app imports (catches import errors, circular deps)
 python -c "from main import app; print('FastAPI app: OK')"
@@ -70,7 +103,7 @@ print('All routes: OK')
 **When to run:** Before every commit, after any code change
 
 ```bash
-source venv/bin/activate
+source .venv/bin/activate
 
 # Full test run with verbose output
 python -m pytest -v
@@ -120,7 +153,7 @@ wc -c public/build/bundle.js
 ./dev.sh
 
 # Or manually:
-source venv/bin/activate
+source .venv/bin/activate
 uvicorn main:app --reload &
 npm run watch:css &
 npx rollup -c -w
@@ -212,7 +245,7 @@ set -e  # Exit on first failure
 echo "=== MyCV-2 Validation ==="
 
 echo "1. Activating venv..."
-source venv/bin/activate
+source .venv/bin/activate
 
 echo "2. Checking imports..."
 python -c "from main import app"
@@ -232,7 +265,7 @@ echo "=== All checks passed ==="
 
 | Symptom | Likely Cause | Fix |
 |---------|--------------|-----|
-| `ModuleNotFoundError: No module named 'fastapi'` | venv not active or deps missing | `source venv/bin/activate && pip install -r requirements.txt` |
+| `ModuleNotFoundError: No module named 'fastapi'` | venv not active or deps missing | `uv sync` (creates .venv and installs deps) |
 | `WeasyPrint import error` | Missing system library | `brew install pango gdk-pixbuf glib cairo` |
 | `PDF generation failed` in server | DYLD not set in subprocess | Ensure using `services/pdf_subprocess.py` pattern (see Note 2026-01-05) |
 | `npm ERR! engine` | Wrong Node version | `nvm use 20` |
