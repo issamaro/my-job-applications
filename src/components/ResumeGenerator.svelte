@@ -220,12 +220,7 @@
 
   {:else if view === 'preview' && currentResume}
     <ResumePreview
-      resume={currentResume.resume}
-      jobAnalysis={currentResume.job_analysis}
-      jobTitle={currentResume.job_title}
-      companyName={currentResume.company_name}
-      matchScore={currentResume.match_score}
-      createdAt={currentResume.created_at}
+      resume={currentResume}
       onBack={handleBack}
       onRegenerate={handleRegenerate}
     />

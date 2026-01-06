@@ -6,7 +6,7 @@
   import Toast from './Toast.svelte';
   import { updateResume, downloadResumePdf } from '../lib/api.js';
 
-  let { resume, jobAnalysis, jobTitle, companyName, matchScore, createdAt, onBack, onRegenerate } = $props();
+  let { resume, onBack, onRegenerate } = $props();
 
   let resumeData = $state(null);
   let editingId = $state(null);
@@ -21,8 +21,8 @@
   let toastType = $state('success');
 
   $effect(() => {
-    if (resume) {
-      resumeData = JSON.parse(JSON.stringify(resume));
+    if (resume?.resume) {
+      resumeData = JSON.parse(JSON.stringify(resume.resume));
     }
   });
 
@@ -51,10 +51,13 @@
   }
 
   async function saveEdit(expIndex) {
+    if (!resume?.id) {
+      throw new Error('Cannot save: resume ID is missing');
+    }
     saving = true;
     try {
       resumeData.work_experiences[expIndex].description = editValue;
-      await updateResume(resume.id || 1, resumeData);
+      await updateResume(resume.id, resumeData);
       savedId = editingId;
       editingId = null;
       setTimeout(() => savedId = null, 2000);
@@ -95,9 +98,12 @@
   }
 
   async function handleDownloadPdf() {
+    if (!resume?.id) {
+      throw new Error('Cannot download PDF: resume ID is missing');
+    }
     isExporting = true;
     try {
-      await downloadResumePdf(resume.id || 1, selectedTemplate);
+      await downloadResumePdf(resume.id, selectedTemplate);
       toastType = 'success';
       toastMessage = 'PDF downloaded';
     } catch (e) {
@@ -114,19 +120,19 @@
     <button class="back-link" onclick={onBack}>
       ← Back to Input
     </button>
-    <span class="match-score {getScoreClass(matchScore)}">
-      Match Score: {matchScore?.toFixed(0) || 0}%
+    <span class="match-score {getScoreClass(resume.match_score)}">
+      Match Score: {resume.match_score?.toFixed(0) || 0}%
     </span>
   </div>
 
   <div class="preview-title">
-    <h2>{jobTitle || 'Untitled'} · {companyName || 'Unknown'}</h2>
-    <p class="preview-date">Generated {formatDate(createdAt)}</p>
+    <h2>{resume.job_title || 'Untitled'} · {resume.company_name || 'Unknown'}</h2>
+    <p class="preview-date">Generated {formatDate(resume.created_at)}</p>
   </div>
 
   <hr />
 
-  <RequirementsAnalysis {jobAnalysis} />
+  <RequirementsAnalysis jobAnalysis={resume.job_analysis} />
 
   <hr />
 
