@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-01-06] - Claude Code Configuration Cleanup
+
+### Changed
+- Removed legacy `venv/` Python path permission from Claude Code settings
+- Only `.venv/` is now permitted as the canonical Python environment
+
+### Added
+- Python Environment section in `.claude/readme.md`
+- Documentation explaining canonical path and `uv` workflow
+
+### Technical
+- Defensive change to prevent interpreter ambiguity
+- Aligns with modern `uv` tooling (`uv sync`, `uv run`)
+
+---
+
 ## [2026-01-05] - Import JSON Profile
 
 ### Added
