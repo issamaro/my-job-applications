@@ -1,11 +1,11 @@
 # Methodology Improvement: Problem Statement
 
 **Date:** 2026-01-03
-**Scope:** Analysis of v3 slash commands, archive retrospectives, and user observations
+**Scope:** Analysis of v4 slash commands, archive retrospectives, and user observations
 
 ---
 
-## 1. Problems Identified from v3 Commands Architecture
+## 1. Problems Identified from v4 Commands Architecture
 
 ### 1.1 Missing Project Initialization Phase
 The current workflow assumes an existing codebase. There is no orchestrator phase for:
@@ -14,38 +14,38 @@ The current workflow assumes an existing codebase. There is no orchestrator phas
 - Technology stack decisions before implementation begins
 
 ### 1.2 Disconnected Scope from Product Context
-`/v3-scope` operates in isolation:
+`/v4-scope` operates in isolation:
 - Not connected to a broader product backlog
 - Does not incorporate learnings from previous retrospectives
 - User intents and retrospective items are not fed into scope decisions
 
 ### 1.3 UX Skill Lacks Critical Thinking Capabilities
-`/v3-ux` is additive-only and doesn't:
+`/v4-ux` is additive-only and doesn't:
 - Challenge existing semantics ("do we still need this?")
 - Ask for screenshots to understand current state
 - Consider refactoring or removing existing UI elements
 - Think outside the box of what already exists
 
 ### 1.4 Reflection Timing is Wrong
-`/v3-reflect` only runs at the end during `/v3-ship`:
+`/v4-reflect` only runs at the end during `/v4-ship`:
 - Issues encountered mid-implementation are not captured in context
 - Learning happens too late to benefit the current feature
 - Ad-hoc problems require waiting until closure to document
 
 ### 1.5 Archive Timing Creates Inconsistency
-Currently `/v3-ship` runs `/v3-close` (which archives) BEFORE `/v3-reflect`:
+Currently `/v4-ship` runs `/v4-close` (which archives) BEFORE `/v4-reflect`:
 - Retrospective is written after the workbench is already archived
 - Retrospective should capture the final state before archiving
 - Order should be: reflect FIRST (capture lessons), THEN archive everything together
 
 ### 1.6 verify-analysis Doesn't Guard Scope Expansion
-`/v3-verify-analysis` checks completeness but doesn't:
+`/v4-verify-analysis` checks completeness but doesn't:
 - Assess if analysis findings expanded scope beyond manageable
 - Guard against analysis revealing too many changes
 - Force re-scoping if complexity grew during analysis
 
 ### 1.7 No Project Initialization Orchestrator
-The v3 workflow assumes an existing codebase. For greenfield projects, there is no:
+The v4 workflow assumes an existing codebase. For greenfield projects, there is no:
 - Orchestrator phase for architectural decisions based on user intent
 - Structured breakdown of user intent into high-level features
 - Explicit decision-making before the first line of code
@@ -70,7 +70,7 @@ Before building features on a new project:
 - No validation of error handling patterns
 - Architecture should be verified as solid before features are added
 
-*Note: These are initialization-time concerns for NEW projects, not per-feature concerns during normal sprints. Per-feature library research is handled by `/v3-research`.*
+*Note: These are initialization-time concerns for NEW projects, not per-feature concerns during normal sprints. Per-feature library research is handled by `/v4-research`.*
 
 ---
 
@@ -159,11 +159,11 @@ User observation: "Should be part of a broader product backlog stage"
 ### 3.5 Reflection is Not Continuous
 User observation: "every time agent encounters an issue"
 - Issues during build are not immediately documented
-- Waiting until /v3-reflect loses context
+- Waiting until /v4-reflect loses context
 - Mid-implementation friction should be captured in-moment
 
 ### 3.6 Archive Order is Wrong
-User observation: "archive the workbench before /v3-reflect runs"
+User observation: "archive the workbench before /v4-reflect runs"
 - Current order: close → reflect → (implicitly archive during close)
 - Should be: archive workbench state → then write retrospective
 
@@ -176,7 +176,7 @@ User observation: "make sure the scope remains manageable after analysis"
 ### 3.8 No Project Initialization Orchestrator with Sub-Phases
 User observation: "Initializer orchestrator phase consisting of architectural decisions based on user intent and high level features"
 
-The v3 workflow lacks a dedicated initialization orchestrator for new projects. User proposed sub-phases:
+The v4 workflow lacks a dedicated initialization orchestrator for new projects. User proposed sub-phases:
 
 **Sub-phase: `/ecosystem`**
 User observation: "Decides what to use, which version (use context7)"
@@ -196,7 +196,7 @@ User observation: "check whether the app is robust"
 - Check error handling patterns, resilience
 - Architecture should be robust before adding features
 
-*Note: These are sub-commands of `/initializer` for NEW projects only, not for normal feature sprints.*
+*Note: These are sub-commands of `/v4-initialize` for NEW projects only, not for normal feature sprints.*
 
 ---
 
@@ -222,7 +222,7 @@ Retrospectives capture lessons but don't feed back into:
 - UX design considerations
 
 ### Theme B: No Foundation Verification for New Projects
-For existing projects, v3 verifies features well:
+For existing projects, v4 verifies features well:
 - Feature requirements (spec coverage)
 - Feature UX (design match)
 - Feature tests (passing)

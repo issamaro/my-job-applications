@@ -80,11 +80,11 @@
 
 | Phase | Rating | Notes |
 |-------|--------|-------|
-| /v3-scope | 5.0/5 | Size indicators consistently accurate |
-| /v3-analyze | 5.0/5 | BDD scenarios + UX design = complete blueprint |
-| /v3-plan | 5.0/5 | Library research prevented all SDK issues |
-| /v3-build | 4.8/5 | Minor syntax issues caught in inspection |
-| /v3-ship | 5.0/5 | Archive + commit process is clean |
+| /v4-scope | 5.0/5 | Size indicators consistently accurate |
+| /v4-analyze | 5.0/5 | BDD scenarios + UX design = complete blueprint |
+| /v4-plan | 5.0/5 | Library research prevented all SDK issues |
+| /v4-build | 4.8/5 | Minor syntax issues caught in inspection |
+| /v4-ship | 5.0/5 | Archive + commit process is clean |
 
 ---
 
