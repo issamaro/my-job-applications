@@ -15,6 +15,7 @@ async def import_profile(profile: ProfileImport):
             conn.execute("DELETE FROM education")
             conn.execute("DELETE FROM skills")
             conn.execute("DELETE FROM projects")
+            conn.execute("DELETE FROM languages")
 
             # 2. Update or insert personal_info (preserve photo column)
             cursor = conn.execute("SELECT id, photo FROM personal_info WHERE id = 1")
@@ -121,7 +122,17 @@ async def import_profile(profile: ProfileImport):
                     ),
                 )
 
-            # 7. Commit (all or nothing)
+            # 7. Insert languages
+            for idx, lang in enumerate(profile.languages):
+                conn.execute(
+                    """
+                    INSERT INTO languages (name, level, display_order)
+                    VALUES (?, ?, ?)
+                    """,
+                    (lang.name, lang.level.value, idx),
+                )
+
+            # 8. Commit (all or nothing)
             conn.commit()
 
             return ProfileImportResponse(
@@ -131,6 +142,7 @@ async def import_profile(profile: ProfileImport):
                     "education": len(profile.education),
                     "skills": len(profile.skills),
                     "projects": len(profile.projects),
+                    "languages": len(profile.languages),
                 },
             )
 

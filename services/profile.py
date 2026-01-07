@@ -28,12 +28,18 @@ class ProfileService:
             cursor = conn.execute("SELECT * FROM projects ORDER BY start_date DESC")
             projects = [dict(row) for row in cursor.fetchall()]
 
+            cursor = conn.execute(
+                "SELECT * FROM languages ORDER BY display_order ASC, id ASC"
+            )
+            languages = [dict(row) for row in cursor.fetchall()]
+
             return CompleteProfile(
                 personal_info=personal_info,
                 work_experiences=work_experiences,
                 education=education,
                 skills=skills,
                 projects=projects,
+                languages=languages,
             )
 
     def has_work_experience(self) -> bool:

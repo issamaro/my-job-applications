@@ -61,6 +61,13 @@
     </section>
     {% endif %}
 
+    {% if languages %}
+    <section class="languages">
+        <h2>Languages</h2>
+        <p>{% for lang in languages %}{{ lang.name }} - {{ lang.level }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+    </section>
+    {% endif %}
+
     {% if projects %}
     <section class="projects">
         <h2>Projects</h2>

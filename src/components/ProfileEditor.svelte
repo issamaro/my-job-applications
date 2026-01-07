@@ -5,6 +5,7 @@
   import Education from './Education.svelte';
   import Skills from './Skills.svelte';
   import Projects from './Projects.svelte';
+  import Languages from './Languages.svelte';
   import ImportModal from './ImportModal.svelte';
   import Toast from './Toast.svelte';
 
@@ -12,6 +13,7 @@
   let educationRef = $state(null);
   let skillsRef = $state(null);
   let projectsRef = $state(null);
+  let languagesRef = $state(null);
   let importModalOpen = $state(false);
   let importButtonRef = $state(null);
   let toastMessage = $state(null);
@@ -57,6 +59,10 @@
 
 <Section title="Skills" onAdd={() => skillsRef?.add()}>
   <Skills bind:this={skillsRef} />
+</Section>
+
+<Section title="Languages" onAdd={() => languagesRef?.add()}>
+  <Languages bind:this={languagesRef} />
 </Section>
 
 <Section title="Projects" onAdd={() => projectsRef?.add()}>

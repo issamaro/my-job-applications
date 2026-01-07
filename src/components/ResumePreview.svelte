@@ -94,6 +94,11 @@
         ...p,
         included: !resumeData.projects[0]?.included
       }));
+    } else if (section === 'languages') {
+      resumeData.languages = resumeData.languages.map(lang => ({
+        ...lang,
+        included: !resumeData.languages[0]?.included
+      }));
     }
   }
 
@@ -274,6 +279,22 @@
         {/each}
       {/snippet}
     </ResumeSection>
+
+    {#if resumeData.languages?.length > 0}
+    <ResumeSection
+      title="Languages"
+      included={resumeData.languages?.[0]?.included !== false}
+      onToggle={() => toggleSection('languages')}
+    >
+      {#snippet children()}
+        <div class="languages-list">
+          {#each resumeData.languages as lang, i}
+            <span class="language-item">{lang.name} - {lang.level}{#if i < resumeData.languages.length - 1},{/if}</span>{' '}
+          {/each}
+        </div>
+      {/snippet}
+    </ResumeSection>
+    {/if}
 
     <ResumeSection
       title="Projects"

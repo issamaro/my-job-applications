@@ -126,6 +126,38 @@ export async function deleteProject(id) {
   });
 }
 
+// Languages
+export async function getLanguages() {
+  return request('/languages');
+}
+
+export async function createLanguage(data) {
+  return request('/languages', {
+    method: 'POST',
+    body: JSON.stringify(data)
+  });
+}
+
+export async function updateLanguage(id, data) {
+  return request(`/languages/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  });
+}
+
+export async function deleteLanguage(id) {
+  return request(`/languages/${id}`, {
+    method: 'DELETE'
+  });
+}
+
+export async function reorderLanguages(items) {
+  return request('/languages/reorder', {
+    method: 'PUT',
+    body: JSON.stringify(items)
+  });
+}
+
 // Month input feature detection
 export function supportsMonthInput() {
   const input = document.createElement('input');

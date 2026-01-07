@@ -1,5 +1,16 @@
+from enum import Enum
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 import re
+
+
+class CEFRLevel(str, Enum):
+    A1 = "A1"
+    A2 = "A2"
+    B1 = "B1"
+    B2 = "B2"
+    C1 = "C1"
+    C2 = "C2"
 
 
 # Personal Info schemas
@@ -156,6 +167,28 @@ class Project(BaseModel):
     updated_at: str | None = None
 
 
+# Language schemas
+class LanguageCreate(BaseModel):
+    name: str
+    level: CEFRLevel
+
+
+class LanguageUpdate(BaseModel):
+    name: str
+    level: CEFRLevel
+
+
+class Language(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    level: str
+    display_order: int = 0
+    created_at: str | None = None
+    updated_at: str | None = None
+
+
 # Resume Generation schemas
 class ResumeGenerateRequest(BaseModel):
     job_description: str
@@ -216,6 +249,13 @@ class ResumeProject(BaseModel):
     included: bool = False
 
 
+class ResumeLanguage(BaseModel):
+    id: int
+    name: str
+    level: str
+    included: bool = True
+
+
 class ResumeContent(BaseModel):
     personal_info: dict | None = None
     summary: str | None = None
@@ -223,6 +263,7 @@ class ResumeContent(BaseModel):
     skills: list[ResumeSkill] = []
     education: list[ResumeEducation] = []
     projects: list[ResumeProject] = []
+    languages: list[ResumeLanguage] = []
 
 
 class GeneratedResumeResponse(BaseModel):
@@ -257,6 +298,7 @@ class CompleteProfile(BaseModel):
     education: list[dict] = []
     skills: list[dict] = []
     projects: list[dict] = []
+    languages: list[dict] = []
 
 
 # Job Description schemas
@@ -413,12 +455,18 @@ class ProjectImport(BaseModel):
         return v
 
 
+class LanguageImport(BaseModel):
+    name: str
+    level: CEFRLevel
+
+
 class ProfileImport(BaseModel):
     personal_info: PersonalInfoImport
     work_experiences: list[WorkExperienceImport] = []
     education: list[EducationImport] = []
     skills: list[SkillImport] = []
     projects: list[ProjectImport] = []
+    languages: list[LanguageImport] = []
 
 
 class ProfileImportResponse(BaseModel):

@@ -10,6 +10,7 @@ from schemas import (
     ResumeSkill,
     ResumeEducation,
     ResumeProject,
+    ResumeLanguage,
 )
 
 
@@ -83,6 +84,13 @@ class ResumeGeneratorService:
             resume_content = llm_result.get("resume", {})
             if profile_dict.get("personal_info"):
                 resume_content["personal_info"] = profile_dict["personal_info"]
+
+            # Include languages from profile (all languages are included by default)
+            if profile_dict.get("languages"):
+                resume_content["languages"] = [
+                    {"id": lang["id"], "name": lang["name"], "level": lang["level"], "included": True}
+                    for lang in profile_dict["languages"]
+                ]
 
             cursor = conn.execute(
                 """
@@ -195,6 +203,7 @@ class ResumeGeneratorService:
         skills = [ResumeSkill(**s) for s in resume_content.get("skills", [])]
         education = [ResumeEducation(**e) for e in resume_content.get("education", [])]
         projects = [ResumeProject(**p) for p in resume_content.get("projects", [])]
+        languages = [ResumeLanguage(**lang) for lang in resume_content.get("languages", [])]
 
         resume = ResumeContent(
             personal_info=resume_content.get("personal_info"),
@@ -203,6 +212,7 @@ class ResumeGeneratorService:
             skills=skills,
             education=education,
             projects=projects,
+            languages=languages,
         )
 
         job_analysis_obj = None

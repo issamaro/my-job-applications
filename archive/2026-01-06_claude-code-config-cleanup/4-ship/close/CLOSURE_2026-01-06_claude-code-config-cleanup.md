@@ -29,6 +29,7 @@ Removed legacy `venv/` Python path permission from Claude Code settings, leaving
 
 ## Commit Reference
 
+**Hash:** `0f310b0`
 **Message:** `chore: Remove legacy venv permission, document canonical .venv path`
 
 ---

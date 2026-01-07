@@ -20,6 +20,9 @@
   let includedProjects = $derived(
     (resumeData?.projects || []).filter(proj => proj.included === true)
   );
+  let includedLanguages = $derived(
+    (resumeData?.languages || []).filter(lang => lang.included !== false)
+  );
 </script>
 
 <div class="pdf-preview template-{template}">
@@ -84,14 +87,21 @@
       {#each includedEducation as edu}
       <p>
         {#if template === 'modern'}
-          <strong>{edu.degree}{#if edu.field_of_study} in {edu.field_of_study}{/if}</strong>
+          <strong>{edu.degree}{edu.field_of_study ? ` in ${edu.field_of_study}` : ''}</strong>
         {:else}
-          {edu.degree}{#if edu.field_of_study} in {edu.field_of_study}{/if}
+          {edu.degree}{edu.field_of_study ? ` in ${edu.field_of_study}` : ''}
         {/if}
         | {edu.institution}
         {#if edu.graduation_year}| {edu.graduation_year}{/if}
       </p>
       {/each}
+    </section>
+    {/if}
+
+    {#if includedLanguages.length > 0}
+    <section class="languages">
+      <h2>Languages</h2>
+      <p>{includedLanguages.map(l => `${l.name} - ${l.level}`).join(', ')}</p>
     </section>
     {/if}
 
@@ -189,7 +199,8 @@
   }
 
   .template-classic .skills p,
-  .template-classic .education p {
+  .template-classic .education p,
+  .template-classic .languages p {
     font-size: 10pt;
     margin: 0 0 4pt;
   }
@@ -298,7 +309,8 @@
     font-size: 9pt;
   }
 
-  .template-modern .education p {
+  .template-modern .education p,
+  .template-modern .languages p {
     font-size: 9pt;
     margin: 0 0 4pt;
   }

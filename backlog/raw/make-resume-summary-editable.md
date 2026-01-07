@@ -1,0 +1,1 @@
+Currently, when I create a job app and generate a resume, I can edit my work experience content, but I can't update the resume's summary section
