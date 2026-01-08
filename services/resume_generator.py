@@ -28,11 +28,18 @@ class ResumeGeneratorService:
         profile = profile_service.get_complete()
         profile_dict = profile.model_dump()
 
-        # Remove photo from profile to avoid sending huge base64 data to LLM
+        # Save photo before removing it (we'll restore it later)
+        saved_photo = None
         if profile_dict.get("personal_info") and "photo" in profile_dict["personal_info"]:
+            saved_photo = profile_dict["personal_info"]["photo"]
+            # Remove photo from profile to avoid sending huge base64 data to LLM
             del profile_dict["personal_info"]["photo"]
 
         llm_result = await llm_service.analyze_and_generate(job_description, profile_dict)
+
+        # Restore photo to profile_dict for use in resume
+        if saved_photo and profile_dict.get("personal_info"):
+            profile_dict["personal_info"]["photo"] = saved_photo
 
         with get_db() as conn:
             # Build title from LLM result
@@ -196,6 +203,15 @@ class ResumeGeneratorService:
         self, row: dict, job_analysis: dict | None = None
     ) -> GeneratedResumeResponse:
         resume_content = json.loads(row["resume_content"]) if row.get("resume_content") else {}
+
+        # Ensure photo from current profile is included (for European templates)
+        personal_info = resume_content.get("personal_info", {})
+        if personal_info and not personal_info.get("photo"):
+            # Fetch current photo from profile
+            profile = profile_service.get_complete()
+            if profile.personal_info and profile.personal_info.get("photo"):
+                personal_info["photo"] = profile.personal_info["photo"]
+                resume_content["personal_info"] = personal_info
 
         work_experiences = [
             ResumeWorkExperience(**we) for we in resume_content.get("work_experiences", [])

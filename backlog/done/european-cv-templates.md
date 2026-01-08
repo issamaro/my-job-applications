@@ -1,16 +1,27 @@
 # European CV Templates - SCOPED_FEATURE
 
-**Size:** L (Large)
-**Scoped:** 2026-01-04
-**Files affected:** ~12-15
+**Size:** M (Medium)
+**Scoped:** 2026-01-08
+**Files affected:** ~6-8
 **Dependencies:** `photo-management` (must be implemented first)
-**Ready for:** /v4-feature
+**Ready for:** /v5-feature
+
+---
+
+## Clarification Log
+
+| Question | Answer | Impact |
+|----------|--------|--------|
+| Intent type | B) Explore options | Explored template quantity and complexity alternatives |
+| Confidence | B) Somewhat confident | Validated assumptions through exploration questions |
+| Scope validation | A) Yes, proceed | Reduced from 4 to 2 templates, simplified layouts |
+| UX simplification | Flat dropdown | Changed from grouped selector to simple Template 1-4 dropdown |
 
 ---
 
 ## Description
 
-Add 4 new CV templates designed for the European/Belgian job market. Unlike the existing ATS-optimized templates, these prioritize visual appeal, include profile photo support, and use more creative layouts with color.
+Add 2 new CV templates designed for the European/Belgian job market. Unlike the existing ATS-optimized templates, these include profile photo support and use two-column or traditional European layouts.
 
 **Note:** Photo upload/editing functionality is handled by the `photo-management` feature (dependency).
 
@@ -27,37 +38,34 @@ Add 4 new CV templates designed for the European/Belgian job market. Unlike the 
 - Photo placement (typically top-left or top-right)
 - Personal details section (nationality, date of birth, etc. - more common in EU)
 - Two-column layouts are popular
-- More creative/visual designs accepted
 - Color usage more common than US/UK markets
 
 ---
 
 ## Scope (IN)
 
-### A. Templates (4)
+### A. Templates (2)
 
 1. **Brussels Professional** - Two-column layout, photo top-left, sidebar for skills/contact
 2. **EU Classic** - Single-column, photo in header, traditional European format
-3. **Creative Belgian** - Modern design, photo with accent color, visual skill bars
-4. **Compact Euro** - Dense information layout, small photo, maximizes content per page
 
 ### B. Technical Deliverables
 
-- [ ] 4 new Jinja2 HTML templates (`templates/resume_{name}.html`)
+- [ ] 2 new Jinja2 HTML templates (`templates/resume_{name}.html`)
 - [ ] CSS additions to `resume_base.css` for new template classes
 - [ ] Photo styling per template (size, shape, border, position)
+- [ ] Placeholder image when no photo is provided
 - [ ] Update `PdfGeneratorService` to accept new template names
-- [ ] Update `TemplateSelector.svelte` with new options (grouped: "ATS-Friendly" / "European Style")
+- [ ] Update `TemplateSelector.svelte` with dropdown (Template 1, 2, 3, 4)
 - [ ] Update `PdfPreview.svelte` with matching frontend preview styles
-- [ ] Graceful handling when no photo is provided
 
 ### C. Design Characteristics
 
 - Photo integration (using photo from `photo-management`)
+- Placeholder silhouette/initials when no photo provided (maintains layout consistency)
 - European date format (DD/MM/YYYY)
 - Optional personal info fields (nationality, date of birth, etc.)
-- Color schemes beyond black/blue
-- Visual elements (skill bars, icons, borders)
+- Simple, reliable layouts (no visual skill bars or complex elements)
 - NOT optimized for ATS parsing (accept text selection issues, non-standard layouts)
 
 ---
@@ -65,23 +73,26 @@ Add 4 new CV templates designed for the European/Belgian job market. Unlike the 
 ## Out of Scope (NOT)
 
 - Photo upload/editing (handled by `photo-management` feature)
+- Creative Belgian template (visual skill bars - deferred)
+- Compact Euro template (dense layout - deferred)
 - Removing or modifying existing Classic/Modern templates
 - Template editor/builder (custom template creation)
 - A/B testing or analytics on template usage
 - Localization (French/Dutch text) - templates remain language-agnostic
 - Custom font imports (use web-safe fonts for PDF reliability)
+- Visual skill bars or complex graphical elements
 
 ---
 
 ## Success Criteria
 
-- [ ] 4 new templates appear in Template Selector, grouped under "European Style"
+- [ ] 2 new templates appear in Template Selector dropdown (Template 3, 4)
 - [ ] Each template renders correctly as PDF with embedded photo
 - [ ] Photo displays correctly in both frontend preview and PDF output
-- [ ] Graceful fallback when no photo is provided (placeholder or hidden area)
+- [ ] Placeholder shown when no photo is provided (maintains layout)
 - [ ] Existing Classic/Modern templates remain unchanged and functional
 - [ ] Templates use consistent color schemes and visual hierarchy
-- [ ] Two-column layouts render correctly across page breaks
+- [ ] Two-column layout (Brussels) renders correctly across page breaks
 
 ---
 
@@ -93,11 +104,9 @@ Add 4 new CV templates designed for the European/Belgian job market. Unlike the 
 |------|--------|
 | `templates/resume_brussels.html` | NEW - Brussels Professional template |
 | `templates/resume_eu_classic.html` | NEW - EU Classic template |
-| `templates/resume_creative.html` | NEW - Creative Belgian template |
-| `templates/resume_compact_euro.html` | NEW - Compact Euro template |
 | `templates/resume_base.css` | Add template-specific CSS classes |
 | `backend/services/pdf_generator.py` | Add templates to `VALID_TEMPLATES` |
-| `frontend/src/components/TemplateSelector.svelte` | Add new options with grouping |
+| `frontend/src/components/TemplateSelector.svelte` | Replace toggle buttons with dropdown |
 | `frontend/src/components/PdfPreview.svelte` | Add matching preview styles |
 
 ### Template Naming Convention
@@ -105,26 +114,31 @@ Add 4 new CV templates designed for the European/Belgian job market. Unlike the 
 ```
 resume_brussels.html      → template="brussels"
 resume_eu_classic.html    → template="eu_classic"
-resume_creative.html      → template="creative"
-resume_compact_euro.html  → template="compact_euro"
 ```
 
 ### Photo Integration
 
 - Photo available via `resume.photo` (base64 data URI)
 - Embed in template: `<img src="{{ resume.photo }}" />`
-- Conditional display: `{% if resume.photo %}`
+- Conditional display: `{% if resume.photo %}...{% else %}<placeholder>{% endif %}`
+- Placeholder: SVG silhouette or initials-based placeholder
 
 ---
 
 ## Suggested Implementation Order
 
-1. **Brussels Professional:** Most standard two-column layout
+1. **Brussels Professional:** Two-column layout with sidebar (CSS Grid)
 2. **EU Classic:** Single-column, simpler structure
-3. **Creative Belgian:** More visual elements, skill bars
-4. **Compact Euro:** Dense layout optimization
-5. **Template selector grouping + preview polish**
+3. **Template selector dropdown + preview polish**
 
 ---
 
-*Split from original XL feature. Photo management is now separate: `backlog/refined/photo-management.md`*
+## Future Expansion (Deferred)
+
+These templates can be added later as separate features:
+- **Creative Belgian** - Visual skill bars, accent colors
+- **Compact Euro** - Dense information layout
+
+---
+
+*Revised 2026-01-08: Reduced from 4 to 2 templates based on scope exploration. Original scope archived.*

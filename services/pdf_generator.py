@@ -9,7 +9,7 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 class PdfGeneratorService:
     TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
-    VALID_TEMPLATES = ["classic", "modern"]
+    VALID_TEMPLATES = ["classic", "modern", "brussels", "eu_classic"]
     SUBPROCESS_SCRIPT = Path(__file__).parent / "pdf_subprocess.py"
 
     def __init__(self):
@@ -71,6 +71,10 @@ class PdfGeneratorService:
             "projects": [
                 proj for proj in resume_data.get("projects", [])
                 if proj.get("included", False)
+            ],
+            "languages": [
+                lang for lang in resume_data.get("languages", [])
+                if lang.get("included", True)
             ],
         }
 

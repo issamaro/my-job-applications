@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body class="template-eu_classic">
+    <header class="cv-header">
+        <div class="header-content">
+            <h1 class="name">{{ personal_info.full_name }}</h1>
+            <p class="contact">
+                {{ personal_info.email }}
+                {% if personal_info.phone %} | {{ personal_info.phone }}{% endif %}
+            </p>
+            <p class="contact">
+                {% if personal_info.location %}{{ personal_info.location }}{% endif %}
+                {% if personal_info.linkedin_url %} | {{ personal_info.linkedin_url }}{% endif %}
+            </p>
+        </div>
+        {% if personal_info.photo %}
+        <img src="{{ personal_info.photo }}" alt="Profile photo" class="profile-photo">
+        {% else %}
+        <div class="photo-placeholder" role="img" aria-label="Photo placeholder">
+            <svg viewBox="0 0 100 100" class="silhouette">
+                <circle cx="50" cy="35" r="20" fill="#9CA3AF"/>
+                <ellipse cx="50" cy="85" rx="35" ry="25" fill="#9CA3AF"/>
+            </svg>
+        </div>
+        {% endif %}
+    </header>
+
+    {% if summary %}
+    <section class="summary">
+        <h2>Professional Summary</h2>
+        <p>{{ summary }}</p>
+    </section>
+    {% endif %}
+
+    {% if work_experiences %}
+    <section class="experience">
+        <h2>Experience</h2>
+        {% for exp in work_experiences %}
+        <div class="job">
+            <div class="job-header">
+                <span class="job-title">{{ exp.title }}</span>
+                <span class="job-company">| {{ exp.company }}</span>
+                <span class="job-dates">{{ exp.start_date }} - {{ exp.end_date or 'Present' }}</span>
+            </div>
+            {% if exp.description %}
+            <p class="job-description">{{ exp.description }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if education %}
+    <section class="education">
+        <h2>Education</h2>
+        {% for edu in education %}
+        <p>
+            {{ edu.degree }}{% if edu.field_of_study %} in {{ edu.field_of_study }}{% endif %}
+            | {{ edu.institution }}
+            {% if edu.graduation_year %}| {{ edu.graduation_year }}{% endif %}
+        </p>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    {% if skills %}
+    <section class="skills">
+        <h2>Skills</h2>
+        <p>{{ skills | map(attribute='name') | join(', ') }}</p>
+    </section>
+    {% endif %}
+
+    {% if languages %}
+    <section class="languages">
+        <h2>Languages</h2>
+        <p>{% for lang in languages %}{{ lang.name }} - {{ lang.level }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+    </section>
+    {% endif %}
+
+    {% if projects %}
+    <section class="projects">
+        <h2>Projects</h2>
+        {% for project in projects %}
+        <div class="project">
+            <p class="project-name">{{ project.name }}</p>
+            {% if project.description %}<p>{{ project.description }}</p>{% endif %}
+            {% if project.technologies %}<p class="technologies">{{ project.technologies }}</p>{% endif %}
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+</body>
+</html>

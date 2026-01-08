@@ -155,3 +155,27 @@ def test_export_pdf_with_classic_template_param(mock_llm, client):
 
     assert response.status_code == 200
     assert response.content[:4] == b"%PDF"
+
+
+@patch("services.resume_generator.llm_service.analyze_and_generate")
+def test_export_pdf_brussels_template(mock_llm, client):
+    """Test ?template=brussels works."""
+    resume_id = _generate_resume(client, mock_llm)
+
+    response = client.get(f"/api/resumes/{resume_id}/pdf?template=brussels")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    assert response.content[:4] == b"%PDF"
+
+
+@patch("services.resume_generator.llm_service.analyze_and_generate")
+def test_export_pdf_eu_classic_template(mock_llm, client):
+    """Test ?template=eu_classic works."""
+    resume_id = _generate_resume(client, mock_llm)
+
+    response = client.get(f"/api/resumes/{resume_id}/pdf?template=eu_classic")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    assert response.content[:4] == b"%PDF"

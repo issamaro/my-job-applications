@@ -74,7 +74,7 @@ async def delete_resume(resume_id: int):
 @router.get("/{resume_id}/pdf")
 async def export_resume_pdf(
     resume_id: int,
-    template: str = Query(default="classic", pattern="^(classic|modern)$")
+    template: str = Query(default="classic", pattern="^(classic|modern|brussels|eu_classic)$")
 ):
     resume = resume_generator_service.get_resume(resume_id)
     if resume is None:

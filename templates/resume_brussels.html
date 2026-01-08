@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body class="template-brussels">
+    <aside class="sidebar">
+        {% if personal_info.photo %}
+        <img src="{{ personal_info.photo }}" alt="Profile photo" class="profile-photo">
+        {% else %}
+        <div class="photo-placeholder" role="img" aria-label="Photo placeholder">
+            <svg viewBox="0 0 100 100" class="silhouette">
+                <circle cx="50" cy="35" r="20" fill="#9CA3AF"/>
+                <ellipse cx="50" cy="85" rx="35" ry="25" fill="#9CA3AF"/>
+            </svg>
+        </div>
+        {% endif %}
+
+        <div class="contact">
+            <h3>Contact</h3>
+            {% if personal_info.email %}
+            <p class="contact-item">{{ personal_info.email }}</p>
+            {% endif %}
+            {% if personal_info.phone %}
+            <p class="contact-item">{{ personal_info.phone }}</p>
+            {% endif %}
+            {% if personal_info.location %}
+            <p class="contact-item">{{ personal_info.location }}</p>
+            {% endif %}
+            {% if personal_info.linkedin_url %}
+            <p class="contact-item">{{ personal_info.linkedin_url }}</p>
+            {% endif %}
+        </div>
+
+        {% if skills %}
+        <div class="skills">
+            <h3>Skills</h3>
+            <div class="skills-list">
+                {% for skill in skills %}
+                <span class="skill-item">{{ skill.name }}</span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if languages %}
+        <div class="languages">
+            <h3>Languages</h3>
+            {% for lang in languages %}
+            <p class="language-item">{{ lang.name }} - {{ lang.level }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </aside>
+
+    <main class="main-content">
+        <h1 class="name">{{ personal_info.full_name }}</h1>
+
+        {% if summary %}
+        <section class="summary">
+            <h2>Professional Summary</h2>
+            <p>{{ summary }}</p>
+        </section>
+        {% endif %}
+
+        {% if work_experiences %}
+        <section class="experience">
+            <h2>Experience</h2>
+            {% for exp in work_experiences %}
+            <div class="job">
+                <div class="job-header">
+                    <span class="job-title">{{ exp.title }}</span>
+                    <span class="job-company">at {{ exp.company }}</span>
+                    <span class="job-dates">{{ exp.start_date }} - {{ exp.end_date or 'Present' }}</span>
+                </div>
+                {% if exp.description %}
+                <p class="job-description">{{ exp.description }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        {% if education %}
+        <section class="education">
+            <h2>Education</h2>
+            {% for edu in education %}
+            <p>
+                <strong>{{ edu.degree }}{% if edu.field_of_study %} in {{ edu.field_of_study }}{% endif %}</strong>
+                | {{ edu.institution }}
+                {% if edu.graduation_year %}| {{ edu.graduation_year }}{% endif %}
+            </p>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        {% if projects %}
+        <section class="projects">
+            <h2>Projects</h2>
+            {% for project in projects %}
+            <div class="project">
+                <p class="project-name">{{ project.name }}</p>
+                {% if project.description %}<p>{{ project.description }}</p>{% endif %}
+                {% if project.technologies %}<p class="technologies">Technologies: {{ project.technologies }}</p>{% endif %}
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+    </main>
+</body>
+</html>

@@ -221,3 +221,322 @@ body {
 .template-modern .technologies {
     color: #666;
 }
+
+/* European Template Variables */
+:root {
+    --eu-photo-size: 100px;
+    --eu-sidebar-width: 180px;
+    --eu-accent-color: #0066cc;
+    --eu-placeholder-bg: #F3F4F6;
+    --eu-placeholder-fg: #9CA3AF;
+}
+
+/* Brussels Template - Two Column with Sidebar */
+@page brussels {
+    size: A4;
+    margin: 20mm;
+}
+
+.template-brussels {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10pt;
+    display: grid;
+    grid-template-columns: var(--eu-sidebar-width) 1fr;
+    gap: 24px;
+}
+
+.template-brussels .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16pt;
+}
+
+.template-brussels .main-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.template-brussels .profile-photo {
+    width: var(--eu-photo-size);
+    height: var(--eu-photo-size);
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.template-brussels .photo-placeholder {
+    width: var(--eu-photo-size);
+    height: var(--eu-photo-size);
+    border-radius: 50%;
+    background: var(--eu-placeholder-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.template-brussels .photo-placeholder svg {
+    width: 100%;
+    height: 100%;
+}
+
+.template-brussels .name {
+    font-size: 18pt;
+    font-weight: bold;
+    color: var(--eu-accent-color);
+    margin: 0 0 8pt;
+}
+
+.template-brussels .sidebar h3 {
+    font-size: 11pt;
+    font-weight: bold;
+    color: var(--eu-accent-color);
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 4pt;
+    margin: 0 0 8pt;
+}
+
+.template-brussels .contact-item {
+    font-size: 9pt;
+    margin-bottom: 4pt;
+    word-break: break-word;
+}
+
+.template-brussels .skills-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4pt;
+}
+
+.template-brussels .skill-item {
+    font-size: 9pt;
+    padding: 2pt 6pt;
+    background: #f0f0f0;
+    border-radius: 2pt;
+}
+
+.template-brussels .language-item {
+    font-size: 9pt;
+    margin-bottom: 4pt;
+}
+
+.template-brussels .main-content section {
+    margin-bottom: 12pt;
+    break-inside: avoid;
+}
+
+.template-brussels .main-content h2 {
+    font-size: 12pt;
+    font-weight: bold;
+    color: var(--eu-accent-color);
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 2pt;
+    margin: 0 0 8pt;
+}
+
+.template-brussels .summary p {
+    font-size: 9pt;
+    margin: 0;
+}
+
+.template-brussels .job {
+    margin-bottom: 10pt;
+    break-inside: avoid;
+}
+
+.template-brussels .job-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4pt;
+    margin-bottom: 4pt;
+}
+
+.template-brussels .job-title {
+    font-weight: bold;
+    font-size: 10pt;
+}
+
+.template-brussels .job-company {
+    color: #333;
+    font-size: 10pt;
+}
+
+.template-brussels .job-dates {
+    margin-left: auto;
+    font-size: 9pt;
+    color: #666;
+}
+
+.template-brussels .job-description {
+    font-size: 9pt;
+    white-space: pre-wrap;
+    margin: 0;
+}
+
+.template-brussels .education p {
+    font-size: 9pt;
+    margin: 0 0 4pt;
+}
+
+.template-brussels .project {
+    margin-bottom: 8pt;
+    break-inside: avoid;
+}
+
+.template-brussels .project-name {
+    font-weight: bold;
+    font-size: 9pt;
+    margin: 0 0 2pt;
+}
+
+.template-brussels .project p {
+    font-size: 9pt;
+    margin: 0 0 2pt;
+}
+
+.template-brussels .technologies {
+    color: #666;
+}
+
+/* EU Classic Template - Single Column Traditional */
+@page eu_classic {
+    size: A4;
+    margin: 20mm;
+}
+
+.template-eu_classic {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 11pt;
+}
+
+.template-eu_classic .cv-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16pt;
+    border-bottom: 2px solid #1a1a1a;
+    padding-bottom: 12pt;
+}
+
+.template-eu_classic .header-content {
+    flex: 1;
+}
+
+.template-eu_classic .profile-photo {
+    width: var(--eu-photo-size);
+    height: var(--eu-photo-size);
+    object-fit: cover;
+    border: 1px solid #e0e0e0;
+}
+
+.template-eu_classic .photo-placeholder {
+    width: var(--eu-photo-size);
+    height: var(--eu-photo-size);
+    background: var(--eu-placeholder-bg);
+    border: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.template-eu_classic .photo-placeholder svg {
+    width: 100%;
+    height: 100%;
+}
+
+.template-eu_classic .name {
+    font-size: 20pt;
+    font-weight: normal;
+    margin: 0 0 8pt;
+}
+
+.template-eu_classic .contact {
+    font-size: 10pt;
+    color: #333;
+    margin: 0 0 4pt;
+}
+
+.template-eu_classic section {
+    margin-bottom: 14pt;
+    break-inside: avoid;
+}
+
+.template-eu_classic h2 {
+    font-size: 12pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5pt;
+    border-bottom: 1px solid #1a1a1a;
+    padding-bottom: 2pt;
+    margin: 0 0 8pt;
+}
+
+.template-eu_classic .summary p {
+    font-size: 10pt;
+    margin: 0;
+}
+
+.template-eu_classic .job {
+    margin-bottom: 10pt;
+    break-inside: avoid;
+}
+
+.template-eu_classic .job-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4pt;
+    margin-bottom: 4pt;
+}
+
+.template-eu_classic .job-title {
+    font-weight: bold;
+}
+
+.template-eu_classic .job-company {
+    font-style: italic;
+}
+
+.template-eu_classic .job-dates {
+    margin-left: auto;
+    font-size: 10pt;
+    color: #333;
+}
+
+.template-eu_classic .job-description {
+    font-size: 10pt;
+    white-space: pre-wrap;
+    margin: 0;
+}
+
+.template-eu_classic .skills p {
+    font-size: 10pt;
+    margin: 0;
+}
+
+.template-eu_classic .education p {
+    font-size: 10pt;
+    margin: 0 0 4pt;
+}
+
+.template-eu_classic .languages p {
+    font-size: 10pt;
+    margin: 0;
+}
+
+.template-eu_classic .project {
+    margin-bottom: 8pt;
+    break-inside: avoid;
+}
+
+.template-eu_classic .project-name {
+    font-weight: bold;
+    font-size: 10pt;
+    margin: 0 0 2pt;
+}
+
+.template-eu_classic .project p {
+    font-size: 10pt;
+    margin: 0 0 2pt;
+}
+
+.template-eu_classic .technologies {
+    font-style: italic;
+    color: #333;
+}
