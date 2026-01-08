@@ -37,3 +37,9 @@ public/build/
 
 # Temp files
 DONOTUSE_*
+
+# Development documentation (internal)
+archive/
+workbench/
+backlog/
+methodology-improvement/
