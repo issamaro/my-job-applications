@@ -20,6 +20,12 @@ def get_client() -> AsyncAnthropic:
     return _client
 
 
+LANGUAGE_INSTRUCTIONS = {
+    "en": "Generate all resume content in English.",
+    "fr": "Generate all resume content in French (Français). Write the summary and work experience descriptions in French.",
+    "nl": "Generate all resume content in Dutch (Nederlands). Write the summary and work experience descriptions in Dutch.",
+}
+
 SYSTEM_PROMPT = """You are an expert resume writer and career coach. Your task is to analyze
 a job description and a candidate's profile, then create a tailored resume
 that highlights the most relevant qualifications.
@@ -35,6 +41,9 @@ Guidelines:
 - Be honest about gaps - don't claim matches that don't exist"""
 
 USER_PROMPT_TEMPLATE = """Analyze this job description and create a tailored resume from the candidate profile.
+
+## LANGUAGE INSTRUCTION
+{language_instruction}
 
 ## JOB DESCRIPTION
 {job_description}
@@ -113,13 +122,16 @@ class LLMService:
         self,
         job_description: str,
         profile: dict,
+        language: str = "en",
     ) -> dict:
         client = get_client()
 
         profile_json = json.dumps(profile, indent=2)
+        language_instruction = LANGUAGE_INSTRUCTIONS.get(language, LANGUAGE_INSTRUCTIONS["en"])
         user_prompt = USER_PROMPT_TEMPLATE.format(
             job_description=job_description,
             profile_json=profile_json,
+            language_instruction=language_instruction,
         )
 
         try:

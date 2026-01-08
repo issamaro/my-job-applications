@@ -1,11 +1,49 @@
 <script>
-  let { resumeData, template = 'classic' } = $props();
+  let { resumeData, template = 'classic', language = 'en' } = $props();
+
+  // Section header translations
+  const translations = {
+    en: {
+      contact: 'Contact',
+      skills: 'Skills',
+      languages: 'Languages',
+      summary: 'Professional Summary',
+      experience: 'Experience',
+      education: 'Education',
+      projects: 'Projects',
+      present: 'Present'
+    },
+    fr: {
+      contact: 'Contact',
+      skills: 'Compétences',
+      languages: 'Langues',
+      summary: 'Profil Professionnel',
+      experience: 'Expérience',
+      education: 'Formation',
+      projects: 'Projets',
+      present: 'Présent'
+    },
+    nl: {
+      contact: 'Contact',
+      skills: 'Vaardigheden',
+      languages: 'Talen',
+      summary: 'Professioneel Profiel',
+      experience: 'Werkervaring',
+      education: 'Opleiding',
+      projects: 'Projecten',
+      present: 'Heden'
+    }
+  };
+
+  let t = $derived(translations[language] || translations.en);
 
   function formatWorkDate(dateStr) {
-    if (!dateStr) return 'Present';
+    if (!dateStr) return t.present;
     const [year, month] = dateStr.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
-    return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    // Use localized month names
+    const locales = { en: 'en-US', fr: 'fr-FR', nl: 'nl-NL' };
+    return date.toLocaleDateString(locales[language] || 'en-US', { month: 'short', year: 'numeric' });
   }
 
   let includedWork = $derived(
@@ -44,7 +82,7 @@
         {/if}
 
         <div class="contact">
-          <h3>Contact</h3>
+          <h3>{t.contact}</h3>
           {#if resumeData.personal_info?.email}
             <p class="contact-item">{resumeData.personal_info.email}</p>
           {/if}
@@ -61,7 +99,7 @@
 
         {#if includedSkills.length > 0}
           <div class="skills">
-            <h3>Skills</h3>
+            <h3>{t.skills}</h3>
             <div class="skills-list">
               {#each includedSkills as skill}
                 <span class="skill-item">{skill.name}</span>
@@ -72,7 +110,7 @@
 
         {#if includedLanguages.length > 0}
           <div class="languages">
-            <h3>Languages</h3>
+            <h3>{t.languages}</h3>
             {#each includedLanguages as lang}
               <p class="language-item">{lang.name} - {lang.level}</p>
             {/each}
@@ -85,14 +123,14 @@
 
         {#if resumeData.summary}
           <section class="summary">
-            <h2>Professional Summary</h2>
+            <h2>{t.summary}</h2>
             <p>{resumeData.summary}</p>
           </section>
         {/if}
 
         {#if includedWork.length > 0}
           <section class="experience">
-            <h2>Experience</h2>
+            <h2>{t.experience}</h2>
             {#each includedWork as exp}
               <div class="job">
                 <div class="job-header">
@@ -110,7 +148,7 @@
 
         {#if includedEducation.length > 0}
           <section class="education">
-            <h2>Education</h2>
+            <h2>{t.education}</h2>
             {#each includedEducation as edu}
               <p>
                 <strong>{edu.degree}{edu.field_of_study ? ` in ${edu.field_of_study}` : ''}</strong>
@@ -123,7 +161,7 @@
 
         {#if includedProjects.length > 0}
           <section class="projects">
-            <h2>Projects</h2>
+            <h2>{t.projects}</h2>
             {#each includedProjects as project}
               <div class="project">
                 <p class="project-name">{project.name}</p>
@@ -165,14 +203,14 @@
 
       {#if resumeData.summary}
         <section class="summary">
-          <h2>Professional Summary</h2>
+          <h2>{t.summary}</h2>
           <p>{resumeData.summary}</p>
         </section>
       {/if}
 
       {#if includedWork.length > 0}
         <section class="experience">
-          <h2>Experience</h2>
+          <h2>{t.experience}</h2>
           {#each includedWork as exp}
             <div class="job">
               <div class="job-header">
@@ -190,7 +228,7 @@
 
       {#if includedEducation.length > 0}
         <section class="education">
-          <h2>Education</h2>
+          <h2>{t.education}</h2>
           {#each includedEducation as edu}
             <p>
               {edu.degree}{edu.field_of_study ? ` in ${edu.field_of_study}` : ''}
@@ -203,21 +241,21 @@
 
       {#if includedSkills.length > 0}
         <section class="skills">
-          <h2>Skills</h2>
+          <h2>{t.skills}</h2>
           <p>{includedSkills.map(s => s.name).join(', ')}</p>
         </section>
       {/if}
 
       {#if includedLanguages.length > 0}
         <section class="languages">
-          <h2>Languages</h2>
+          <h2>{t.languages}</h2>
           <p>{includedLanguages.map(l => `${l.name} - ${l.level}`).join(', ')}</p>
         </section>
       {/if}
 
       {#if includedProjects.length > 0}
         <section class="projects">
-          <h2>Projects</h2>
+          <h2>{t.projects}</h2>
           {#each includedProjects as project}
             <div class="project">
               <p class="project-name">{project.name}</p>
@@ -246,14 +284,14 @@
 
       {#if resumeData.summary}
       <section class="summary">
-        <h2>Professional Summary</h2>
+        <h2>{t.summary}</h2>
         <p>{resumeData.summary}</p>
       </section>
       {/if}
 
       {#if includedWork.length > 0}
       <section class="experience">
-        <h2>Experience</h2>
+        <h2>{t.experience}</h2>
         {#each includedWork as exp}
         <div class="job">
           <div class="job-header">
@@ -271,7 +309,7 @@
 
       {#if includedSkills.length > 0}
       <section class="skills">
-        <h2>Skills</h2>
+        <h2>{t.skills}</h2>
         {#if template === 'modern'}
         <div class="skills-list">
           {#each includedSkills as skill}
@@ -286,7 +324,7 @@
 
       {#if includedEducation.length > 0}
       <section class="education">
-        <h2>Education</h2>
+        <h2>{t.education}</h2>
         {#each includedEducation as edu}
         <p>
           {#if template === 'modern'}
@@ -303,14 +341,14 @@
 
       {#if includedLanguages.length > 0}
       <section class="languages">
-        <h2>Languages</h2>
+        <h2>{t.languages}</h2>
         <p>{includedLanguages.map(l => `${l.name} - ${l.level}`).join(', ')}</p>
       </section>
       {/if}
 
       {#if includedProjects.length > 0}
       <section class="projects">
-        <h2>Projects</h2>
+        <h2>{t.projects}</h2>
         {#each includedProjects as project}
         <div class="project">
           <p class="project-name">{project.name}</p>

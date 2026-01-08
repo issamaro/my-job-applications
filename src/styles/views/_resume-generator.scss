@@ -44,7 +44,19 @@
 }
 
 .generator-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: $spacing-grid;
   margin-top: $spacing-section;
+
+  .language-selector {
+    flex: 0 0 auto;
+
+    select {
+      min-width: 140px;
+      max-width: 160px;
+    }
+  }
 }
 
 .loading-actions {

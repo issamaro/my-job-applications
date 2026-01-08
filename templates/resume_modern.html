@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ language }}">
 <head>
     <meta charset="UTF-8">
 </head>
@@ -18,20 +18,20 @@
 
     {% if summary %}
     <section class="summary">
-        <h2>Professional Summary</h2>
+        <h2>{{ labels.summary }}</h2>
         <p>{{ summary }}</p>
     </section>
     {% endif %}
 
     {% if work_experiences %}
     <section class="experience">
-        <h2>Experience</h2>
+        <h2>{{ labels.experience }}</h2>
         {% for exp in work_experiences %}
         <div class="job">
             <div class="job-header">
                 <span class="job-title">{{ exp.title }}</span>
-                <span class="job-company">at {{ exp.company }}</span>
-                <span class="job-dates">{{ exp.start_date }} - {{ exp.end_date or 'Present' }}</span>
+                <span class="job-company">{{ labels.at }} {{ exp.company }}</span>
+                <span class="job-dates">{{ exp.formatted_start_date }} - {{ exp.formatted_end_date }}</span>
             </div>
             {% if exp.description %}
             <p class="job-description">{{ exp.description }}</p>
@@ -43,7 +43,7 @@
 
     {% if skills %}
     <section class="skills">
-        <h2>Skills</h2>
+        <h2>{{ labels.skills }}</h2>
         <div class="skills-list">
             {% for skill in skills %}
             <span class="skill-item">{{ skill.name }}</span>
@@ -54,10 +54,10 @@
 
     {% if education %}
     <section class="education">
-        <h2>Education</h2>
+        <h2>{{ labels.education }}</h2>
         {% for edu in education %}
         <p>
-            <strong>{{ edu.degree }}{% if edu.field_of_study %} in {{ edu.field_of_study }}{% endif %}</strong>
+            <strong>{{ edu.degree }}{% if edu.field_of_study %} {{ labels.in }} {{ edu.field_of_study }}{% endif %}</strong>
             | {{ edu.institution }}
             {% if edu.graduation_year %}| {{ edu.graduation_year }}{% endif %}
         </p>
@@ -67,19 +67,19 @@
 
     {% if languages %}
     <section class="languages">
-        <h2>Languages</h2>
+        <h2>{{ labels.languages }}</h2>
         <p>{% for lang in languages %}{{ lang.name }} - {{ lang.level }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
     </section>
     {% endif %}
 
     {% if projects %}
     <section class="projects">
-        <h2>Projects</h2>
+        <h2>{{ labels.projects }}</h2>
         {% for project in projects %}
         <div class="project">
             <p class="project-name">{{ project.name }}</p>
             {% if project.description %}<p>{{ project.description }}</p>{% endif %}
-            {% if project.technologies %}<p class="technologies">Technologies: {{ project.technologies }}</p>{% endif %}
+            {% if project.technologies %}<p class="technologies">{{ project.technologies }}</p>{% endif %}
         </div>
         {% endfor %}
     </section>

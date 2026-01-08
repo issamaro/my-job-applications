@@ -66,6 +66,17 @@
   margin: 0;
 }
 
+.language-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: rgba($color-primary, 0.1);
+  color: $color-primary;
+  border-radius: 4px;
+}
+
 .section-heading {
   margin-bottom: $spacing-grid;
 }

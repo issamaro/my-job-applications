@@ -193,6 +193,7 @@ class Language(BaseModel):
 class ResumeGenerateRequest(BaseModel):
     job_description: str
     job_description_id: int | None = None  # Optional: link to existing JD
+    language: str = "en"
 
     @field_validator("job_description")
     @classmethod
@@ -200,6 +201,13 @@ class ResumeGenerateRequest(BaseModel):
         if len(v.strip()) < 100:
             raise ValueError("Job description must be at least 100 characters")
         return v.strip()
+
+    @field_validator("language")
+    @classmethod
+    def validate_language(cls, v: str) -> str:
+        if v not in ("en", "fr", "nl"):
+            raise ValueError("Language must be en, fr, or nl")
+        return v
 
 
 class SkillMatch(BaseModel):
@@ -275,6 +283,7 @@ class GeneratedResumeResponse(BaseModel):
     match_score: float | None = None
     job_analysis: JobAnalysis | None = None
     resume: ResumeContent | None = None
+    language: str = "en"
     created_at: str | None = None
 
 

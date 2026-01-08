@@ -8,6 +8,46 @@
 
   let { resume, onBack, onRegenerate } = $props();
 
+  const languageLabels = {
+    en: 'English',
+    fr: 'Français',
+    nl: 'Nederlands'
+  };
+
+  // Section translations for edit view
+  const sectionTranslations = {
+    en: {
+      resumePreview: 'Resume Preview',
+      workExperience: 'Work Experience',
+      skills: 'Skills',
+      education: 'Education',
+      languages: 'Languages',
+      projects: 'Projects'
+    },
+    fr: {
+      resumePreview: 'Aperçu du CV',
+      workExperience: 'Expérience',
+      skills: 'Compétences',
+      education: 'Formation',
+      languages: 'Langues',
+      projects: 'Projets'
+    },
+    nl: {
+      resumePreview: 'CV Voorbeeld',
+      workExperience: 'Werkervaring',
+      skills: 'Vaardigheden',
+      education: 'Opleiding',
+      languages: 'Talen',
+      projects: 'Projecten'
+    }
+  };
+
+  // Reactive translations based on resume.language
+  let labels = $derived.by(() => {
+    const lang = resume?.language || 'en';
+    return sectionTranslations[lang] || sectionTranslations.en;
+  });
+
   let resumeData = $state(null);
   let editingId = $state(null);
   let editValue = $state('');
@@ -108,7 +148,7 @@
     }
     isExporting = true;
     try {
-      await downloadResumePdf(resume.id, selectedTemplate);
+      await downloadResumePdf(resume.id, selectedTemplate, resume.language || 'en');
       toastType = 'success';
       toastMessage = 'PDF downloaded';
     } catch (e) {
@@ -132,7 +172,12 @@
 
   <div class="preview-title">
     <h2>{resume.job_title || 'Untitled'} · {resume.company_name || 'Unknown'}</h2>
-    <p class="preview-date">Generated {formatDate(resume.created_at)}</p>
+    <p class="preview-date">
+      Generated {formatDate(resume.created_at)}
+      {#if resume.language}
+        <span class="language-badge">{languageLabels[resume.language] || resume.language}</span>
+      {/if}
+    </p>
   </div>
 
   <hr />
@@ -182,7 +227,7 @@
   </div>
 
   {#if viewMode === 'edit'}
-  <h3 class="section-heading">Resume Preview</h3>
+  <h3 class="section-heading">{labels.resumePreview}</h3>
 
   {#if resumeData}
     {#if resumeData.personal_info}
@@ -205,7 +250,7 @@
     {/if}
 
     <ResumeSection
-      title="Work Experience"
+      title={labels.workExperience}
       included={resumeData.work_experiences?.[0]?.included !== false}
       onToggle={() => toggleSection('work')}
     >
@@ -253,7 +298,7 @@
     </ResumeSection>
 
     <ResumeSection
-      title="Skills"
+      title={labels.skills}
       included={resumeData.skills?.[0]?.included !== false}
       onToggle={() => toggleSection('skills')}
     >
@@ -269,7 +314,7 @@
     </ResumeSection>
 
     <ResumeSection
-      title="Education"
+      title={labels.education}
       included={resumeData.education?.[0]?.included !== false}
       onToggle={() => toggleSection('education')}
     >
@@ -282,7 +327,7 @@
 
     {#if resumeData.languages?.length > 0}
     <ResumeSection
-      title="Languages"
+      title={labels.languages}
       included={resumeData.languages?.[0]?.included !== false}
       onToggle={() => toggleSection('languages')}
     >
@@ -297,7 +342,7 @@
     {/if}
 
     <ResumeSection
-      title="Projects"
+      title={labels.projects}
       included={resumeData.projects?.[0]?.included === true}
       onToggle={() => toggleSection('projects')}
     >
@@ -317,7 +362,7 @@
     </ResumeSection>
   {/if}
   {:else}
-  <PdfPreview {resumeData} template={selectedTemplate} />
+  <PdfPreview {resumeData} template={selectedTemplate} language={resume?.language || 'en'} />
   {/if}
 
   <hr />

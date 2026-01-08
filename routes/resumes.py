@@ -22,7 +22,8 @@ async def generate_resume(request: ResumeGenerateRequest):
     try:
         result = await resume_generator_service.generate(
             request.job_description,
-            request.job_description_id
+            request.job_description_id,
+            request.language
         )
         return result
     except ProfileIncompleteError as e:
@@ -74,16 +75,21 @@ async def delete_resume(resume_id: int):
 @router.get("/{resume_id}/pdf")
 async def export_resume_pdf(
     resume_id: int,
-    template: str = Query(default="classic", pattern="^(classic|modern|brussels|eu_classic)$")
+    template: str = Query(default="classic", pattern="^(classic|modern|brussels|eu_classic)$"),
+    language: str = Query(default="en", pattern="^(en|fr|nl)$")
 ):
     resume = resume_generator_service.get_resume(resume_id)
     if resume is None:
         raise HTTPException(status_code=404, detail="Resume not found")
 
+    # Use the language from the resume if not explicitly provided, or use the query param
+    pdf_language = language if language else resume.language
+
     try:
         pdf_bytes = pdf_generator_service.generate_pdf(
             resume.resume.model_dump() if resume.resume else {},
-            template
+            template,
+            pdf_language
         )
         filename = pdf_generator_service.generate_filename(
             resume.resume.model_dump() if resume.resume else {},

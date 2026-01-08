@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-01-08] - Multi-Language Resume Generation
+
+### Added
+- Language selector in Resume Generator (English, French, Dutch)
+- Resume generation in selected language via LLM instructions
+- Translated section headers in PDF preview (Expérience, Compétences, etc.)
+- Translated section headers in PDF export
+- Language badge showing selected language on resume preview
+- Localized date formatting (month names, "Present" label)
+- Translation files for en/fr/nl (`translations/*.json`)
+- New translation service (`services/translations.py`)
+- LanguageSelector component (`src/components/LanguageSelector.svelte`)
+- 39 new tests for language functionality
+
+### Changed
+- API: `POST /api/resumes/generate` accepts `language` parameter
+- API: `GET /api/resumes/{id}/pdf` accepts `language` parameter
+- Resume response includes `language` field
+- PDF templates use translation variables instead of hardcoded English
+
+### Technical
+- Language stored per-resume in database
+- Jinja2 templates receive translations via context
+- Frontend uses derived translations based on resume.language
+
+---
+
 ## [2026-01-06] - Claude Code Configuration Cleanup
 
 ### Changed

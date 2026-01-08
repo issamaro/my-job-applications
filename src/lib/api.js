@@ -166,8 +166,8 @@ export function supportsMonthInput() {
 }
 
 // Resume Generation
-export async function generateResume(jobDescription, jobDescriptionId = null) {
-  const body = { job_description: jobDescription };
+export async function generateResume(jobDescription, jobDescriptionId = null, language = 'en') {
+  const body = { job_description: jobDescription, language };
   if (jobDescriptionId) {
     body.job_description_id = jobDescriptionId;
   }
@@ -202,8 +202,8 @@ export async function getCompleteProfile() {
   return request('/profile/complete');
 }
 
-export async function downloadResumePdf(id, template = 'classic') {
-  const response = await fetch(`${API_BASE}/resumes/${id}/pdf?template=${template}`);
+export async function downloadResumePdf(id, template = 'classic', language = 'en') {
+  const response = await fetch(`${API_BASE}/resumes/${id}/pdf?template=${template}&language=${language}`);
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ detail: 'PDF generation failed' }));

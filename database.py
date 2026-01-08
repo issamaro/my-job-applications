@@ -114,6 +114,8 @@ def init_db():
             "ALTER TABLE generated_resumes ADD COLUMN jd_version_id INTEGER",
             # Photo Management feature
             "ALTER TABLE personal_info ADD COLUMN photo TEXT",
+            # Multi-Language Resume Generation feature
+            "ALTER TABLE generated_resumes ADD COLUMN language TEXT DEFAULT 'en'",
         ]
         for sql in migrations:
             try:

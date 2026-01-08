@@ -19,7 +19,7 @@ class ProfileIncompleteError(Exception):
 
 
 class ResumeGeneratorService:
-    async def generate(self, job_description: str, job_description_id: int | None = None) -> GeneratedResumeResponse:
+    async def generate(self, job_description: str, job_description_id: int | None = None, language: str = "en") -> GeneratedResumeResponse:
         if not profile_service.has_work_experience():
             raise ProfileIncompleteError(
                 "Your profile needs work experience before you can generate a tailored resume."
@@ -35,7 +35,7 @@ class ResumeGeneratorService:
             # Remove photo from profile to avoid sending huge base64 data to LLM
             del profile_dict["personal_info"]["photo"]
 
-        llm_result = await llm_service.analyze_and_generate(job_description, profile_dict)
+        llm_result = await llm_service.analyze_and_generate(job_description, profile_dict, language)
 
         # Restore photo to profile_dict for use in resume
         if saved_photo and profile_dict.get("personal_info"):
@@ -102,8 +102,8 @@ class ResumeGeneratorService:
             cursor = conn.execute(
                 """
                 INSERT INTO generated_resumes
-                (job_description_id, job_title, company_name, match_score, resume_content)
-                VALUES (?, ?, ?, ?, ?)
+                (job_description_id, job_title, company_name, match_score, resume_content, language)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """,
                 (
                     jd_id,
@@ -111,6 +111,7 @@ class ResumeGeneratorService:
                     llm_result.get("company_name"),
                     llm_result.get("match_score"),
                     json.dumps(resume_content),
+                    language,
                 ),
             )
             conn.commit()
@@ -242,6 +243,7 @@ class ResumeGeneratorService:
             match_score=row.get("match_score"),
             job_analysis=job_analysis_obj,
             resume=resume,
+            language=row.get("language", "en"),
             created_at=row.get("created_at"),
         )
 

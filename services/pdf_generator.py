@@ -6,6 +6,8 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from services.translations import load_translations, format_date
+
 
 class PdfGeneratorService:
     TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
@@ -18,7 +20,7 @@ class PdfGeneratorService:
             autoescape=select_autoescape(["html"])
         )
 
-    def generate_pdf(self, resume_data: dict, template: str = "classic") -> bytes:
+    def generate_pdf(self, resume_data: dict, template: str = "classic", language: str = "en") -> bytes:
         """Generate PDF from resume data using specified template.
 
         Uses subprocess to bypass macOS SIP restrictions on DYLD_* variables.
@@ -27,7 +29,7 @@ class PdfGeneratorService:
             raise ValueError(f"Invalid template: {template}")
 
         html_template = self.env.get_template(f"resume_{template}.html")
-        html_content = html_template.render(**self._prepare_context(resume_data))
+        html_content = html_template.render(**self._prepare_context(resume_data, language))
         css_path = self.TEMPLATES_DIR / "resume_base.css"
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -51,15 +53,23 @@ class PdfGeneratorService:
 
             return pdf_path.read_bytes()
 
-    def _prepare_context(self, resume_data: dict) -> dict:
-        """Filter to only included sections."""
+    def _prepare_context(self, resume_data: dict, language: str = "en") -> dict:
+        """Filter to only included sections and add translations."""
+        translations = load_translations(language)
+
+        # Format dates in work experiences
+        work_experiences = []
+        for exp in resume_data.get("work_experiences", []):
+            if exp.get("included", True):
+                formatted_exp = dict(exp)
+                formatted_exp["formatted_start_date"] = format_date(exp.get("start_date"), language)
+                formatted_exp["formatted_end_date"] = format_date(exp.get("end_date"), language)
+                work_experiences.append(formatted_exp)
+
         return {
             "personal_info": resume_data.get("personal_info", {}),
             "summary": resume_data.get("summary"),
-            "work_experiences": [
-                exp for exp in resume_data.get("work_experiences", [])
-                if exp.get("included", True)
-            ],
+            "work_experiences": work_experiences,
             "skills": [
                 skill for skill in resume_data.get("skills", [])
                 if skill.get("included", True)
@@ -76,6 +86,8 @@ class PdfGeneratorService:
                 lang for lang in resume_data.get("languages", [])
                 if lang.get("included", True)
             ],
+            "labels": translations,
+            "language": language,
         }
 
     def generate_filename(self, resume_data: dict, company_name: str | None) -> str:

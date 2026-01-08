@@ -3,6 +3,7 @@
   import ProgressBar from './ProgressBar.svelte';
   import ResumePreview from './ResumePreview.svelte';
   import SavedJobsList from './SavedJobsList.svelte';
+  import LanguageSelector from './LanguageSelector.svelte';
   import { generateResume, getResume, getCompleteProfile, createJobDescription, updateJobDescription } from '../lib/api.js';
 
   let view = $state('input');
@@ -16,6 +17,7 @@
   let loadedJobId = $state(null);
   let loadedJobTitle = $state(null);
   let saving = $state(false);
+  let selectedLanguage = $state('en');
 
   const statusMessages = [
     'Analyzing job description...',
@@ -55,7 +57,7 @@
     abortController = new AbortController();
 
     try {
-      const result = await generateResume(jobDescription, loadedJobId);
+      const result = await generateResume(jobDescription, loadedJobId, selectedLanguage);
       currentResume = result;
       view = 'preview';
       savedJobsRef?.refresh();
@@ -188,6 +190,10 @@
     />
 
     <div class="generator-actions">
+      <LanguageSelector
+        value={selectedLanguage}
+        onchange={(val) => selectedLanguage = val}
+      />
       <button
         class="btn btn-primary"
         onclick={handleGenerate}
