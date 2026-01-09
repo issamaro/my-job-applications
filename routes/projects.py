@@ -11,6 +11,7 @@ async def list_projects():
         cursor = conn.execute(
             """
             SELECT * FROM projects
+            WHERE user_id = 1
             ORDER BY created_at DESC
             """
         )
@@ -23,8 +24,8 @@ async def create_project(proj: ProjectCreate):
     with get_db() as conn:
         cursor = conn.execute(
             """
-            INSERT INTO projects (name, description, technologies, url, start_date, end_date)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO projects (name, description, technologies, url, start_date, end_date, user_id)
+            VALUES (?, ?, ?, ?, ?, ?, 1)
             """,
             (
                 proj.name,

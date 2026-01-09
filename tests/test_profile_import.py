@@ -68,11 +68,11 @@ def test_import_profile_happy_path(client):
 
 def test_import_preserves_photo(client):
     """Test that importing preserves existing photo."""
-    # First, set up a personal info with a photo
+    # First, set up a user with a photo
     with database.get_db() as conn:
         conn.execute(
             """
-            INSERT INTO personal_info (id, full_name, email, photo)
+            INSERT INTO users (id, full_name, email, photo)
             VALUES (1, 'Old Name', 'old@example.com', 'data:image/png;base64,ABC123')
             """
         )
@@ -95,7 +95,7 @@ def test_import_preserves_photo(client):
 
     # Verify photo was preserved
     with database.get_db() as conn:
-        cursor = conn.execute("SELECT full_name, email, photo FROM personal_info WHERE id = 1")
+        cursor = conn.execute("SELECT full_name, email, photo FROM users WHERE id = 1")
         row = cursor.fetchone()
         assert row["full_name"] == "New Name"
         assert row["email"] == "new@example.com"

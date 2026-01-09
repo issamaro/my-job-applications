@@ -11,6 +11,7 @@ async def list_education():
         cursor = conn.execute(
             """
             SELECT * FROM education
+            WHERE user_id = 1
             ORDER BY graduation_year DESC
             """
         )
@@ -23,8 +24,8 @@ async def create_education(edu: EducationCreate):
     with get_db() as conn:
         cursor = conn.execute(
             """
-            INSERT INTO education (institution, degree, field_of_study, graduation_year, gpa, notes)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO education (institution, degree, field_of_study, graduation_year, gpa, notes, user_id)
+            VALUES (?, ?, ?, ?, ?, ?, 1)
             """,
             (
                 edu.institution,

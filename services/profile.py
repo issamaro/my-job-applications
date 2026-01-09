@@ -3,10 +3,10 @@ from schemas import CompleteProfile
 
 
 class ProfileService:
-    def get_complete(self) -> CompleteProfile:
+    def get_complete(self, user_id: int = 1) -> CompleteProfile:
         with get_db() as conn:
             personal_info = None
-            cursor = conn.execute("SELECT * FROM personal_info WHERE id = 1")
+            cursor = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,))
             row = cursor.fetchone()
             if row:
                 personal_info = dict(row)
@@ -14,22 +14,33 @@ class ProfileService:
             cursor = conn.execute(
                 """
                 SELECT * FROM work_experiences
+                WHERE user_id = ?
                 ORDER BY is_current DESC, start_date DESC
-                """
+                """,
+                (user_id,),
             )
             work_experiences = [dict(row) for row in cursor.fetchall()]
 
-            cursor = conn.execute("SELECT * FROM education ORDER BY graduation_year DESC")
+            cursor = conn.execute(
+                "SELECT * FROM education WHERE user_id = ? ORDER BY graduation_year DESC",
+                (user_id,),
+            )
             education = [dict(row) for row in cursor.fetchall()]
 
-            cursor = conn.execute("SELECT * FROM skills ORDER BY name")
+            cursor = conn.execute(
+                "SELECT * FROM skills WHERE user_id = ? ORDER BY name", (user_id,)
+            )
             skills = [dict(row) for row in cursor.fetchall()]
 
-            cursor = conn.execute("SELECT * FROM projects ORDER BY start_date DESC")
+            cursor = conn.execute(
+                "SELECT * FROM projects WHERE user_id = ? ORDER BY start_date DESC",
+                (user_id,),
+            )
             projects = [dict(row) for row in cursor.fetchall()]
 
             cursor = conn.execute(
-                "SELECT * FROM languages ORDER BY display_order ASC, id ASC"
+                "SELECT * FROM languages WHERE user_id = ? ORDER BY display_order ASC, id ASC",
+                (user_id,),
             )
             languages = [dict(row) for row in cursor.fetchall()]
 
@@ -42,9 +53,11 @@ class ProfileService:
                 languages=languages,
             )
 
-    def has_work_experience(self) -> bool:
+    def has_work_experience(self, user_id: int = 1) -> bool:
         with get_db() as conn:
-            cursor = conn.execute("SELECT COUNT(*) FROM work_experiences")
+            cursor = conn.execute(
+                "SELECT COUNT(*) FROM work_experiences WHERE user_id = ?", (user_id,)
+            )
             count = cursor.fetchone()[0]
             return count > 0
 

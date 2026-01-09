@@ -17,6 +17,7 @@ async def list_languages():
         cursor = conn.execute(
             """
             SELECT * FROM languages
+            WHERE user_id = 1
             ORDER BY display_order ASC, id ASC
             """
         )
@@ -27,13 +28,15 @@ async def list_languages():
 @router.post("", response_model=Language)
 async def create_language(lang: LanguageCreate):
     with get_db() as conn:
-        cursor = conn.execute("SELECT COALESCE(MAX(display_order), -1) + 1 FROM languages")
+        cursor = conn.execute(
+            "SELECT COALESCE(MAX(display_order), -1) + 1 FROM languages WHERE user_id = 1"
+        )
         next_order = cursor.fetchone()[0]
 
         cursor = conn.execute(
             """
-            INSERT INTO languages (name, level, display_order)
-            VALUES (?, ?, ?)
+            INSERT INTO languages (name, level, display_order, user_id)
+            VALUES (?, ?, ?, 1)
             """,
             (lang.name, lang.level.value, next_order),
         )
@@ -54,6 +57,7 @@ async def reorder_languages(items: list[ReorderItem]):
         cursor = conn.execute(
             """
             SELECT * FROM languages
+            WHERE user_id = 1
             ORDER BY display_order ASC, id ASC
             """
         )

@@ -44,6 +44,38 @@ class PersonalInfo(BaseModel):
     updated_at: str | None = None
 
 
+# User schemas (replaces personal_info table with users table)
+class User(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    full_name: str
+    email: str
+    phone: str | None = None
+    location: str | None = None
+    linkedin_url: str | None = None
+    summary: str | None = None
+    photo: str | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+
+
+class UserUpdate(BaseModel):
+    full_name: str
+    email: str
+    phone: str | None = None
+    location: str | None = None
+    linkedin_url: str | None = None
+    summary: str | None = None
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        if not re.match(r"^[^@]+@[^@]+\.[^@]+$", v):
+            raise ValueError("Invalid email address")
+        return v
+
+
 # Work Experience schemas
 class WorkExperienceCreate(BaseModel):
     company: str

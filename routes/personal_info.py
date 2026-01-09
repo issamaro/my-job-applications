@@ -1,30 +1,30 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from database import get_db
-from schemas import PersonalInfo, PersonalInfoUpdate
+from schemas import User, UserUpdate
 
 router = APIRouter(prefix="/api/personal-info", tags=["personal-info"])
 
 
-@router.get("", response_model=PersonalInfo | None)
+@router.get("", response_model=User | None)
 async def get_personal_info():
     with get_db() as conn:
-        cursor = conn.execute("SELECT * FROM personal_info WHERE id = 1")
+        cursor = conn.execute("SELECT * FROM users WHERE id = 1")
         row = cursor.fetchone()
         if row is None:
             return None
-        return PersonalInfo.model_validate(dict(row))
+        return User.model_validate(dict(row))
 
 
-@router.put("", response_model=PersonalInfo)
-async def update_personal_info(info: PersonalInfoUpdate):
+@router.put("", response_model=User)
+async def update_personal_info(info: UserUpdate):
     with get_db() as conn:
-        cursor = conn.execute("SELECT id FROM personal_info WHERE id = 1")
+        cursor = conn.execute("SELECT id FROM users WHERE id = 1")
         exists = cursor.fetchone() is not None
 
         if exists:
             conn.execute(
                 """
-                UPDATE personal_info SET
+                UPDATE users SET
                     full_name = ?,
                     email = ?,
                     phone = ?,
@@ -46,7 +46,7 @@ async def update_personal_info(info: PersonalInfoUpdate):
         else:
             conn.execute(
                 """
-                INSERT INTO personal_info (id, full_name, email, phone, location, linkedin_url, summary)
+                INSERT INTO users (id, full_name, email, phone, location, linkedin_url, summary)
                 VALUES (1, ?, ?, ?, ?, ?, ?)
                 """,
                 (
@@ -60,6 +60,6 @@ async def update_personal_info(info: PersonalInfoUpdate):
             )
         conn.commit()
 
-        cursor = conn.execute("SELECT * FROM personal_info WHERE id = 1")
+        cursor = conn.execute("SELECT * FROM users WHERE id = 1")
         row = cursor.fetchone()
-        return PersonalInfo.model_validate(dict(row))
+        return User.model_validate(dict(row))

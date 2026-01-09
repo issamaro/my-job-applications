@@ -10,21 +10,21 @@ async def import_profile(profile: ProfileImport):
     """Import complete profile from JSON, replacing all existing data except photo."""
     try:
         with get_db() as conn:
-            # 1. Clear existing data (except photo)
-            conn.execute("DELETE FROM work_experiences")
-            conn.execute("DELETE FROM education")
-            conn.execute("DELETE FROM skills")
-            conn.execute("DELETE FROM projects")
-            conn.execute("DELETE FROM languages")
+            # 1. Clear existing data for user_id=1 (except photo)
+            conn.execute("DELETE FROM work_experiences WHERE user_id = 1")
+            conn.execute("DELETE FROM education WHERE user_id = 1")
+            conn.execute("DELETE FROM skills WHERE user_id = 1")
+            conn.execute("DELETE FROM projects WHERE user_id = 1")
+            conn.execute("DELETE FROM languages WHERE user_id = 1")
 
-            # 2. Update or insert personal_info (preserve photo column)
-            cursor = conn.execute("SELECT id, photo FROM personal_info WHERE id = 1")
+            # 2. Update or insert user (preserve photo column)
+            cursor = conn.execute("SELECT id, photo FROM users WHERE id = 1")
             row = cursor.fetchone()
 
             if row:
                 conn.execute(
                     """
-                    UPDATE personal_info SET
+                    UPDATE users SET
                         full_name = ?,
                         email = ?,
                         phone = ?,
@@ -46,7 +46,7 @@ async def import_profile(profile: ProfileImport):
             else:
                 conn.execute(
                     """
-                    INSERT INTO personal_info (id, full_name, email, phone, location, linkedin_url, summary)
+                    INSERT INTO users (id, full_name, email, phone, location, linkedin_url, summary)
                     VALUES (1, ?, ?, ?, ?, ?, ?)
                     """,
                     (
@@ -63,8 +63,8 @@ async def import_profile(profile: ProfileImport):
             for exp in profile.work_experiences:
                 conn.execute(
                     """
-                    INSERT INTO work_experiences (company, title, start_date, end_date, is_current, description, location)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    INSERT INTO work_experiences (company, title, start_date, end_date, is_current, description, location, user_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, 1)
                     """,
                     (
                         exp.company,
@@ -81,8 +81,8 @@ async def import_profile(profile: ProfileImport):
             for edu in profile.education:
                 conn.execute(
                     """
-                    INSERT INTO education (institution, degree, field_of_study, graduation_year, gpa, notes)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO education (institution, degree, field_of_study, graduation_year, gpa, notes, user_id)
+                    VALUES (?, ?, ?, ?, ?, ?, 1)
                     """,
                     (
                         edu.institution,
@@ -98,7 +98,7 @@ async def import_profile(profile: ProfileImport):
             for skill in profile.skills:
                 try:
                     conn.execute(
-                        "INSERT INTO skills (name) VALUES (?)",
+                        "INSERT INTO skills (name, user_id) VALUES (?, 1)",
                         (skill.name,),
                     )
                 except Exception:
@@ -109,8 +109,8 @@ async def import_profile(profile: ProfileImport):
             for project in profile.projects:
                 conn.execute(
                     """
-                    INSERT INTO projects (name, description, technologies, url, start_date, end_date)
-                    VALUES (?, ?, ?, ?, ?, ?)
+                    INSERT INTO projects (name, description, technologies, url, start_date, end_date, user_id)
+                    VALUES (?, ?, ?, ?, ?, ?, 1)
                     """,
                     (
                         project.name,
@@ -126,8 +126,8 @@ async def import_profile(profile: ProfileImport):
             for idx, lang in enumerate(profile.languages):
                 conn.execute(
                     """
-                    INSERT INTO languages (name, level, display_order)
-                    VALUES (?, ?, ?)
+                    INSERT INTO languages (name, level, display_order, user_id)
+                    VALUES (?, ?, ?, 1)
                     """,
                     (lang.name, lang.level.value, idx),
                 )

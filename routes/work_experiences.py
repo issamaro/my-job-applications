@@ -11,6 +11,7 @@ async def list_work_experiences():
         cursor = conn.execute(
             """
             SELECT * FROM work_experiences
+            WHERE user_id = 1
             ORDER BY is_current DESC, start_date DESC
             """
         )
@@ -23,8 +24,8 @@ async def create_work_experience(exp: WorkExperienceCreate):
     with get_db() as conn:
         cursor = conn.execute(
             """
-            INSERT INTO work_experiences (company, title, start_date, end_date, is_current, description, location)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO work_experiences (company, title, start_date, end_date, is_current, description, location, user_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 1)
             """,
             (
                 exp.company,

@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+import sqlite3
+from fastapi import APIRouter, HTTPException
 from database import get_db, exists_or_404
 from schemas import Skill, SkillCreate
 
@@ -11,6 +12,7 @@ async def list_skills():
         cursor = conn.execute(
             """
             SELECT * FROM skills
+            WHERE user_id = 1
             ORDER BY name ASC
             """
         )
@@ -25,17 +27,25 @@ async def create_skills(skill_input: SkillCreate):
 
     with get_db() as conn:
         for name in names:
-            cursor = conn.execute("SELECT * FROM skills WHERE name = ?", (name,))
+            cursor = conn.execute(
+                "SELECT * FROM skills WHERE name = ? AND user_id = 1", (name,)
+            )
             existing = cursor.fetchone()
             if existing:
                 created_skills.append(Skill.model_validate(dict(existing)))
             else:
-                cursor = conn.execute(
-                    "INSERT INTO skills (name) VALUES (?)",
-                    (name,),
-                )
-                skill_id = cursor.lastrowid
-                created_skills.append(Skill(id=skill_id, name=name))
+                try:
+                    cursor = conn.execute(
+                        "INSERT INTO skills (name, user_id) VALUES (?, 1)",
+                        (name,),
+                    )
+                    skill_id = cursor.lastrowid
+                    created_skills.append(Skill(id=skill_id, name=name))
+                except sqlite3.IntegrityError:
+                    raise HTTPException(
+                        status_code=409,
+                        detail=f"Skill '{name}' already exists for this user",
+                    )
         conn.commit()
 
     return created_skills

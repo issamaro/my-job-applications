@@ -41,6 +41,45 @@ def get_db():
         conn.close()
 
 
+def _migrate_skills_unique_constraint(conn):
+    """Recreate skills table with UNIQUE(user_id, name) constraint.
+
+    SQLite doesn't support ALTER TABLE for constraint changes.
+    This migration recreates the table with correct unique constraint.
+    """
+    # Check if migration already done (table has user_id column)
+    cursor = conn.execute("PRAGMA table_info(skills)")
+    columns = [row[1] for row in cursor.fetchall()]
+    if "user_id" in columns:
+        return  # Already migrated
+
+    # Step 1: Create new table with constraint
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS skills_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            user_id INTEGER DEFAULT 1,
+            UNIQUE(user_id, name)
+        )
+    """)
+
+    # Step 2: Copy data (only if new table is empty)
+    cursor = conn.execute("SELECT COUNT(*) FROM skills_new")
+    if cursor.fetchone()[0] == 0:
+        conn.execute("""
+            INSERT INTO skills_new (id, name, user_id)
+            SELECT id, name, 1 FROM skills
+        """)
+
+    # Step 3: Drop old table
+    conn.execute("DROP TABLE IF EXISTS skills")
+
+    # Step 4: Rename new to old
+    conn.execute("ALTER TABLE skills_new RENAME TO skills")
+
+    conn.commit()
+
+
 def _migrate_generated_resumes_fk_cascade(conn):
     """Recreate generated_resumes table with FK CASCADE constraint.
 
@@ -116,6 +155,19 @@ def init_db():
                 summary TEXT,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 CHECK (id = 1)
+            );
+
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL,
+                full_name TEXT NOT NULL,
+                phone TEXT,
+                location TEXT,
+                linkedin_url TEXT,
+                summary TEXT,
+                photo TEXT,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             );
 
             CREATE TABLE IF NOT EXISTS work_experiences (
@@ -208,6 +260,11 @@ def init_db():
             "ALTER TABLE generated_resumes ADD COLUMN job_analysis TEXT",
             "ALTER TABLE job_descriptions ADD COLUMN user_id INTEGER DEFAULT 1",
             "ALTER TABLE generated_resumes ADD COLUMN user_id INTEGER DEFAULT 1",
+            # User/Profile Domain Redesign: add user_id to profile tables
+            "ALTER TABLE work_experiences ADD COLUMN user_id INTEGER DEFAULT 1",
+            "ALTER TABLE education ADD COLUMN user_id INTEGER DEFAULT 1",
+            "ALTER TABLE projects ADD COLUMN user_id INTEGER DEFAULT 1",
+            "ALTER TABLE languages ADD COLUMN user_id INTEGER DEFAULT 1",
         ]
         for sql in migrations:
             try:
@@ -248,3 +305,22 @@ def init_db():
         # Job Application Domain Redesign: Table recreation for FK CASCADE
         # SQLite doesn't support ALTER TABLE for FK modification, must recreate table
         _migrate_generated_resumes_fk_cascade(conn)
+
+        # User/Profile Domain Redesign: Migrate personal_info data to users table
+        cursor = conn.execute("SELECT COUNT(*) FROM users WHERE id = 1")
+        if cursor.fetchone()[0] == 0:
+            # Check if personal_info has data to migrate
+            cursor = conn.execute("SELECT COUNT(*) FROM personal_info WHERE id = 1")
+            if cursor.fetchone()[0] > 0:
+                conn.execute("""
+                    INSERT INTO users (id, email, full_name, phone, location, linkedin_url, summary, photo, updated_at)
+                    SELECT 1, email, full_name, phone, location, linkedin_url, summary, photo, updated_at
+                    FROM personal_info WHERE id = 1
+                """)
+                conn.commit()
+
+        # User/Profile Domain Redesign: Recreate skills with UNIQUE(user_id, name) constraint
+        _migrate_skills_unique_constraint(conn)
+
+        # User/Profile Domain Redesign: Drop personal_info table (data migrated to users)
+        conn.execute("DROP TABLE IF EXISTS personal_info")
