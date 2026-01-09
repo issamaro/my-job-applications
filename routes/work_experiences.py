@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException
-from database import get_db
+from fastapi import APIRouter
+from database import get_db, get_or_404, exists_or_404, fetch_one
 from schemas import WorkExperience, WorkExperienceCreate, WorkExperienceUpdate
 
 router = APIRouter(prefix="/api/work-experiences", tags=["work-experiences"])
@@ -37,29 +37,19 @@ async def create_work_experience(exp: WorkExperienceCreate):
             ),
         )
         conn.commit()
-        exp_id = cursor.lastrowid
-
-        cursor = conn.execute("SELECT * FROM work_experiences WHERE id = ?", (exp_id,))
-        row = cursor.fetchone()
-        return WorkExperience.model_validate(dict(row))
+        return fetch_one(conn, "work_experiences", cursor.lastrowid, WorkExperience)
 
 
 @router.get("/{exp_id}", response_model=WorkExperience)
 async def get_work_experience(exp_id: int):
     with get_db() as conn:
-        cursor = conn.execute("SELECT * FROM work_experiences WHERE id = ?", (exp_id,))
-        row = cursor.fetchone()
-        if row is None:
-            raise HTTPException(status_code=404, detail="Work experience not found")
-        return WorkExperience.model_validate(dict(row))
+        return get_or_404(conn, "work_experiences", exp_id, "Work experience", WorkExperience)
 
 
 @router.put("/{exp_id}", response_model=WorkExperience)
 async def update_work_experience(exp_id: int, exp: WorkExperienceUpdate):
     with get_db() as conn:
-        cursor = conn.execute("SELECT id FROM work_experiences WHERE id = ?", (exp_id,))
-        if cursor.fetchone() is None:
-            raise HTTPException(status_code=404, detail="Work experience not found")
+        exists_or_404(conn, "work_experiences", exp_id, "Work experience")
 
         conn.execute(
             """
@@ -86,19 +76,13 @@ async def update_work_experience(exp_id: int, exp: WorkExperienceUpdate):
             ),
         )
         conn.commit()
-
-        cursor = conn.execute("SELECT * FROM work_experiences WHERE id = ?", (exp_id,))
-        row = cursor.fetchone()
-        return WorkExperience.model_validate(dict(row))
+        return fetch_one(conn, "work_experiences", exp_id, WorkExperience)
 
 
 @router.delete("/{exp_id}")
 async def delete_work_experience(exp_id: int):
     with get_db() as conn:
-        cursor = conn.execute("SELECT id FROM work_experiences WHERE id = ?", (exp_id,))
-        if cursor.fetchone() is None:
-            raise HTTPException(status_code=404, detail="Work experience not found")
-
+        exists_or_404(conn, "work_experiences", exp_id, "Work experience")
         conn.execute("DELETE FROM work_experiences WHERE id = ?", (exp_id,))
         conn.commit()
         return {"deleted": exp_id}

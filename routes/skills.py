@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException
-from database import get_db
+from fastapi import APIRouter
+from database import get_db, exists_or_404
 from schemas import Skill, SkillCreate
 
 router = APIRouter(prefix="/api/skills", tags=["skills"])
@@ -44,10 +44,7 @@ async def create_skills(skill_input: SkillCreate):
 @router.delete("/{skill_id}")
 async def delete_skill(skill_id: int):
     with get_db() as conn:
-        cursor = conn.execute("SELECT id FROM skills WHERE id = ?", (skill_id,))
-        if cursor.fetchone() is None:
-            raise HTTPException(status_code=404, detail="Skill not found")
-
+        exists_or_404(conn, "skills", skill_id, "Skill")
         conn.execute("DELETE FROM skills WHERE id = ?", (skill_id,))
         conn.commit()
         return {"deleted": skill_id}

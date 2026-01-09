@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException
-from database import get_db
+from fastapi import APIRouter
+from database import get_db, get_or_404, exists_or_404, fetch_one
 from schemas import Education, EducationCreate, EducationUpdate
 
 router = APIRouter(prefix="/api/education", tags=["education"])
@@ -36,29 +36,19 @@ async def create_education(edu: EducationCreate):
             ),
         )
         conn.commit()
-        edu_id = cursor.lastrowid
-
-        cursor = conn.execute("SELECT * FROM education WHERE id = ?", (edu_id,))
-        row = cursor.fetchone()
-        return Education.model_validate(dict(row))
+        return fetch_one(conn, "education", cursor.lastrowid, Education)
 
 
 @router.get("/{edu_id}", response_model=Education)
 async def get_education(edu_id: int):
     with get_db() as conn:
-        cursor = conn.execute("SELECT * FROM education WHERE id = ?", (edu_id,))
-        row = cursor.fetchone()
-        if row is None:
-            raise HTTPException(status_code=404, detail="Education not found")
-        return Education.model_validate(dict(row))
+        return get_or_404(conn, "education", edu_id, "Education", Education)
 
 
 @router.put("/{edu_id}", response_model=Education)
 async def update_education(edu_id: int, edu: EducationUpdate):
     with get_db() as conn:
-        cursor = conn.execute("SELECT id FROM education WHERE id = ?", (edu_id,))
-        if cursor.fetchone() is None:
-            raise HTTPException(status_code=404, detail="Education not found")
+        exists_or_404(conn, "education", edu_id, "Education")
 
         conn.execute(
             """
@@ -83,19 +73,13 @@ async def update_education(edu_id: int, edu: EducationUpdate):
             ),
         )
         conn.commit()
-
-        cursor = conn.execute("SELECT * FROM education WHERE id = ?", (edu_id,))
-        row = cursor.fetchone()
-        return Education.model_validate(dict(row))
+        return fetch_one(conn, "education", edu_id, Education)
 
 
 @router.delete("/{edu_id}")
 async def delete_education(edu_id: int):
     with get_db() as conn:
-        cursor = conn.execute("SELECT id FROM education WHERE id = ?", (edu_id,))
-        if cursor.fetchone() is None:
-            raise HTTPException(status_code=404, detail="Education not found")
-
+        exists_or_404(conn, "education", edu_id, "Education")
         conn.execute("DELETE FROM education WHERE id = ?", (edu_id,))
         conn.commit()
         return {"deleted": edu_id}

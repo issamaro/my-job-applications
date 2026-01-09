@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel
-from database import get_db
+from database import get_db, get_or_404, exists_or_404, fetch_one
 from schemas import Language, LanguageCreate, LanguageUpdate
 
 router = APIRouter(prefix="/api/languages", tags=["languages"])
@@ -38,11 +38,7 @@ async def create_language(lang: LanguageCreate):
             (lang.name, lang.level.value, next_order),
         )
         conn.commit()
-        lang_id = cursor.lastrowid
-
-        cursor = conn.execute("SELECT * FROM languages WHERE id = ?", (lang_id,))
-        row = cursor.fetchone()
-        return Language.model_validate(dict(row))
+        return fetch_one(conn, "languages", cursor.lastrowid, Language)
 
 
 @router.put("/reorder", response_model=list[Language])
@@ -68,19 +64,13 @@ async def reorder_languages(items: list[ReorderItem]):
 @router.get("/{lang_id}", response_model=Language)
 async def get_language(lang_id: int):
     with get_db() as conn:
-        cursor = conn.execute("SELECT * FROM languages WHERE id = ?", (lang_id,))
-        row = cursor.fetchone()
-        if row is None:
-            raise HTTPException(status_code=404, detail="Language not found")
-        return Language.model_validate(dict(row))
+        return get_or_404(conn, "languages", lang_id, "Language", Language)
 
 
 @router.put("/{lang_id}", response_model=Language)
 async def update_language(lang_id: int, lang: LanguageUpdate):
     with get_db() as conn:
-        cursor = conn.execute("SELECT id FROM languages WHERE id = ?", (lang_id,))
-        if cursor.fetchone() is None:
-            raise HTTPException(status_code=404, detail="Language not found")
+        exists_or_404(conn, "languages", lang_id, "Language")
 
         conn.execute(
             """
@@ -93,19 +83,13 @@ async def update_language(lang_id: int, lang: LanguageUpdate):
             (lang.name, lang.level.value, lang_id),
         )
         conn.commit()
-
-        cursor = conn.execute("SELECT * FROM languages WHERE id = ?", (lang_id,))
-        row = cursor.fetchone()
-        return Language.model_validate(dict(row))
+        return fetch_one(conn, "languages", lang_id, Language)
 
 
 @router.delete("/{lang_id}")
 async def delete_language(lang_id: int):
     with get_db() as conn:
-        cursor = conn.execute("SELECT id FROM languages WHERE id = ?", (lang_id,))
-        if cursor.fetchone() is None:
-            raise HTTPException(status_code=404, detail="Language not found")
-
+        exists_or_404(conn, "languages", lang_id, "Language")
         conn.execute("DELETE FROM languages WHERE id = ?", (lang_id,))
         conn.commit()
         return {"deleted": lang_id}
