@@ -35,3 +35,44 @@
     {@render children()}
   </div>
 </section>
+
+<style>
+  .section {
+    margin-bottom: var(--spacing-section);
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-grid);
+    border-bottom: 1px solid var(--color-border);
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      background: rgb(0 0 0 / 0.02);
+    }
+  }
+
+  .section-title {
+    margin: 0;
+    font-size: var(--font-size-heading);
+  }
+
+  .section-actions {
+    display: flex;
+    gap: var(--spacing-grid);
+    align-items: center;
+  }
+
+  .section-content {
+    padding: var(--spacing-grid);
+  }
+
+  .section-content.collapsed {
+    display: none;
+  }
+</style>

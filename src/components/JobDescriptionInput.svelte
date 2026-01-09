@@ -61,3 +61,81 @@
     </button>
   </div>
 </div>
+
+<style>
+  .jd-input {
+    h2 {
+      margin-bottom: var(--spacing-grid);
+    }
+
+    .instructions {
+      color: rgb(var(--color-text-rgb) / 0.7);
+      margin-bottom: var(--spacing-section);
+    }
+
+    textarea {
+      min-height: 200px;
+
+      &.dimmed {
+        opacity: 0.6;
+        background: rgb(0 0 0 / 0.02);
+      }
+    }
+  }
+
+  .jd-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+  }
+
+  .char-counter {
+    font-size: 14px;
+    color: rgb(var(--color-text-rgb) / 0.6);
+
+    &.valid {
+      color: var(--color-success);
+    }
+  }
+
+  .loaded-indicator {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    margin-bottom: var(--spacing-grid);
+    background: rgb(var(--color-primary-rgb) / 0.05);
+    border-left: 3px solid var(--color-primary);
+    border-radius: 2px;
+  }
+
+  .loaded-badge {
+    font-size: 14px;
+    color: var(--color-primary);
+  }
+
+  .clear-link {
+    background: none;
+    border: none;
+    color: rgb(var(--color-text-rgb) / 0.6);
+    cursor: pointer;
+    font-size: 14px;
+
+    &:hover {
+      color: var(--color-text);
+      text-decoration: underline;
+    }
+
+    &:focus {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+  }
+
+  .button-row {
+    display: flex;
+    gap: var(--spacing-grid);
+    margin-top: var(--spacing-grid);
+  }
+</style>

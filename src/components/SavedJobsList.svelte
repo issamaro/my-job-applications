@@ -108,3 +108,57 @@
   onCancel={() => deleteId = null}
 />
 {/if}
+
+<style>
+  .saved-jobs-section {
+    margin-top: var(--spacing-section);
+  }
+
+  .saved-jobs-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: var(--spacing-grid);
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+
+    h3 {
+      margin: 0;
+    }
+
+    &:hover {
+      background: rgb(0 0 0 / 0.02);
+    }
+
+    &:focus {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+  }
+
+  .collapse-toggle {
+    font-family: monospace;
+    color: rgb(var(--color-text-rgb) / 0.6);
+  }
+
+  .saved-jobs-content {
+    border: 1px solid var(--color-border);
+    border-top: none;
+    border-radius: 0 0 2px 2px;
+  }
+
+  .error-state {
+    padding: var(--spacing-section);
+    text-align: center;
+    color: var(--color-error);
+
+    p {
+      margin: 0;
+    }
+  }
+</style>

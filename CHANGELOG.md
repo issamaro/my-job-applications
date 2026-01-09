@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-01-09] - SCSS to CSS Custom Properties Migration
+
+### Changed
+- Migrated from SCSS to CSS Custom Properties (CSS variables)
+- Replaced 20 SCSS files with single `global.css` + Svelte scoped styles
+- Simplified build scripts from 4 to 2 (`build`, `dev`)
+- Removed sass dependency from project
+
+### Added
+- `src/styles/global.css` with CSS Custom Properties for design tokens
+- RGB color variants (`--color-*-rgb`) for alpha transparency support
+- Scoped `<style>` blocks in 14 Svelte components
+- CSS native nesting for cleaner style organization
+
+### Removed
+- sass package dependency
+- `build:css` and `watch:css` npm scripts
+- 20 SCSS files (tokens, reset, layout, utilities, components, views)
+- `src/styles/components/` and `src/styles/views/` directories
+
+### Technical
+- Build time unchanged (~1.1s)
+- Bundle size: 48KB CSS, 141KB JS
+- No visual changes (pure refactoring)
+- Enables future dark mode implementation
+
+---
+
 ## [2026-01-08] - Multi-Language Resume Generation
 
 ### Added

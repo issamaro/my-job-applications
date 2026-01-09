@@ -127,3 +127,41 @@
     <span class="saved-indicator" class:fading={!saving}>Saved</span>
   {/if}
 {/if}
+
+<style>
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    font-size: 14px;
+    background: rgb(var(--color-primary-rgb) / 0.1);
+    border: 1px solid rgb(var(--color-primary-rgb) / 0.3);
+    border-radius: 2px;
+  }
+
+  .tag-remove {
+    padding: 0;
+    font-size: 16px;
+    line-height: 1;
+    color: rgb(var(--color-text-rgb) / 0.6);
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      color: var(--color-error);
+    }
+
+    &:focus {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+  }
+</style>

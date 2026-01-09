@@ -232,3 +232,31 @@
     />
   {/if}
 </div>
+
+<style>
+  .resume-generator {
+    padding: 0;
+  }
+
+  .profile-incomplete {
+    text-align: center;
+    padding: calc(var(--spacing-section) * 2);
+    border: 1px solid var(--color-border);
+    border-radius: 2px;
+
+    p {
+      margin-bottom: var(--spacing-section);
+    }
+  }
+
+  .generator-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--spacing-grid);
+    margin-top: var(--spacing-section);
+  }
+
+  .loading-actions {
+    margin-top: var(--spacing-grid);
+  }
+</style>

@@ -68,3 +68,11 @@
 <Section title="Projects" onAdd={() => projectsRef?.add()}>
   <Projects bind:this={projectsRef} />
 </Section>
+
+<style>
+  .profile-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--spacing-grid);
+  }
+</style>

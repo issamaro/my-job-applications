@@ -7,11 +7,8 @@
     "node": ">=20.0.0 <21.0.0"
   },
   "scripts": {
-    "build": "npm run build:css && rollup -c",
-    "build:css": "sass src/styles/main.scss:public/build/global.css --style=compressed",
-    "watch": "rollup -c -w",
-    "watch:css": "sass src/styles/main.scss:public/build/global.css --watch",
-    "dev": "npm run build:css && rollup -c -w"
+    "build": "rollup -c",
+    "dev": "rollup -c -w"
   },
   "dependencies": {
     "cropperjs": "^2.0.0"
@@ -23,7 +20,6 @@
     "@rollup/plugin-node-resolve": "^15.0.0",
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-terser": "^0.4.0",
-    "rollup-plugin-css-only": "^4.5.0",
-    "sass": "^1.80.0"
+    "rollup-plugin-css-only": "^4.5.0"
   }
 }

@@ -335,3 +335,197 @@
   </div>
 </div>
 {/if}
+
+<style>
+  .import-modal {
+    max-width: 480px;
+    width: 90%;
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-grid);
+
+    .dialog-title {
+      margin: 0;
+    }
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: rgb(var(--color-text-rgb) / 0.6);
+    padding: 0;
+    line-height: 1;
+
+    &:hover {
+      color: var(--color-text);
+    }
+
+    &:focus {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+  }
+
+  .drop-zone {
+    border: 2px dashed var(--color-border);
+    border-radius: 2px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+
+    &:hover,
+    &.dragging {
+      border-color: var(--color-primary);
+      background: rgb(var(--color-primary-rgb) / 0.02);
+    }
+
+    &:focus {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
+    &.error {
+      border-color: var(--color-error);
+    }
+  }
+
+  .file-input {
+    display: none;
+  }
+
+  .drop-text {
+    margin: 0;
+    color: rgb(var(--color-text-rgb) / 0.7);
+  }
+
+  .error-messages {
+    margin-top: var(--spacing-grid);
+  }
+
+  .sample-link {
+    margin-top: var(--spacing-grid);
+    text-align: center;
+
+    a {
+      color: var(--color-primary);
+      font-size: 14px;
+
+      &:hover {
+        text-decoration: none;
+      }
+
+      &:focus {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+      }
+    }
+  }
+
+  .validating-state,
+  .importing-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px;
+    gap: var(--spacing-grid);
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgb(var(--color-primary-rgb) / 0.3);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .spinner-small {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgb(255 255 255 / 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  .preview-state {
+    padding: var(--spacing-grid) 0;
+  }
+
+  .preview-counts {
+    h3 {
+      margin: 0 0 var(--spacing-field);
+      font-size: var(--font-size-body);
+    }
+
+    ul {
+      margin: 0;
+      padding-left: var(--spacing-section);
+      font-size: 14px;
+    }
+
+    li {
+      margin: 4px 0;
+    }
+  }
+
+  .warning-box {
+    margin-top: var(--spacing-grid);
+    padding: var(--spacing-field);
+    background: rgb(204 102 0 / 0.05);
+    border: 1px solid rgb(204 102 0 / 0.2);
+    border-radius: 2px;
+  }
+
+  .warning-text {
+    margin: 0;
+    color: #c60;
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  .photo-note {
+    margin: 8px 0 0;
+    color: rgb(var(--color-text-rgb) / 0.7);
+    font-size: 14px;
+  }
+
+  .dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(0 0 0 / 0.5);
+    z-index: 1000;
+  }
+
+  .dialog {
+    padding: var(--spacing-section);
+    background: var(--color-background);
+    border-radius: 2px;
+  }
+
+  .dialog-title {
+    margin: 0 0 var(--spacing-grid);
+    font-size: var(--font-size-heading);
+  }
+
+  .dialog-actions {
+    display: flex;
+    gap: var(--spacing-grid);
+    justify-content: flex-end;
+    margin-top: var(--spacing-section);
+  }
+</style>

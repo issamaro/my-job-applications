@@ -32,7 +32,6 @@ cleanup() {
     echo -e "\n${YELLOW}Shutting down servers...${NC}"
     kill $BACKEND_PID 2>/dev/null || true
     kill $FRONTEND_PID 2>/dev/null || true
-    kill $SASS_PID 2>/dev/null || true
     wait 2>/dev/null
     echo -e "${GREEN}Servers stopped.${NC}"
     exit 0
@@ -56,18 +55,9 @@ if [ ! -d "node_modules" ]; then
     npm install
 fi
 
-# Build CSS first
-echo -e "${BLUE}Building CSS...${NC}"
-npm run build:css
-
-# Start Sass watcher in background
-echo -e "${GREEN}Starting Sass watcher...${NC}"
-npm run watch:css &
-SASS_PID=$!
-
-# Start Rollup/Svelte watcher in background
+# Start Rollup/Svelte watcher in background (CSS is bundled automatically)
 echo -e "${GREEN}Starting Svelte build watcher...${NC}"
-npm run watch &
+npm run dev &
 FRONTEND_PID=$!
 
 # Give frontend a moment to start
