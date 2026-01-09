@@ -68,11 +68,15 @@ class ResumeGeneratorService:
                     for lang in profile_dict["languages"]
                 ]
 
+            # Store job_analysis directly in resume record (isolation per resume)
+            job_analysis = llm_result.get("job_analysis")
+            job_analysis_json = json.dumps(job_analysis) if job_analysis else None
+
             cursor = conn.execute(
                 """
                 INSERT INTO generated_resumes
-                (job_description_id, job_title, company_name, match_score, resume_content, language)
-                VALUES (?, ?, ?, ?, ?, ?)
+                (job_description_id, job_title, company_name, match_score, resume_content, language, job_analysis)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     jd_id,
@@ -81,6 +85,7 @@ class ResumeGeneratorService:
                     llm_result.get("match_score"),
                     json.dumps(resume_content),
                     language,
+                    job_analysis_json,
                 ),
             )
             conn.commit()
@@ -91,29 +96,19 @@ class ResumeGeneratorService:
             )
             row = cursor.fetchone()
 
-            return self._row_to_response(dict(row), llm_result.get("job_analysis"))
+            return self._row_to_response(dict(row))
 
     def get_resume(self, resume_id: int) -> GeneratedResumeResponse | None:
         with get_db() as conn:
             cursor = conn.execute(
-                """
-                SELECT gr.*, jd.parsed_data as job_analysis_data
-                FROM generated_resumes gr
-                JOIN job_descriptions jd ON gr.job_description_id = jd.id
-                WHERE gr.id = ?
-                """,
+                "SELECT * FROM generated_resumes WHERE id = ?",
                 (resume_id,),
             )
             row = cursor.fetchone()
             if row is None:
                 return None
 
-            row_dict = dict(row)
-            job_analysis = None
-            if row_dict.get("job_analysis_data"):
-                job_analysis = json.loads(row_dict["job_analysis_data"])
-
-            return self._row_to_response(row_dict, job_analysis)
+            return self._row_to_response(dict(row))
 
     def get_history(self) -> list[dict]:
         with get_db() as conn:
@@ -169,9 +164,7 @@ class ResumeGeneratorService:
             conn.commit()
             return cursor.rowcount > 0
 
-    def _row_to_response(
-        self, row: dict, job_analysis: dict | None = None
-    ) -> GeneratedResumeResponse:
+    def _row_to_response(self, row: dict) -> GeneratedResumeResponse:
         resume_content = json.loads(row["resume_content"]) if row.get("resume_content") else {}
 
         # Ensure photo from current profile is included (for European templates)
@@ -201,9 +194,11 @@ class ResumeGeneratorService:
             languages=languages,
         )
 
+        # Read job_analysis directly from resume record (isolation per resume)
         job_analysis_obj = None
-        if job_analysis:
-            job_analysis_obj = JobAnalysis(**job_analysis)
+        if row.get("job_analysis"):
+            job_analysis_data = json.loads(row["job_analysis"])
+            job_analysis_obj = JobAnalysis(**job_analysis_data)
 
         return GeneratedResumeResponse(
             id=row["id"],

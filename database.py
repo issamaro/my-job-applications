@@ -41,6 +41,68 @@ def get_db():
         conn.close()
 
 
+def _migrate_generated_resumes_fk_cascade(conn):
+    """Recreate generated_resumes table with FK CASCADE constraint.
+
+    SQLite doesn't support ALTER TABLE for FK modification.
+    This migration recreates the table with correct ON DELETE CASCADE.
+    """
+    # Check if migration already done (new table has CASCADE in schema)
+    cursor = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='generated_resumes'"
+    )
+    row = cursor.fetchone()
+    if row and "ON DELETE CASCADE" in (row[0] or ""):
+        return  # Already migrated
+
+    # Step 1: Create new table with correct FK
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS generated_resumes_new (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            job_description_id INTEGER NOT NULL,
+            job_title TEXT,
+            company_name TEXT,
+            match_score REAL,
+            resume_content TEXT NOT NULL,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            updated_at TEXT,
+            jd_version_id INTEGER,
+            language TEXT DEFAULT 'en',
+            job_analysis TEXT,
+            user_id INTEGER DEFAULT 1,
+            FOREIGN KEY (job_description_id) REFERENCES job_descriptions(id) ON DELETE CASCADE
+        )
+    """)
+
+    # Step 2: Copy data (only if new table is empty)
+    cursor = conn.execute("SELECT COUNT(*) FROM generated_resumes_new")
+    if cursor.fetchone()[0] == 0:
+        conn.execute("""
+            INSERT INTO generated_resumes_new
+            (id, job_description_id, job_title, company_name, match_score,
+             resume_content, created_at, updated_at, jd_version_id, language,
+             job_analysis, user_id)
+            SELECT id, job_description_id, job_title, company_name, match_score,
+                   resume_content, created_at, updated_at, jd_version_id, language,
+                   job_analysis, user_id
+            FROM generated_resumes
+        """)
+
+    # Step 3: Drop old table
+    conn.execute("DROP TABLE IF EXISTS generated_resumes")
+
+    # Step 4: Rename new to old
+    conn.execute("ALTER TABLE generated_resumes_new RENAME TO generated_resumes")
+
+    # Step 5: Recreate index
+    conn.execute("""
+        CREATE INDEX IF NOT EXISTS idx_generated_resumes_created
+        ON generated_resumes(created_at DESC)
+    """)
+
+    conn.commit()
+
+
 def init_db():
     with get_db() as conn:
         conn.executescript("""
@@ -142,6 +204,10 @@ def init_db():
             "ALTER TABLE personal_info ADD COLUMN photo TEXT",
             # Multi-Language Resume Generation feature
             "ALTER TABLE generated_resumes ADD COLUMN language TEXT DEFAULT 'en'",
+            # Job Application Domain Redesign: job_analysis per resume + multi-user prep
+            "ALTER TABLE generated_resumes ADD COLUMN job_analysis TEXT",
+            "ALTER TABLE job_descriptions ADD COLUMN user_id INTEGER DEFAULT 1",
+            "ALTER TABLE generated_resumes ADD COLUMN user_id INTEGER DEFAULT 1",
         ]
         for sql in migrations:
             try:
@@ -168,3 +234,17 @@ def init_db():
             CREATE INDEX IF NOT EXISTS idx_job_description_versions_jd_id
             ON job_description_versions(job_description_id);
         """)
+
+        # Job Application Domain Redesign: Backfill job_analysis from JD parsed_data
+        conn.execute("""
+            UPDATE generated_resumes
+            SET job_analysis = (
+                SELECT parsed_data FROM job_descriptions
+                WHERE job_descriptions.id = generated_resumes.job_description_id
+            )
+            WHERE job_analysis IS NULL
+        """)
+
+        # Job Application Domain Redesign: Table recreation for FK CASCADE
+        # SQLite doesn't support ALTER TABLE for FK modification, must recreate table
+        _migrate_generated_resumes_fk_cascade(conn)

@@ -111,14 +111,8 @@ class JobDescriptionService:
             return self.get(jd_id)
 
     def delete(self, jd_id: int) -> bool:
-        """Delete JD and cascade to resumes + versions"""
+        """Delete JD - FK CASCADE handles generated_resumes and versions automatically"""
         with get_db() as conn:
-            # Manual delete for legacy FK without CASCADE
-            conn.execute(
-                "DELETE FROM generated_resumes WHERE job_description_id = ?",
-                (jd_id,),
-            )
-            # job_description_versions has CASCADE, auto-deletes
             cursor = conn.execute(
                 "DELETE FROM job_descriptions WHERE id = ?",
                 (jd_id,),

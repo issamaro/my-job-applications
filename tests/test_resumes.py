@@ -464,3 +464,156 @@ def test_generate_with_nonexistent_job_description_id(client):
     )
     assert response.status_code == 400
     assert "not found" in response.json()["detail"].lower()
+
+
+# Tests for Job Analysis Isolation per Resume
+
+
+@patch("services.resume_generator.llm_service.analyze_and_generate")
+def test_job_analysis_stored_in_resume(mock_llm, client):
+    """Test that job_analysis is stored directly in the resume record."""
+    _create_work_experience(client)
+
+    mock_llm.return_value = {
+        "job_title": "Software Engineer",
+        "company_name": "TechCorp",
+        "match_score": 85.5,
+        "job_analysis": {
+            "required_skills": [{"name": "Python", "matched": True}],
+            "preferred_skills": [{"name": "Docker", "matched": False}],
+        },
+        "resume": {
+            "summary": "Test",
+            "work_experiences": [],
+            "skills": [],
+            "education": [],
+            "projects": [],
+        },
+    }
+
+    long_jd = "A" * 150
+    response = client.post(
+        "/api/resumes/generate",
+        json={"job_description": long_jd},
+    )
+    assert response.status_code == 200
+    result = response.json()
+
+    # Verify job_analysis is in the response
+    assert result["job_analysis"] is not None
+    assert len(result["job_analysis"]["required_skills"]) == 1
+    assert result["job_analysis"]["required_skills"][0]["name"] == "Python"
+
+
+@patch("services.resume_generator.llm_service.analyze_and_generate")
+def test_job_analysis_persists_on_page_refresh(mock_llm, client):
+    """Test that job_analysis persists when retrieving resume by ID (page refresh)."""
+    _create_work_experience(client)
+
+    mock_llm.return_value = {
+        "job_title": "Software Engineer",
+        "company_name": "TechCorp",
+        "match_score": 85.5,
+        "job_analysis": {
+            "required_skills": [{"name": "Python", "matched": True}],
+            "preferred_skills": [],
+        },
+        "resume": {
+            "summary": "Test",
+            "work_experiences": [],
+            "skills": [],
+            "education": [],
+            "projects": [],
+        },
+    }
+
+    long_jd = "A" * 150
+    create_response = client.post(
+        "/api/resumes/generate",
+        json={"job_description": long_jd},
+    )
+    resume_id = create_response.json()["id"]
+
+    # Simulate page refresh - get resume by ID
+    get_response = client.get(f"/api/resumes/{resume_id}")
+    assert get_response.status_code == 200
+    result = get_response.json()
+
+    # Verify job_analysis is still there
+    assert result["job_analysis"] is not None
+    assert result["job_analysis"]["required_skills"][0]["name"] == "Python"
+
+
+@patch("services.resume_generator.llm_service.analyze_and_generate")
+def test_two_resumes_same_jd_independent_job_analysis(mock_llm, client):
+    """Test that two resumes from same JD have independent job_analysis."""
+    _create_work_experience(client)
+
+    # Create a job description first
+    jd_response = _create_job_description(client)
+    jd_id = jd_response.json()["id"]
+
+    # First resume generation - Python skills matched
+    mock_llm.return_value = {
+        "job_title": "Software Engineer",
+        "company_name": "TechCorp",
+        "match_score": 85.5,
+        "job_analysis": {
+            "required_skills": [{"name": "Python", "matched": True}],
+            "preferred_skills": [],
+        },
+        "resume": {
+            "summary": "Python focused",
+            "work_experiences": [],
+            "skills": [],
+            "education": [],
+            "projects": [],
+        },
+    }
+
+    long_jd = "A" * 150
+    response1 = client.post(
+        "/api/resumes/generate",
+        json={"job_description": long_jd, "job_description_id": jd_id},
+    )
+    resume1_id = response1.json()["id"]
+
+    # Second resume generation - Java skills matched (different analysis)
+    mock_llm.return_value = {
+        "job_title": "Software Engineer",
+        "company_name": "TechCorp",
+        "match_score": 75.0,
+        "job_analysis": {
+            "required_skills": [{"name": "Java", "matched": True}],
+            "preferred_skills": [{"name": "Spring", "matched": True}],
+        },
+        "resume": {
+            "summary": "Java focused",
+            "work_experiences": [],
+            "skills": [],
+            "education": [],
+            "projects": [],
+        },
+    }
+
+    response2 = client.post(
+        "/api/resumes/generate",
+        json={"job_description": long_jd, "job_description_id": jd_id},
+    )
+    resume2_id = response2.json()["id"]
+
+    # Verify both resumes exist and have different job_analysis
+    get1 = client.get(f"/api/resumes/{resume1_id}")
+    get2 = client.get(f"/api/resumes/{resume2_id}")
+
+    assert get1.status_code == 200
+    assert get2.status_code == 200
+
+    # First resume should have Python
+    assert get1.json()["job_analysis"]["required_skills"][0]["name"] == "Python"
+    # Second resume should have Java
+    assert get2.json()["job_analysis"]["required_skills"][0]["name"] == "Java"
+
+    # Verify they're linked to the same JD
+    jd_resumes = client.get(f"/api/job-descriptions/{jd_id}/resumes")
+    assert len(jd_resumes.json()) == 2

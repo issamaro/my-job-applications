@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-01-09] - Job Application Domain Redesign
+
+### Changed
+- Each resume now stores its own job_analysis independently
+- Regenerating Resume B no longer overwrites Resume A's analysis
+- FK CASCADE on generated_resumes handles automatic deletion when JD deleted
+
+### Added
+- `job_analysis` column in generated_resumes table
+- `user_id` columns in job_descriptions and generated_resumes (multi-user prep)
+- 3 new tests for job analysis isolation
+
+### Removed
+- Manual cascade delete code in JobDescriptionService.delete()
+- JOIN to job_descriptions.parsed_data in get_resume()
+
+### Technical
+- Table recreation migration for FK CASCADE (SQLite limitation)
+- Backfill migration copies existing parsed_data to resume records
+
+---
+
 ## [2026-01-09] - Job Requirements Analysis Persistence Fix
 
 ### Fixed
