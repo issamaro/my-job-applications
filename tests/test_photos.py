@@ -114,8 +114,9 @@ def test_data_url_too_large(client):
     """PUT with oversized data returns 422."""
     create_personal_info(client)
 
-    # Create a data URL larger than 500,000 characters
-    large_base64 = base64.b64encode(b"x" * 400000).decode()
+    # Create a data URL larger than 15MB limit
+    # Base64 encoding increases size by ~33%, so 12MB raw data -> ~16MB base64
+    large_base64 = base64.b64encode(b"x" * 12_000_000).decode()
     large_data_url = f"data:image/jpeg;base64,{large_base64}"
 
     response = client.put("/api/photos", json={"image_data": large_data_url})
