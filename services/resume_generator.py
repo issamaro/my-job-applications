@@ -64,16 +64,16 @@ class ResumeGeneratorService:
                     conn.execute(
                         """
                         UPDATE job_descriptions
-                        SET title = ?, company_name = ?, updated_at = CURRENT_TIMESTAMP
+                        SET title = ?, company_name = ?, parsed_data = ?, updated_at = CURRENT_TIMESTAMP
                         WHERE id = ?
                         """,
-                        (title, company_name, jd_id)
+                        (title, company_name, json.dumps(llm_result.get("job_analysis", {})), jd_id)
                     )
                 else:
-                    # Just update timestamp
+                    # Update parsed_data and timestamp
                     conn.execute(
-                        "UPDATE job_descriptions SET updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                        (jd_id,)
+                        "UPDATE job_descriptions SET parsed_data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                        (json.dumps(llm_result.get("job_analysis", {})), jd_id)
                     )
                 conn.commit()
             else:

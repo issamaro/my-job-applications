@@ -205,3 +205,118 @@ def test_delete_removes_job_description(mock_llm, client):
 
     history_response = client.get("/api/resumes")
     assert history_response.json() == []
+
+
+@patch("services.resume_generator.llm_service.analyze_and_generate")
+def test_job_analysis_persists_with_existing_jd(mock_llm, client):
+    """Test that job_analysis is saved when generating with existing job_description_id."""
+    _setup_profile(client)
+
+    # First, create a job description via save endpoint
+    save_response = client.post(
+        "/api/job-descriptions",
+        json={"raw_text": "Looking for Senior Python Developer with FastAPI experience. " + "A" * 100},
+    )
+    assert save_response.status_code == 201
+    jd_id = save_response.json()["id"]
+
+    # Now generate resume with that existing JD
+    mock_llm.return_value = {
+        "job_title": "Senior Python Developer",
+        "company_name": "TechStartup",
+        "match_score": 88,
+        "job_analysis": {
+            "required_skills": [
+                {"name": "Python", "matched": True},
+                {"name": "FastAPI", "matched": True},
+            ],
+            "preferred_skills": [{"name": "Docker", "matched": False}],
+        },
+        "resume": {
+            "summary": "Experienced Python developer",
+            "work_experiences": [],
+            "skills": [],
+            "education": [],
+            "projects": [],
+        },
+    }
+
+    response = client.post(
+        "/api/resumes/generate",
+        json={
+            "job_description": "Looking for Senior Python Developer with FastAPI experience. " + "A" * 100,
+            "job_description_id": jd_id,
+        },
+    )
+
+    assert response.status_code == 200
+    resume_data = response.json()
+    resume_id = resume_data["id"]
+
+    # Verify job_analysis is in immediate response
+    assert resume_data["job_analysis"] is not None
+    assert len(resume_data["job_analysis"]["required_skills"]) == 2
+
+    # Verify job_analysis persists when fetching resume (simulates page refresh)
+    get_response = client.get(f"/api/resumes/{resume_id}")
+    assert get_response.status_code == 200
+    fetched_resume = get_response.json()
+
+    assert fetched_resume["job_analysis"] is not None
+    assert fetched_resume["job_analysis"]["required_skills"][0]["name"] == "Python"
+    assert fetched_resume["job_analysis"]["required_skills"][1]["name"] == "FastAPI"
+
+
+@patch("services.resume_generator.llm_service.analyze_and_generate")
+def test_job_analysis_updates_on_regenerate(mock_llm, client):
+    """Test that job_analysis is updated when regenerating from same JD."""
+    _setup_profile(client)
+
+    # Create JD with existing title (not "Untitled Job")
+    save_response = client.post(
+        "/api/job-descriptions",
+        json={"raw_text": "Backend Developer position. " + "A" * 100},
+    )
+    jd_id = save_response.json()["id"]
+
+    # Update the JD to have a non-default title
+    from database import get_db
+    with get_db() as conn:
+        conn.execute("UPDATE job_descriptions SET title = ? WHERE id = ?", ("Backend Developer at Corp", jd_id))
+        conn.commit()
+
+    # Generate with updated analysis
+    mock_llm.return_value = {
+        "job_title": "Backend Developer",
+        "company_name": "Corp",
+        "match_score": 75,
+        "job_analysis": {
+            "required_skills": [{"name": "Node.js", "matched": False}],
+            "preferred_skills": [],
+        },
+        "resume": {
+            "summary": "Test",
+            "work_experiences": [],
+            "skills": [],
+            "education": [],
+            "projects": [],
+        },
+    }
+
+    response = client.post(
+        "/api/resumes/generate",
+        json={
+            "job_description": "Backend Developer position. " + "A" * 100,
+            "job_description_id": jd_id,
+        },
+    )
+
+    assert response.status_code == 200
+    resume_id = response.json()["id"]
+
+    # Verify updated analysis persists
+    get_response = client.get(f"/api/resumes/{resume_id}")
+    fetched_resume = get_response.json()
+
+    assert fetched_resume["job_analysis"] is not None
+    assert fetched_resume["job_analysis"]["required_skills"][0]["name"] == "Node.js"

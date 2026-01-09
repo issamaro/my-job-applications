@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-01-09] - Job Requirements Analysis Persistence Fix
+
+### Fixed
+- Job Requirements Analysis section now persists after page refresh
+- Fixed UPDATE queries in resume_generator.py to save `parsed_data`
+- Both UPDATE branches (title update + timestamp only) now include job analysis
+
+### Added
+- 2 new tests for job analysis persistence with existing job descriptions
+
+### Technical
+- Root cause: UPDATE queries were missing `parsed_data` parameter
+- INSERT path worked correctly; UPDATE paths did not save job analysis
+- Fix adds `json.dumps(llm_result.get("job_analysis", {}))` to both UPDATE branches
+
+---
+
 ## [2026-01-09] - SCSS to CSS Custom Properties Migration
 
 ### Changed
