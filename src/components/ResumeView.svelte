@@ -1,10 +1,10 @@
 <script>
-  import RequirementsAnalysis from './RequirementsAnalysis.svelte';
+  import JobAnalysis from './JobAnalysis.svelte';
   import ResumeSection from './ResumeSection.svelte';
   import TemplateSelector from './TemplateSelector.svelte';
   import PdfPreview from './PdfPreview.svelte';
   import Toast from './Toast.svelte';
-  import { updateResume, downloadResumePdf } from '../lib/api.js';
+  import { updateResume, downloadPdf } from '../lib/api.js';
 
   let { resume, onBack, onRegenerate } = $props();
 
@@ -17,6 +17,7 @@
   // Section translations for edit view
   const sectionTranslations = {
     en: {
+      resumeEditor: 'Resume Editor',
       resumePreview: 'Resume Preview',
       workExperience: 'Work Experience',
       skills: 'Skills',
@@ -25,6 +26,7 @@
       projects: 'Projects'
     },
     fr: {
+      resumeEditor: 'Éditeur de CV',
       resumePreview: 'Aperçu du CV',
       workExperience: 'Expérience',
       skills: 'Compétences',
@@ -33,6 +35,7 @@
       projects: 'Projets'
     },
     nl: {
+      resumeEditor: 'CV Bewerken',
       resumePreview: 'CV Voorbeeld',
       workExperience: 'Werkervaring',
       skills: 'Vaardigheden',
@@ -54,7 +57,7 @@
   let saving = $state(false);
   let savedId = $state(null);
 
-  let viewMode = $state('edit');
+  let editMode = $state('edit');
   let selectedTemplate = $state('classic');
   let isExporting = $state(false);
   let toastMessage = $state(null);
@@ -148,7 +151,7 @@
     }
     isExporting = true;
     try {
-      await downloadResumePdf(resume.id, selectedTemplate, resume.language || 'en');
+      await downloadPdf(resume.id, selectedTemplate, resume.language || 'en');
       toastType = 'success';
       toastMessage = 'PDF downloaded';
     } catch (e) {
@@ -182,7 +185,7 @@
 
   <hr />
 
-  <RequirementsAnalysis jobAnalysis={resume.job_analysis} />
+  <JobAnalysis jobAnalysis={resume.job_analysis} />
 
   <hr />
 
@@ -191,26 +194,26 @@
       <button
         type="button"
         class="view-mode-btn"
-        class:active={viewMode === 'edit'}
-        onclick={() => viewMode = 'edit'}
+        class:active={editMode === 'edit'}
+        onclick={() => editMode = 'edit'}
         role="tab"
-        aria-selected={viewMode === 'edit'}
+        aria-selected={editMode === 'edit'}
       >
         Edit
       </button>
       <button
         type="button"
         class="view-mode-btn"
-        class:active={viewMode === 'preview'}
-        onclick={() => viewMode = 'preview'}
+        class:active={editMode === 'preview'}
+        onclick={() => editMode = 'preview'}
         role="tab"
-        aria-selected={viewMode === 'preview'}
+        aria-selected={editMode === 'preview'}
       >
         Preview
       </button>
     </div>
 
-    {#if viewMode === 'preview'}
+    {#if editMode === 'preview'}
     <div class="preview-controls">
       <TemplateSelector bind:selected={selectedTemplate} />
       <button
@@ -226,8 +229,8 @@
     {/if}
   </div>
 
-  {#if viewMode === 'edit'}
-  <h3 class="section-heading">{labels.resumePreview}</h3>
+  {#if editMode === 'edit'}
+  <h3 class="section-heading">{labels.resumeEditor}</h3>
 
   {#if resumeData}
     {#if resumeData.personal_info}
@@ -362,6 +365,7 @@
     </ResumeSection>
   {/if}
   {:else}
+  <h3 class="section-heading">{labels.resumePreview}</h3>
   <PdfPreview {resumeData} template={selectedTemplate} language={resume?.language || 'en'} />
   {/if}
 

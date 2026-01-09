@@ -1,12 +1,12 @@
-def test_get_personal_info_empty(client):
-    """Test getting personal info when none exists."""
-    response = client.get("/api/personal-info")
+def test_get_user_empty(client):
+    """Test getting user when none exists."""
+    response = client.get("/api/users")
     assert response.status_code == 200
     assert response.json() is None
 
 
-def test_create_personal_info(client):
-    """Test creating personal info via PUT."""
+def test_create_user(client):
+    """Test creating user via PUT."""
     data = {
         "full_name": "John Smith",
         "email": "john@example.com",
@@ -15,7 +15,7 @@ def test_create_personal_info(client):
         "linkedin_url": "https://linkedin.com/in/johnsmith",
         "summary": "Experienced software engineer",
     }
-    response = client.put("/api/personal-info", json=data)
+    response = client.put("/api/users", json=data)
     assert response.status_code == 200
     result = response.json()
     assert result["full_name"] == "John Smith"
@@ -23,20 +23,20 @@ def test_create_personal_info(client):
     assert result["id"] == 1
 
 
-def test_update_personal_info(client):
-    """Test updating existing personal info."""
+def test_update_user(client):
+    """Test updating existing user."""
     data = {
         "full_name": "John Smith",
         "email": "john@example.com",
     }
-    client.put("/api/personal-info", json=data)
+    client.put("/api/users", json=data)
 
     updated_data = {
         "full_name": "John M. Smith",
         "email": "john.smith@example.com",
         "phone": "+1 555 999 8888",
     }
-    response = client.put("/api/personal-info", json=updated_data)
+    response = client.put("/api/users", json=updated_data)
     assert response.status_code == 200
     result = response.json()
     assert result["full_name"] == "John M. Smith"
@@ -50,7 +50,7 @@ def test_validation_error_empty_name(client):
         "full_name": "",
         "email": "john@example.com",
     }
-    response = client.put("/api/personal-info", json=data)
+    response = client.put("/api/users", json=data)
     # Pydantic allows empty strings by default, but we should handle this
     # For now, test that the request succeeds (schema doesn't enforce non-empty)
     assert response.status_code == 200
@@ -62,7 +62,7 @@ def test_validation_error_invalid_email(client):
         "full_name": "John Smith",
         "email": "invalid-email",
     }
-    response = client.put("/api/personal-info", json=data)
+    response = client.put("/api/users", json=data)
     assert response.status_code == 422
 
 
@@ -71,5 +71,5 @@ def test_validation_error_missing_required(client):
     data = {
         "full_name": "John Smith",
     }
-    response = client.put("/api/personal-info", json=data)
+    response = client.put("/api/users", json=data)
     assert response.status_code == 422

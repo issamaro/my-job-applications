@@ -13,38 +13,7 @@ class CEFRLevel(str, Enum):
     C2 = "C2"
 
 
-# Personal Info schemas
-class PersonalInfoUpdate(BaseModel):
-    full_name: str
-    email: str
-    phone: str | None = None
-    location: str | None = None
-    linkedin_url: str | None = None
-    summary: str | None = None
-
-    @field_validator("email")
-    @classmethod
-    def validate_email(cls, v: str) -> str:
-        if not re.match(r"^[^@]+@[^@]+\.[^@]+$", v):
-            raise ValueError("Invalid email address")
-        return v
-
-
-class PersonalInfo(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    full_name: str
-    email: str
-    phone: str | None = None
-    location: str | None = None
-    linkedin_url: str | None = None
-    summary: str | None = None
-    photo: str | None = None
-    updated_at: str | None = None
-
-
-# User schemas (replaces personal_info table with users table)
+# User schemas
 class User(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -224,7 +193,7 @@ class Language(BaseModel):
 # Resume Generation schemas
 class ResumeGenerateRequest(BaseModel):
     job_description: str
-    job_description_id: int | None = None  # Optional: link to existing JD
+    job_id: int | None = None  # Optional: link to existing job
     language: str = "en"
 
     @field_validator("job_description")
@@ -243,8 +212,10 @@ class ResumeGenerateRequest(BaseModel):
 
 
 class SkillMatch(BaseModel):
+    """Skill matching result from job analysis."""
+
     name: str
-    matched: bool
+    matched: bool  # Whether user has this skill (boolean). Distinct from ResumeHistoryItem.match_score (percentage).
 
 
 class JobAnalysis(BaseModel):
@@ -342,11 +313,11 @@ class CompleteProfile(BaseModel):
     languages: list[dict] = []
 
 
-# Job Description schemas
-class JobDescriptionCreate(BaseModel):
-    raw_text: str = Field(..., min_length=100)
+# Job schemas
+class JobCreate(BaseModel):
+    original_text: str = Field(..., min_length=100)
 
-    @field_validator("raw_text")
+    @field_validator("original_text")
     @classmethod
     def validate_length(cls, v: str) -> str:
         if len(v.strip()) < 100:
@@ -354,11 +325,11 @@ class JobDescriptionCreate(BaseModel):
         return v.strip()
 
 
-class JobDescriptionUpdate(BaseModel):
+class JobUpdate(BaseModel):
     title: str | None = Field(None, max_length=100)
-    raw_text: str | None = None
+    original_text: str | None = None
 
-    @field_validator("raw_text")
+    @field_validator("original_text")
     @classmethod
     def validate_length(cls, v: str | None) -> str | None:
         if v is not None and len(v.strip()) < 100:
@@ -366,40 +337,40 @@ class JobDescriptionUpdate(BaseModel):
         return v.strip() if v else v
 
 
-class JobDescriptionListItem(BaseModel):
+class JobListItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     title: str
     company_name: str | None = None
-    raw_text_preview: str
+    text_preview: str
     resume_count: int
     created_at: str
     updated_at: str
 
 
-class JobDescriptionResponse(BaseModel):
+class JobResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     title: str
     company_name: str | None = None
-    raw_text: str
+    original_text: str
     resume_count: int
     created_at: str
     updated_at: str
 
 
-class JobDescriptionWithResumes(JobDescriptionResponse):
+class JobWithResumes(JobResponse):
     resumes: list[ResumeHistoryItem] = []
 
 
-class JobDescriptionVersion(BaseModel):
+class JobVersion(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
     version_number: int
-    raw_text: str
+    original_text: str
     created_at: str
 
 

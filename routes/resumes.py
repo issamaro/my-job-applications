@@ -22,7 +22,7 @@ async def generate_resume(request: ResumeGenerateRequest):
     try:
         result = await resume_generator_service.generate(
             request.job_description,
-            request.job_description_id,
+            request.job_id,
             request.language
         )
         return result

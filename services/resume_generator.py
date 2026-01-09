@@ -2,7 +2,7 @@ import json
 from database import get_db
 from services.profile import profile_service
 from services.llm import llm_service
-from services.job_descriptions import job_description_service
+from services.jobs import job_service
 from schemas import (
     GeneratedResumeResponse,
     JobAnalysis,
@@ -20,7 +20,7 @@ class ProfileIncompleteError(Exception):
 
 
 class ResumeGeneratorService:
-    async def generate(self, job_description: str, job_description_id: int | None = None, language: str = "en") -> GeneratedResumeResponse:
+    async def generate(self, job_description: str, job_id: int | None = None, language: str = "en") -> GeneratedResumeResponse:
         if not profile_service.has_work_experience():
             raise ProfileIncompleteError(
                 "Your profile needs work experience before you can generate a tailored resume."
@@ -47,13 +47,13 @@ class ResumeGeneratorService:
         company_name = llm_result.get("company_name", "Unknown Company")
         title = f"{job_title} at {company_name}"
 
-        # Save job analysis via service (single source of truth for JD mutations)
-        jd_id = job_description_service.save_job_analysis(
+        # Save job analysis via service (single source of truth for job mutations)
+        saved_job_id = job_service.save_job_analysis(
             job_analysis=llm_result.get("job_analysis", {}),
             title=title,
             company_name=company_name,
-            raw_text=job_description if not job_description_id else None,
-            jd_id=job_description_id,
+            original_text=job_description if not job_id else None,
+            job_id=job_id,
         )
 
         with get_db() as conn:
@@ -75,11 +75,11 @@ class ResumeGeneratorService:
             cursor = conn.execute(
                 """
                 INSERT INTO generated_resumes
-                (job_description_id, job_title, company_name, match_score, resume_content, language, job_analysis)
+                (job_id, job_title, company_name, match_score, resume_content, language, job_analysis)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    jd_id,
+                    saved_job_id,
                     llm_result.get("job_title"),
                     llm_result.get("company_name"),
                     llm_result.get("match_score"),

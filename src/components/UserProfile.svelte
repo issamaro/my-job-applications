@@ -1,5 +1,5 @@
 <script>
-  import { getPersonalInfo, updatePersonalInfo } from '../lib/api.js';
+  import { getUser, updateUser } from '../lib/api.js';
   import PhotoUpload from './PhotoUpload.svelte';
 
   let data = $state({
@@ -30,7 +30,7 @@
   async function loadData() {
     try {
       loading = true;
-      const result = await getPersonalInfo();
+      const result = await getUser();
       if (result) {
         data = { ...data, ...result };
       }
@@ -64,7 +64,7 @@
 
     try {
       saving = true;
-      await updatePersonalInfo(data);
+      await updateUser(data);
       saved = true;
       if (savedTimeout) clearTimeout(savedTimeout);
       savedTimeout = setTimeout(() => { saved = false; }, 2000);

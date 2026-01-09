@@ -59,7 +59,7 @@ def test_import_profile_happy_path(client):
     assert result["counts"]["projects"] == 1
 
     # Verify data was actually imported
-    pi_response = client.get("/api/personal-info")
+    pi_response = client.get("/api/users")
     assert pi_response.status_code == 200
     pi = pi_response.json()
     assert pi["full_name"] == "Jane Doe"

@@ -80,25 +80,122 @@ def _migrate_skills_unique_constraint(conn):
     conn.commit()
 
 
+def _migrate_job_descriptions_to_jobs(conn):
+    """Rename job_descriptions table to jobs.
+
+    Uses SQLite ALTER TABLE RENAME for fast, index-preserving rename.
+    Handles partially migrated state where both tables may exist.
+    """
+    cursor = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='job_descriptions'"
+    )
+    has_old_table = cursor.fetchone() is not None
+
+    cursor = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='jobs'"
+    )
+    has_new_table = cursor.fetchone() is not None
+
+    if has_old_table and not has_new_table:
+        # Normal case: rename old to new
+        conn.execute("ALTER TABLE job_descriptions RENAME TO jobs")
+        conn.commit()
+    elif has_old_table and has_new_table:
+        # Partially migrated: both exist
+        cursor = conn.execute("SELECT COUNT(*) FROM jobs")
+        new_count = cursor.fetchone()[0]
+        cursor = conn.execute("SELECT COUNT(*) FROM job_descriptions")
+        old_count = cursor.fetchone()[0]
+
+        if new_count == 0 and old_count > 0:
+            # New table is empty, old has data - drop new and rename old
+            conn.execute("DROP TABLE jobs")
+            conn.execute("ALTER TABLE job_descriptions RENAME TO jobs")
+            conn.commit()
+        elif old_count == 0:
+            # Old table is empty - just drop it
+            conn.execute("DROP TABLE job_descriptions")
+            conn.commit()
+        # else: both have data - keep new table (assume it's more current)
+
+
+def _migrate_raw_text_to_original_text(conn):
+    """Rename raw_text column to original_text in jobs table.
+
+    SQLite 3.25+ supports ALTER TABLE RENAME COLUMN.
+    """
+    cursor = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='jobs'"
+    )
+    if not cursor.fetchone():
+        return  # Table doesn't exist yet
+
+    cursor = conn.execute("PRAGMA table_info(jobs)")
+    columns = [row[1] for row in cursor.fetchall()]
+
+    if "raw_text" in columns and "original_text" not in columns:
+        conn.execute("ALTER TABLE jobs RENAME COLUMN raw_text TO original_text")
+        conn.commit()
+
+
+def _migrate_job_description_versions_to_job_versions(conn):
+    """Rename job_description_versions table to job_versions.
+
+    Also renames column job_description_id to job_id and raw_text to original_text.
+    """
+    cursor = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='job_description_versions'"
+    )
+    has_old_table = cursor.fetchone() is not None
+
+    cursor = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='job_versions'"
+    )
+    has_new_table = cursor.fetchone() is not None
+
+    if has_old_table and not has_new_table:
+        # Rename table and columns
+        conn.execute("ALTER TABLE job_description_versions RENAME TO job_versions")
+        conn.execute("ALTER TABLE job_versions RENAME COLUMN job_description_id TO job_id")
+        conn.execute("ALTER TABLE job_versions RENAME COLUMN raw_text TO original_text")
+        conn.commit()
+    elif has_old_table and has_new_table:
+        # Both exist - check if old is empty
+        cursor = conn.execute("SELECT COUNT(*) FROM job_description_versions")
+        old_count = cursor.fetchone()[0]
+        if old_count == 0:
+            conn.execute("DROP TABLE job_description_versions")
+            conn.commit()
+
+
 def _migrate_generated_resumes_fk_cascade(conn):
     """Recreate generated_resumes table with FK CASCADE constraint.
 
     SQLite doesn't support ALTER TABLE for FK modification.
     This migration recreates the table with correct ON DELETE CASCADE.
+    Also renames job_description_id column to job_id.
     """
-    # Check if migration already done (new table has CASCADE in schema)
+    cursor = conn.execute("PRAGMA table_info(generated_resumes)")
+    columns = [row[1] for row in cursor.fetchall()]
+    has_job_id = "job_id" in columns
+    has_job_description_id = "job_description_id" in columns
+
+    # Check if migration already done (has CASCADE and correct column name)
     cursor = conn.execute(
         "SELECT sql FROM sqlite_master WHERE type='table' AND name='generated_resumes'"
     )
     row = cursor.fetchone()
-    if row and "ON DELETE CASCADE" in (row[0] or ""):
-        return  # Already migrated
+    if row and "ON DELETE CASCADE" in (row[0] or "") and has_job_id and not has_job_description_id:
+        return  # Already fully migrated
 
-    # Step 1: Create new table with correct FK
+    # Determine source column name
+    source_column = "job_id" if has_job_id else "job_description_id"
+
+    # Step 1: Create new table with correct FK and column name
     conn.execute("""
         CREATE TABLE IF NOT EXISTS generated_resumes_new (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            job_description_id INTEGER NOT NULL,
+            job_id INTEGER NOT NULL,
             job_title TEXT,
             company_name TEXT,
             match_score REAL,
@@ -109,19 +206,19 @@ def _migrate_generated_resumes_fk_cascade(conn):
             language TEXT DEFAULT 'en',
             job_analysis TEXT,
             user_id INTEGER DEFAULT 1,
-            FOREIGN KEY (job_description_id) REFERENCES job_descriptions(id) ON DELETE CASCADE
+            FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
         )
     """)
 
     # Step 2: Copy data (only if new table is empty)
     cursor = conn.execute("SELECT COUNT(*) FROM generated_resumes_new")
     if cursor.fetchone()[0] == 0:
-        conn.execute("""
+        conn.execute(f"""
             INSERT INTO generated_resumes_new
-            (id, job_description_id, job_title, company_name, match_score,
+            (id, job_id, job_title, company_name, match_score,
              resume_content, created_at, updated_at, jd_version_id, language,
              job_analysis, user_id)
-            SELECT id, job_description_id, job_title, company_name, match_score,
+            SELECT id, {source_column}, job_title, company_name, match_score,
                    resume_content, created_at, updated_at, jd_version_id, language,
                    job_analysis, user_id
             FROM generated_resumes
@@ -292,12 +389,38 @@ def init_db():
             ON job_description_versions(job_description_id);
         """)
 
-        # Job Application Domain Redesign: Backfill job_analysis from JD parsed_data
-        conn.execute("""
+        # Job Application Domain Redesign: Table and column renames
+        # MUST run BEFORE any queries that reference new names
+        _migrate_job_descriptions_to_jobs(conn)
+        _migrate_raw_text_to_original_text(conn)
+        _migrate_job_description_versions_to_job_versions(conn)
+
+        # Create job_versions table with NEW schema (for fresh installs or after migration)
+        conn.executescript("""
+            CREATE TABLE IF NOT EXISTS job_versions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                job_id INTEGER NOT NULL,
+                original_text TEXT NOT NULL,
+                version_number INTEGER NOT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_job_versions_job_id
+            ON job_versions(job_id);
+        """)
+
+        # Job Application Domain Redesign: Backfill job_analysis from jobs parsed_data
+        # Check which column exists for the JOIN
+        cursor = conn.execute("PRAGMA table_info(generated_resumes)")
+        gr_columns = [row[1] for row in cursor.fetchall()]
+        job_fk_col = "job_id" if "job_id" in gr_columns else "job_description_id"
+
+        conn.execute(f"""
             UPDATE generated_resumes
             SET job_analysis = (
-                SELECT parsed_data FROM job_descriptions
-                WHERE job_descriptions.id = generated_resumes.job_description_id
+                SELECT parsed_data FROM jobs
+                WHERE jobs.id = generated_resumes.{job_fk_col}
             )
             WHERE job_analysis IS NULL
         """)
@@ -307,20 +430,28 @@ def init_db():
         _migrate_generated_resumes_fk_cascade(conn)
 
         # User/Profile Domain Redesign: Migrate personal_info data to users table
-        cursor = conn.execute("SELECT COUNT(*) FROM users WHERE id = 1")
-        if cursor.fetchone()[0] == 0:
-            # Check if personal_info has data to migrate
-            cursor = conn.execute("SELECT COUNT(*) FROM personal_info WHERE id = 1")
-            if cursor.fetchone()[0] > 0:
-                conn.execute("""
-                    INSERT INTO users (id, email, full_name, phone, location, linkedin_url, summary, photo, updated_at)
-                    SELECT 1, email, full_name, phone, location, linkedin_url, summary, photo, updated_at
-                    FROM personal_info WHERE id = 1
-                """)
-                conn.commit()
+        # Check if personal_info table exists first
+        cursor = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='personal_info'"
+        )
+        has_personal_info = cursor.fetchone() is not None
+
+        if has_personal_info:
+            cursor = conn.execute("SELECT COUNT(*) FROM users WHERE id = 1")
+            if cursor.fetchone()[0] == 0:
+                # Check if personal_info has data to migrate
+                cursor = conn.execute("SELECT COUNT(*) FROM personal_info WHERE id = 1")
+                if cursor.fetchone()[0] > 0:
+                    conn.execute("""
+                        INSERT INTO users (id, email, full_name, phone, location, linkedin_url, summary, photo, updated_at)
+                        SELECT 1, email, full_name, phone, location, linkedin_url, summary, photo, updated_at
+                        FROM personal_info WHERE id = 1
+                    """)
+                    conn.commit()
 
         # User/Profile Domain Redesign: Recreate skills with UNIQUE(user_id, name) constraint
         _migrate_skills_unique_constraint(conn)
 
         # User/Profile Domain Redesign: Drop personal_info table (data migrated to users)
         conn.execute("DROP TABLE IF EXISTS personal_info")
+        conn.commit()

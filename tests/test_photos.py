@@ -9,7 +9,7 @@ VALID_PNG_DATA = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAf
 def create_personal_info(client):
     """Helper to create personal info before photo tests."""
     return client.put(
-        "/api/personal-info",
+        "/api/users",
         json={"full_name": "Test User", "email": "test@example.com"},
     )
 
@@ -128,6 +128,6 @@ def test_photo_included_in_personal_info(client):
     create_personal_info(client)
     client.put("/api/photos", json={"image_data": VALID_JPEG_DATA})
 
-    response = client.get("/api/personal-info")
+    response = client.get("/api/users")
     assert response.status_code == 200
     assert response.json()["photo"] == VALID_JPEG_DATA

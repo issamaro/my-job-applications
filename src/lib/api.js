@@ -21,13 +21,13 @@ async function request(url, options = {}) {
   return response.json();
 }
 
-// Personal Info
-export async function getPersonalInfo() {
-  return request('/personal-info');
+// Users
+export async function getUser() {
+  return request('/users');
 }
 
-export async function updatePersonalInfo(data) {
-  return request('/personal-info', {
+export async function updateUser(data) {
+  return request('/users', {
     method: 'PUT',
     body: JSON.stringify(data)
   });
@@ -202,7 +202,7 @@ export async function getCompleteProfile() {
   return request('/profile/complete');
 }
 
-export async function downloadResumePdf(id, template = 'classic', language = 'en') {
+export async function downloadPdf(id, template = 'classic', language = 'en') {
   const response = await fetch(`${API_BASE}/resumes/${id}/pdf?template=${template}&language=${language}`);
 
   if (!response.ok) {
@@ -223,45 +223,45 @@ export async function downloadResumePdf(id, template = 'classic', language = 'en
   URL.revokeObjectURL(url);
 }
 
-// Job Descriptions
-export async function getJobDescriptions() {
-  return request('/job-descriptions');
+// Jobs
+export async function getJobs() {
+  return request('/jobs');
 }
 
-export async function createJobDescription(rawText) {
-  return request('/job-descriptions', {
+export async function createJob(originalText) {
+  return request('/jobs', {
     method: 'POST',
-    body: JSON.stringify({ raw_text: rawText })
+    body: JSON.stringify({ original_text: originalText })
   });
 }
 
-export async function getJobDescription(id) {
-  return request(`/job-descriptions/${id}`);
+export async function getJob(id) {
+  return request(`/jobs/${id}`);
 }
 
-export async function updateJobDescription(id, data) {
-  return request(`/job-descriptions/${id}`, {
+export async function updateJob(id, data) {
+  return request(`/jobs/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data)
   });
 }
 
-export async function deleteJobDescription(id) {
-  return request(`/job-descriptions/${id}`, {
+export async function deleteJob(id) {
+  return request(`/jobs/${id}`, {
     method: 'DELETE'
   });
 }
 
-export async function getJobDescriptionResumes(id) {
-  return request(`/job-descriptions/${id}/resumes`);
+export async function getJobResumes(id) {
+  return request(`/jobs/${id}/resumes`);
 }
 
-export async function getJobDescriptionVersions(id) {
-  return request(`/job-descriptions/${id}/versions`);
+export async function getJobVersions(id) {
+  return request(`/jobs/${id}/versions`);
 }
 
-export async function restoreJobDescriptionVersion(jdId, versionId) {
-  return request(`/job-descriptions/${jdId}/versions/${versionId}/restore`, {
+export async function restoreJobVersion(jobId, versionId) {
+  return request(`/jobs/${jobId}/versions/${versionId}/restore`, {
     method: 'POST'
   });
 }

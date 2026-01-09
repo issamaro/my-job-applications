@@ -291,25 +291,25 @@ def test_get_complete_profile(client):
     assert len(result["work_experiences"]) == 1
 
 
-# Tests for job_description_id linkage
+# Tests for job_id linkage
 
-def _create_job_description(client, raw_text=None):
-    """Helper to create a job description."""
-    if raw_text is None:
-        raw_text = "A" * 150
+def _create_job(client, original_text=None):
+    """Helper to create a job."""
+    if original_text is None:
+        original_text = "A" * 150
     return client.post(
-        "/api/job-descriptions",
-        json={"raw_text": raw_text},
+        "/api/jobs",
+        json={"original_text": original_text},
     )
 
 
 @patch("services.resume_generator.llm_service.analyze_and_generate")
-def test_generate_with_job_description_id_links_to_existing(mock_llm, client):
-    """Test generating resume with job_description_id links to existing JD."""
+def test_generate_with_job_id_links_to_existing(mock_llm, client):
+    """Test generating resume with job_id links to existing JD."""
     _create_work_experience(client)
 
     # Create a job description first
-    jd_response = _create_job_description(client)
+    jd_response = _create_job(client)
     jd_id = jd_response.json()["id"]
 
     mock_llm.return_value = {
@@ -329,12 +329,12 @@ def test_generate_with_job_description_id_links_to_existing(mock_llm, client):
     long_jd = "A" * 150
     response = client.post(
         "/api/resumes/generate",
-        json={"job_description": long_jd, "job_description_id": jd_id},
+        json={"job_description": long_jd, "job_id": jd_id},
     )
     assert response.status_code == 200
 
     # Verify the resume is linked to the existing JD
-    jd_resumes_response = client.get(f"/api/job-descriptions/{jd_id}/resumes")
+    jd_resumes_response = client.get(f"/api/jobs/{jd_id}/resumes")
     assert jd_resumes_response.status_code == 200
     resumes = jd_resumes_response.json()
     assert len(resumes) == 1
@@ -342,8 +342,8 @@ def test_generate_with_job_description_id_links_to_existing(mock_llm, client):
 
 
 @patch("services.resume_generator.llm_service.analyze_and_generate")
-def test_generate_without_job_description_id_creates_new(mock_llm, client):
-    """Test generating resume without job_description_id creates new JD."""
+def test_generate_without_job_id_creates_new(mock_llm, client):
+    """Test generating resume without job_id creates new JD."""
     _create_work_experience(client)
 
     mock_llm.return_value = {
@@ -368,7 +368,7 @@ def test_generate_without_job_description_id_creates_new(mock_llm, client):
     assert response.status_code == 200
 
     # Check that job descriptions increased
-    jd_response = client.get("/api/job-descriptions")
+    jd_response = client.get("/api/jobs")
     assert jd_response.status_code == 200
     jds = jd_response.json()
     assert len(jds) >= 1
@@ -380,11 +380,11 @@ def test_generate_updates_untitled_job_title(mock_llm, client):
     _create_work_experience(client)
 
     # Create a job description with "Untitled Job" title
-    jd_response = _create_job_description(client)
+    jd_response = _create_job(client)
     jd_id = jd_response.json()["id"]
 
     # Update the title to "Untitled Job"
-    client.put(f"/api/job-descriptions/{jd_id}", json={"title": "Untitled Job"})
+    client.put(f"/api/jobs/{jd_id}", json={"title": "Untitled Job"})
 
     mock_llm.return_value = {
         "job_title": "Senior Developer",
@@ -403,12 +403,12 @@ def test_generate_updates_untitled_job_title(mock_llm, client):
     long_jd = "A" * 150
     response = client.post(
         "/api/resumes/generate",
-        json={"job_description": long_jd, "job_description_id": jd_id},
+        json={"job_description": long_jd, "job_id": jd_id},
     )
     assert response.status_code == 200
 
     # Verify title was updated
-    jd_get_response = client.get(f"/api/job-descriptions/{jd_id}")
+    jd_get_response = client.get(f"/api/jobs/{jd_id}")
     assert jd_get_response.status_code == 200
     assert jd_get_response.json()["title"] == "Senior Developer at NewCorp"
 
@@ -419,12 +419,12 @@ def test_generate_preserves_custom_title(mock_llm, client):
     _create_work_experience(client)
 
     # Create a job description
-    jd_response = _create_job_description(client)
+    jd_response = _create_job(client)
     jd_id = jd_response.json()["id"]
 
     # Set a custom title
     custom_title = "My Dream Job"
-    client.put(f"/api/job-descriptions/{jd_id}", json={"title": custom_title})
+    client.put(f"/api/jobs/{jd_id}", json={"title": custom_title})
 
     mock_llm.return_value = {
         "job_title": "Different Title",
@@ -443,24 +443,24 @@ def test_generate_preserves_custom_title(mock_llm, client):
     long_jd = "A" * 150
     response = client.post(
         "/api/resumes/generate",
-        json={"job_description": long_jd, "job_description_id": jd_id},
+        json={"job_description": long_jd, "job_id": jd_id},
     )
     assert response.status_code == 200
 
     # Verify custom title was preserved
-    jd_get_response = client.get(f"/api/job-descriptions/{jd_id}")
+    jd_get_response = client.get(f"/api/jobs/{jd_id}")
     assert jd_get_response.status_code == 200
     assert jd_get_response.json()["title"] == custom_title
 
 
-def test_generate_with_nonexistent_job_description_id(client):
-    """Test generating resume with non-existent job_description_id returns error."""
+def test_generate_with_nonexistent_job_id(client):
+    """Test generating resume with non-existent job_id returns error."""
     _create_work_experience(client)
 
     long_jd = "A" * 150
     response = client.post(
         "/api/resumes/generate",
-        json={"job_description": long_jd, "job_description_id": 99999},
+        json={"job_description": long_jd, "job_id": 99999},
     )
     assert response.status_code == 400
     assert "not found" in response.json()["detail"].lower()
@@ -550,7 +550,7 @@ def test_two_resumes_same_jd_independent_job_analysis(mock_llm, client):
     _create_work_experience(client)
 
     # Create a job description first
-    jd_response = _create_job_description(client)
+    jd_response = _create_job(client)
     jd_id = jd_response.json()["id"]
 
     # First resume generation - Python skills matched
@@ -574,7 +574,7 @@ def test_two_resumes_same_jd_independent_job_analysis(mock_llm, client):
     long_jd = "A" * 150
     response1 = client.post(
         "/api/resumes/generate",
-        json={"job_description": long_jd, "job_description_id": jd_id},
+        json={"job_description": long_jd, "job_id": jd_id},
     )
     resume1_id = response1.json()["id"]
 
@@ -598,7 +598,7 @@ def test_two_resumes_same_jd_independent_job_analysis(mock_llm, client):
 
     response2 = client.post(
         "/api/resumes/generate",
-        json={"job_description": long_jd, "job_description_id": jd_id},
+        json={"job_description": long_jd, "job_id": jd_id},
     )
     resume2_id = response2.json()["id"]
 
@@ -615,5 +615,5 @@ def test_two_resumes_same_jd_independent_job_analysis(mock_llm, client):
     assert get2.json()["job_analysis"]["required_skills"][0]["name"] == "Java"
 
     # Verify they're linked to the same JD
-    jd_resumes = client.get(f"/api/job-descriptions/{jd_id}/resumes")
+    jd_resumes = client.get(f"/api/jobs/{jd_id}/resumes")
     assert len(jd_resumes.json()) == 2

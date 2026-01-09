@@ -1,10 +1,10 @@
 <script>
-  import JobDescriptionInput from './JobDescriptionInput.svelte';
+  import JobInput from './JobInput.svelte';
   import ProgressBar from './ProgressBar.svelte';
-  import ResumePreview from './ResumePreview.svelte';
+  import ResumeView from './ResumeView.svelte';
   import SavedJobsList from './SavedJobsList.svelte';
   import LanguageSelector from './LanguageSelector.svelte';
-  import { generateResume, getResume, getCompleteProfile, createJobDescription, updateJobDescription } from '../lib/api.js';
+  import { generateResume, getResume, getCompleteProfile, createJob, updateJob } from '../lib/api.js';
 
   let view = $state('input');
   let jobDescription = $state('');
@@ -125,8 +125,8 @@
     window.dispatchEvent(new CustomEvent('switchTab', { detail: 'profile' }));
   }
 
-  function handleLoadJob(id, rawText, title) {
-    jobDescription = rawText;
+  function handleLoadJob(id, originalText, title) {
+    jobDescription = originalText;
     loadedJobId = id;
     loadedJobTitle = title;
     error = null;
@@ -150,16 +150,16 @@
 
     try {
       if (loadedJobId) {
-        await updateJobDescription(loadedJobId, { raw_text: jobDescription });
+        await updateJob(loadedJobId, { original_text: jobDescription });
       } else {
-        const result = await createJobDescription(jobDescription);
+        const result = await createJob(jobDescription);
         loadedJobId = result.id;
         loadedJobTitle = result.title;
       }
       savedJobsRef?.refresh();
     } catch (e) {
       error = 'Could not save. Please try again.';
-      console.error('Failed to save job description:', e);
+      console.error('Failed to save job:', e);
     } finally {
       saving = false;
     }
@@ -175,7 +175,7 @@
       </button>
     </div>
   {:else if view === 'input'}
-    <JobDescriptionInput
+    <JobInput
       value={jobDescription}
       {error}
       {saving}
@@ -211,7 +211,7 @@
     />
 
   {:else if view === 'loading'}
-    <JobDescriptionInput
+    <JobInput
       value={jobDescription}
       disabled={true}
     />
@@ -225,7 +225,7 @@
     </div>
 
   {:else if view === 'preview' && currentResume}
-    <ResumePreview
+    <ResumeView
       resume={currentResume}
       onBack={handleBack}
       onRegenerate={handleRegenerate}

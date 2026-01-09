@@ -18,7 +18,7 @@ def _create_work_experience(client):
 def _create_personal_info(client):
     """Helper to create personal info."""
     return client.put(
-        "/api/personal-info",
+        "/api/users",
         json={
             "full_name": "John Doe",
             "email": "john@example.com",

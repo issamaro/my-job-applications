@@ -1,5 +1,5 @@
 <script>
-  import { updateJobDescription, getJobDescriptionResumes, deleteResume } from '../lib/api.js';
+  import { updateJob, getJobResumes, deleteResume } from '../lib/api.js';
   import ConfirmDialog from './ConfirmDialog.svelte';
 
   let { job, selected = false, autoExpand = false, onLoad, onDelete, onSelectResume } = $props();
@@ -14,9 +14,9 @@
   let resumeError = $state(null);
 
   let preview = $derived(
-    job.raw_text_preview.length > 200
-      ? job.raw_text_preview.slice(0, 200) + '...'
-      : job.raw_text_preview
+    job.text_preview.length > 200
+      ? job.text_preview.slice(0, 200) + '...'
+      : job.text_preview
   );
 
   $effect(() => {
@@ -40,7 +40,7 @@
   async function saveTitle() {
     if (editTitle.trim() && editTitle !== job.title) {
       try {
-        await updateJobDescription(job.id, { title: editTitle.trim() });
+        await updateJob(job.id, { title: editTitle.trim() });
         job.title = editTitle.trim();
       } catch (e) {
         console.error('Failed to update title:', e);
@@ -68,7 +68,7 @@
       loadingResumes = true;
       resumeError = null;
       try {
-        resumes = await getJobDescriptionResumes(job.id);
+        resumes = await getJobResumes(job.id);
         resumesFetched = true;
       } catch (err) {
         console.error('Failed to load resumes:', err);
@@ -130,7 +130,7 @@
       {:else}
         <button
           class="job-title-btn"
-          onclick={() => onLoad(job.id, job.raw_text, job.title)}
+          onclick={() => onLoad(job.id, job.text_preview, job.title)}
           aria-label="{job.title}, {formatDate(job.updated_at)}, {job.resume_count} resumes. Click to load."
         >
           <span class="job-title">{job.title}</span>
@@ -140,7 +140,7 @@
     </div>
     <button
       class="job-content"
-      onclick={() => onLoad(job.id, job.raw_text, job.title)}
+      onclick={() => onLoad(job.id, job.text_preview, job.title)}
     >
       <p class="job-preview">{preview}</p>
     </button>
@@ -168,7 +168,7 @@
   <button
     class="delete-link"
     onclick={() => onDelete(job.id, job.resume_count)}
-    aria-label="Delete job description"
+    aria-label="Delete job"
   >
     Delete
   </button>

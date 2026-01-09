@@ -5,7 +5,7 @@ from unittest.mock import patch, AsyncMock
 def _setup_profile(client):
     """Helper to create profile data."""
     client.put(
-        "/api/personal-info",
+        "/api/users",
         json={
             "full_name": "John Doe",
             "email": "john@example.com",
@@ -209,13 +209,13 @@ def test_delete_removes_job_description(mock_llm, client):
 
 @patch("services.resume_generator.llm_service.analyze_and_generate")
 def test_job_analysis_persists_with_existing_jd(mock_llm, client):
-    """Test that job_analysis is saved when generating with existing job_description_id."""
+    """Test that job_analysis is saved when generating with existing job_id."""
     _setup_profile(client)
 
-    # First, create a job description via save endpoint
+    # First, create a job via save endpoint
     save_response = client.post(
-        "/api/job-descriptions",
-        json={"raw_text": "Looking for Senior Python Developer with FastAPI experience. " + "A" * 100},
+        "/api/jobs",
+        json={"original_text": "Looking for Senior Python Developer with FastAPI experience. " + "A" * 100},
     )
     assert save_response.status_code == 201
     jd_id = save_response.json()["id"]
@@ -245,7 +245,7 @@ def test_job_analysis_persists_with_existing_jd(mock_llm, client):
         "/api/resumes/generate",
         json={
             "job_description": "Looking for Senior Python Developer with FastAPI experience. " + "A" * 100,
-            "job_description_id": jd_id,
+            "job_id": jd_id,
         },
     )
 
@@ -272,17 +272,17 @@ def test_job_analysis_updates_on_regenerate(mock_llm, client):
     """Test that job_analysis is updated when regenerating from same JD."""
     _setup_profile(client)
 
-    # Create JD with existing title (not "Untitled Job")
+    # Create job with existing title (not "Untitled Job")
     save_response = client.post(
-        "/api/job-descriptions",
-        json={"raw_text": "Backend Developer position. " + "A" * 100},
+        "/api/jobs",
+        json={"original_text": "Backend Developer position. " + "A" * 100},
     )
     jd_id = save_response.json()["id"]
 
-    # Update the JD to have a non-default title
+    # Update the job to have a non-default title
     from database import get_db
     with get_db() as conn:
-        conn.execute("UPDATE job_descriptions SET title = ? WHERE id = ?", ("Backend Developer at Corp", jd_id))
+        conn.execute("UPDATE jobs SET title = ? WHERE id = ?", ("Backend Developer at Corp", jd_id))
         conn.commit()
 
     # Generate with updated analysis
@@ -307,7 +307,7 @@ def test_job_analysis_updates_on_regenerate(mock_llm, client):
         "/api/resumes/generate",
         json={
             "job_description": "Backend Developer position. " + "A" * 100,
-            "job_description_id": jd_id,
+            "job_id": jd_id,
         },
     )
 

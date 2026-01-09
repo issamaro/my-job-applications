@@ -2,11 +2,11 @@ from fastapi import APIRouter
 from database import get_db
 from schemas import User, UserUpdate
 
-router = APIRouter(prefix="/api/personal-info", tags=["personal-info"])
+router = APIRouter(prefix="/api/users", tags=["users"])
 
 
 @router.get("", response_model=User | None)
-async def get_personal_info():
+async def get_user():
     with get_db() as conn:
         cursor = conn.execute("SELECT * FROM users WHERE id = 1")
         row = cursor.fetchone()
@@ -16,7 +16,7 @@ async def get_personal_info():
 
 
 @router.put("", response_model=User)
-async def update_personal_info(info: UserUpdate):
+async def update_user(info: UserUpdate):
     with get_db() as conn:
         cursor = conn.execute("SELECT id FROM users WHERE id = 1")
         exists = cursor.fetchone() is not None

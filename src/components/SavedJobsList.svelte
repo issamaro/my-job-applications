@@ -1,7 +1,7 @@
 <script>
   import ConfirmDialog from './ConfirmDialog.svelte';
   import SavedJobItem from './SavedJobItem.svelte';
-  import { getJobDescriptions, deleteJobDescription, getJobDescription } from '../lib/api.js';
+  import { getJobs, deleteJob, getJob } from '../lib/api.js';
 
   let { onLoad, onSelectResume, selectedId = null } = $props();
 
@@ -19,22 +19,22 @@
   async function loadJobs() {
     error = null;
     try {
-      jobs = await getJobDescriptions();
+      jobs = await getJobs();
     } catch (e) {
-      console.error('Failed to load job descriptions:', e);
-      error = 'Could not load job applications. Please refresh the page.';
+      console.error('Failed to load jobs:', e);
+      error = 'Could not load saved jobs. Please refresh the page.';
     } finally {
       loading = false;
     }
   }
 
-  async function handleLoad(id, rawTextPreview, title) {
+  async function handleLoad(id, textPreview, title) {
     try {
-      // Fetch full job description to get complete raw_text
-      const job = await getJobDescription(id);
-      onLoad(id, job.raw_text, title);
+      // Fetch full job to get complete original_text
+      const job = await getJob(id);
+      onLoad(id, job.original_text, title);
     } catch (e) {
-      console.error('Failed to load job description:', e);
+      console.error('Failed to load job:', e);
     }
   }
 
@@ -46,10 +46,10 @@
   async function handleDelete() {
     if (deleteId) {
       try {
-        await deleteJobDescription(deleteId);
+        await deleteJob(deleteId);
         jobs = jobs.filter(j => j.id !== deleteId);
       } catch (e) {
-        console.error('Failed to delete job description:', e);
+        console.error('Failed to delete job:', e);
       }
       deleteId = null;
     }
@@ -66,7 +66,7 @@
     onclick={() => collapsed = !collapsed}
     aria-expanded={!collapsed}
   >
-    <h3>My Job Applications</h3>
+    <h3>Saved Jobs</h3>
     <span class="collapse-toggle">{collapsed ? '[+]' : '[-]'}</span>
   </button>
 
@@ -102,8 +102,8 @@
 
 {#if deleteId}
 <ConfirmDialog
-  title="Delete Job Application?"
-  message={`This will delete the job description and ${deleteResumeCount} generated resume${deleteResumeCount !== 1 ? 's' : ''}. This cannot be undone.`}
+  title="Delete Job?"
+  message={`This will delete the job and ${deleteResumeCount} generated resume${deleteResumeCount !== 1 ? 's' : ''}. This cannot be undone.`}
   onConfirm={handleDelete}
   onCancel={() => deleteId = null}
 />

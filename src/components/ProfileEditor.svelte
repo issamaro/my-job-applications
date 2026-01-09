@@ -1,6 +1,6 @@
 <script>
   import Section from './Section.svelte';
-  import PersonalInfo from './PersonalInfo.svelte';
+  import UserProfile from './UserProfile.svelte';
   import WorkExperience from './WorkExperience.svelte';
   import Education from './Education.svelte';
   import Skills from './Skills.svelte';
@@ -46,7 +46,7 @@
 <Toast bind:message={toastMessage} type="success" />
 
 <Section title="Personal Info">
-  <PersonalInfo />
+  <UserProfile />
 </Section>
 
 <Section title="Work Experience" onAdd={() => workExperienceRef?.add()}>

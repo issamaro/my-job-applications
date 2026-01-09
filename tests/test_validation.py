@@ -19,7 +19,7 @@ def test_special_characters_in_text(client):
         "email": "jose@example.com",
         "summary": 'Said "Hello, World!" and wrote some code <script>alert("XSS")</script>',
     }
-    response = client.put("/api/personal-info", json=data)
+    response = client.put("/api/users", json=data)
     assert response.status_code == 200
     result = response.json()
     assert result["full_name"] == "José García-López"
