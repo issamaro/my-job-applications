@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from database import get_db
 
@@ -166,6 +167,66 @@ class JobDescriptionService:
 
             # Update with version text (this will create a new version via update())
             return self.update(jd_id, {"raw_text": version["raw_text"]})
+
+
+    def save_job_analysis(
+        self,
+        job_analysis: dict,
+        title: str,
+        company_name: str,
+        raw_text: str | None = None,
+        jd_id: int | None = None,
+    ) -> int:
+        """
+        Single source of truth for saving job analysis (parsed_data) to a JD.
+
+        - If jd_id is None: Creates new JD with raw_text, title, company_name, and parsed_data
+        - If jd_id is provided: Updates existing JD's parsed_data (and title if still "Untitled Job")
+
+        Returns the JD id.
+        """
+        with get_db() as conn:
+            parsed_data_json = json.dumps(job_analysis) if job_analysis else None
+
+            if jd_id is None:
+                # INSERT: Create new JD
+                cursor = conn.execute(
+                    """
+                    INSERT INTO job_descriptions (raw_text, parsed_data, title, company_name, updated_at, is_saved)
+                    VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, 1)
+                    """,
+                    (raw_text, parsed_data_json, title, company_name),
+                )
+                conn.commit()
+                return cursor.lastrowid
+            else:
+                # UPDATE: Check if existing JD needs title update
+                cursor = conn.execute(
+                    "SELECT title FROM job_descriptions WHERE id = ?",
+                    (jd_id,)
+                )
+                existing = cursor.fetchone()
+                if not existing:
+                    raise ValueError(f"Job description with id {jd_id} not found")
+
+                if existing["title"] == "Untitled Job":
+                    # Update title, company_name, and parsed_data
+                    conn.execute(
+                        """
+                        UPDATE job_descriptions
+                        SET title = ?, company_name = ?, parsed_data = ?, updated_at = CURRENT_TIMESTAMP
+                        WHERE id = ?
+                        """,
+                        (title, company_name, parsed_data_json, jd_id)
+                    )
+                else:
+                    # Only update parsed_data and timestamp
+                    conn.execute(
+                        "UPDATE job_descriptions SET parsed_data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                        (parsed_data_json, jd_id)
+                    )
+                conn.commit()
+                return jd_id
 
 
 job_description_service = JobDescriptionService()

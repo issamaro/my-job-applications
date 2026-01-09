@@ -2,6 +2,7 @@ import json
 from database import get_db
 from services.profile import profile_service
 from services.llm import llm_service
+from services.job_descriptions import job_description_service
 from schemas import (
     GeneratedResumeResponse,
     JobAnalysis,
@@ -41,53 +42,21 @@ class ResumeGeneratorService:
         if saved_photo and profile_dict.get("personal_info"):
             profile_dict["personal_info"]["photo"] = saved_photo
 
+        # Build title from LLM result
+        job_title = llm_result.get("job_title", "Untitled")
+        company_name = llm_result.get("company_name", "Unknown Company")
+        title = f"{job_title} at {company_name}"
+
+        # Save job analysis via service (single source of truth for JD mutations)
+        jd_id = job_description_service.save_job_analysis(
+            job_analysis=llm_result.get("job_analysis", {}),
+            title=title,
+            company_name=company_name,
+            raw_text=job_description if not job_description_id else None,
+            jd_id=job_description_id,
+        )
+
         with get_db() as conn:
-            # Build title from LLM result
-            job_title = llm_result.get("job_title", "Untitled")
-            company_name = llm_result.get("company_name", "Unknown Company")
-            title = f"{job_title} at {company_name}"
-
-            if job_description_id:
-                # Link to existing JD - verify it exists
-                cursor = conn.execute(
-                    "SELECT id, title FROM job_descriptions WHERE id = ?",
-                    (job_description_id,)
-                )
-                existing = cursor.fetchone()
-                if not existing:
-                    raise ValueError(f"Job description with id {job_description_id} not found")
-
-                jd_id = job_description_id
-
-                # Update title only if still "Untitled Job"
-                if existing["title"] == "Untitled Job":
-                    conn.execute(
-                        """
-                        UPDATE job_descriptions
-                        SET title = ?, company_name = ?, parsed_data = ?, updated_at = CURRENT_TIMESTAMP
-                        WHERE id = ?
-                        """,
-                        (title, company_name, json.dumps(llm_result.get("job_analysis", {})), jd_id)
-                    )
-                else:
-                    # Update parsed_data and timestamp
-                    conn.execute(
-                        "UPDATE job_descriptions SET parsed_data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                        (json.dumps(llm_result.get("job_analysis", {})), jd_id)
-                    )
-                conn.commit()
-            else:
-                # Create new JD (existing behavior)
-                cursor = conn.execute(
-                    """
-                    INSERT INTO job_descriptions (raw_text, parsed_data, title, company_name, updated_at, is_saved)
-                    VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, 1)
-                    """,
-                    (job_description, json.dumps(llm_result.get("job_analysis", {})), title, company_name),
-                )
-                conn.commit()
-                jd_id = cursor.lastrowid
-
             resume_content = llm_result.get("resume", {})
             if profile_dict.get("personal_info"):
                 resume_content["personal_info"] = profile_dict["personal_info"]
