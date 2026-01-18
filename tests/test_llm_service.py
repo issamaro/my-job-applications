@@ -1,3 +1,9 @@
+"""Integration tests for the LLM service module.
+
+These tests verify the service interface works correctly with the
+lazy-loading wrapper and provider abstraction.
+"""
+
 import pytest
 from unittest.mock import patch, AsyncMock, MagicMock
 import anthropic
@@ -26,10 +32,12 @@ def sample_profile():
 
 
 @pytest.mark.asyncio
-@patch("services.llm.get_client")
+@patch("services.llm.claude._get_client")
 async def test_analyze_and_generate_success(mock_get_client, sample_profile):
-    """Test successful LLM response parsing."""
+    """Test successful LLM response parsing through the service wrapper."""
+    # Reset the lazy service singleton to ensure fresh provider
     from services.llm import llm_service
+    llm_service._instance = None
 
     mock_client = AsyncMock()
     mock_get_client.return_value = mock_client
@@ -51,10 +59,11 @@ async def test_analyze_and_generate_success(mock_get_client, sample_profile):
 
 
 @pytest.mark.asyncio
-@patch("services.llm.get_client")
+@patch("services.llm.claude._get_client")
 async def test_analyze_and_generate_extracts_json(mock_get_client, sample_profile):
     """Test that LLM service extracts JSON from response with surrounding text."""
     from services.llm import llm_service
+    llm_service._instance = None
 
     mock_client = AsyncMock()
     mock_get_client.return_value = mock_client
@@ -73,10 +82,11 @@ async def test_analyze_and_generate_extracts_json(mock_get_client, sample_profil
 
 
 @pytest.mark.asyncio
-@patch("services.llm.get_client")
+@patch("services.llm.claude._get_client")
 async def test_analyze_and_generate_connection_error(mock_get_client, sample_profile):
     """Test handling of API connection errors."""
     from services.llm import llm_service
+    llm_service._instance = None
 
     mock_client = AsyncMock()
     mock_get_client.return_value = mock_client
@@ -91,10 +101,11 @@ async def test_analyze_and_generate_connection_error(mock_get_client, sample_pro
 
 
 @pytest.mark.asyncio
-@patch("services.llm.get_client")
+@patch("services.llm.claude._get_client")
 async def test_analyze_and_generate_rate_limit(mock_get_client, sample_profile):
     """Test handling of rate limit errors."""
     from services.llm import llm_service
+    llm_service._instance = None
 
     mock_client = AsyncMock()
     mock_get_client.return_value = mock_client
@@ -117,10 +128,11 @@ async def test_analyze_and_generate_rate_limit(mock_get_client, sample_profile):
 
 
 @pytest.mark.asyncio
-@patch("services.llm.get_client")
+@patch("services.llm.claude._get_client")
 async def test_analyze_and_generate_invalid_json(mock_get_client, sample_profile):
     """Test handling of invalid JSON response."""
     from services.llm import llm_service
+    llm_service._instance = None
 
     mock_client = AsyncMock()
     mock_get_client.return_value = mock_client

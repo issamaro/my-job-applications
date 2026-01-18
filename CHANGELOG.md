@@ -6,6 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-01-18] - Gemini API Integration
+
+### Added
+- Google Gemini as alternative LLM provider alongside Claude
+- LLM provider abstraction layer with Protocol + Factory pattern
+- Environment variable configuration for provider selection
+- New environment variables: `LLM_PROVIDER`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `CLAUDE_MODEL`
+- 38 new tests for LLM providers and factory
+
+### Changed
+- Refactored monolithic `services/llm.py` into `services/llm/` package
+- Provider selection via `LLM_PROVIDER` env var (defaults to "claude")
+- Both providers support async operations and structured JSON output
+
+### Dependencies
+- google-genai >=1.0.0 (Gemini API client)
+
+### Technical
+- `services/llm/base.py`: LLMProvider protocol definition
+- `services/llm/claude.py`: Claude provider implementation
+- `services/llm/gemini.py`: Gemini provider implementation
+- `services/llm/factory.py`: Provider factory with validation
+- Lazy initialization defers API key validation until first use
+
+---
+
 ## [2026-01-09] - Job Application Domain Redesign
 
 ### Changed

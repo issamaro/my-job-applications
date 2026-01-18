@@ -1,6 +1,13 @@
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Configure logging to show INFO level for services
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s:\t%(name)s - %(message)s",
+)
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI

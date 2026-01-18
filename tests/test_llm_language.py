@@ -1,7 +1,7 @@
 """Tests for LLM language support."""
 
 import pytest
-from services.llm import LANGUAGE_INSTRUCTIONS, USER_PROMPT_TEMPLATE
+from services.llm.base import LANGUAGE_INSTRUCTIONS, USER_PROMPT_TEMPLATE
 
 
 class TestLanguageInstructions:
