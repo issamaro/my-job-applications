@@ -12,7 +12,7 @@
 source .venv/bin/activate && \
 python -c "from main import app; print('Backend: OK')" && \
 python -m pytest -v && \
-npm run build && \
+bun run build && \
 echo "All checks passed"
 ```
 
@@ -21,19 +21,18 @@ echo "All checks passed"
 ## Environment Setup
 
 **Expected versions:**
-- Python: 3.13 (see `.python-version`)
-- Node: 20 (see `.nvmrc`)
+- Python: 3.13 (managed by uv)
+- Node: via bun (managed by bun)
 
 **Initial setup:**
 ```bash
-# Install uv if not already installed
-curl -LsSf https://astral.sh/uv/install.sh | sh
+# Run automated setup (installs everything)
+./setup.sh
 
-# Create venv and install all dependencies
+# Or manually:
+brew install uv bun
 uv sync
-
-# Install Node dependencies
-npm install
+bun install
 ```
 
 **Verify setup:**
@@ -41,12 +40,12 @@ npm install
 # Check Python version
 .venv/bin/python --version  # Should show 3.13.x
 
-# Check Node version
-node --version  # Should show v20.x
+# Check bun version
+bun --version
 
 # Check dependencies
 .venv/bin/python -c "import fastapi; print('Python deps: OK')"
-npm list --depth=0 | head -5
+bun pm ls
 ```
 
 ---
@@ -66,7 +65,7 @@ source .venv/bin/activate
 python -c "import fastapi, pydantic, uvicorn; print('Python deps: OK')"
 
 # Check Node dependencies
-npm list --depth=0 | head -10
+bun pm ls
 ```
 
 **Expected output:** No missing dependencies
@@ -127,8 +126,8 @@ python -m pytest -k "test_generate" -v
 **When to run:** Before shipping UI changes
 
 ```bash
-# Full build (SCSS + Rollup)
-npm run build
+# Full build (Rollup + Svelte)
+bun run build
 
 # Verify output files exist
 ls -la public/build/bundle.js public/build/global.css
@@ -155,8 +154,7 @@ wc -c public/build/bundle.js
 # Or manually:
 source .venv/bin/activate
 uvicorn main:app --reload &
-npm run watch:css &
-npx rollup -c -w
+bun run dev
 ```
 
 **Verify:**
@@ -254,7 +252,7 @@ echo "3. Running tests..."
 python -m pytest -q
 
 echo "4. Building frontend..."
-npm run build
+bun run build
 
 echo "=== All checks passed ==="
 ```
@@ -268,7 +266,7 @@ echo "=== All checks passed ==="
 | `ModuleNotFoundError: No module named 'fastapi'` | venv not active or deps missing | `uv sync` (creates .venv and installs deps) |
 | `WeasyPrint import error` | Missing system library | `brew install pango gdk-pixbuf glib cairo` |
 | `PDF generation failed` in server | DYLD not set in subprocess | Ensure using `services/pdf_subprocess.py` pattern (see Note 2026-01-05) |
-| `npm ERR! engine` | Wrong Node version | `nvm use 20` |
+| `bun: command not found` | bun not installed | `brew install bun` |
 | Tests fail with DB errors | Stale test DB | Delete `test_*.db` files |
 | Rollup circular dep warnings | Svelte internals | Safe to ignore if build succeeds |
 

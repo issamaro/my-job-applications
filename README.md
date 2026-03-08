@@ -4,53 +4,53 @@ AI-powered CV/Resume builder.
 
 ## Prerequisites
 
-- Python 3.13+
-- Node.js 20+
-- [uv](https://docs.astral.sh/uv/) (Python package manager)
-- [Volta](https://volta.sh/) (Node.js version manager) - recommended
+- [Homebrew](https://brew.sh/) (macOS package manager)
+- [uv](https://docs.astral.sh/uv/) — Python version + package manager
+- [bun](https://bun.sh/) — Node.js runtime + package manager
 
 ## Setup
 
-### Node.js (via Volta)
-
-Install Volta (one-time):
+Run once:
 
 ```bash
-curl https://get.volta.sh | bash
+./setup.sh
 ```
 
-Volta automatically uses the correct Node.js version when you enter the project directory (pinned in `package.json`).
+This installs all dependencies (Homebrew, uv, bun, Python 3.13, Python packages, Node packages).
 
-### Python (via uv)
+### Manual setup (if preferred)
 
 ```bash
+# Install package managers
+brew install uv bun
+
+# Python dependencies
 uv sync
-```
 
-### Frontend dependencies
-
-```bash
-npm install
+# Node dependencies
+bun install
 ```
 
 ## Development
 
-### Backend
-
 ```bash
-uv run uvicorn app.main:app --reload
+./dev.sh
 ```
 
-### Frontend
+Or manually:
 
 ```bash
-npm run dev
+# Backend
+uv run uvicorn main:app --reload
+
+# Frontend (separate terminal)
+bun run dev
 ```
 
 ### Build
 
 ```bash
-npm run build
+bun run build
 ```
 
 ## Tests

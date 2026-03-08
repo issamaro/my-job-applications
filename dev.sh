@@ -49,15 +49,9 @@ fi
 echo -e "${BLUE}Syncing Python dependencies...${NC}"
 uv sync --quiet 2>/dev/null || uv sync
 
-# Install npm dependencies if needed
-if [ ! -d "node_modules" ]; then
-    echo -e "${BLUE}Installing npm dependencies...${NC}"
-    npm install
-fi
-
 # Start Rollup/Svelte watcher in background (CSS is bundled automatically)
 echo -e "${GREEN}Starting Svelte build watcher...${NC}"
-npm run dev &
+bun run dev &
 FRONTEND_PID=$!
 
 # Give frontend a moment to start
