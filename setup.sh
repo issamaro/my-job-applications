@@ -70,7 +70,7 @@ ok "Python 3.13"
 
 if ! command -v bun &>/dev/null; then
     step "Installing bun via Homebrew..."
-    brew install bun
+    brew install oven-sh/bun/bun
     ok "bun installed"
     need_restart=true
 else

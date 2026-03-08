@@ -22,7 +22,7 @@ This installs all dependencies (Homebrew, uv, bun, Python 3.13, Python packages,
 
 ```bash
 # Install package managers
-brew install uv bun
+brew install uv && brew install oven-sh/bun/bun
 
 # Python dependencies
 uv sync

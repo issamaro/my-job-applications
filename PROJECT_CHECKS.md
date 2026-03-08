@@ -266,7 +266,7 @@ echo "=== All checks passed ==="
 | `ModuleNotFoundError: No module named 'fastapi'` | venv not active or deps missing | `uv sync` (creates .venv and installs deps) |
 | `WeasyPrint import error` | Missing system library | `brew install pango gdk-pixbuf glib cairo` |
 | `PDF generation failed` in server | DYLD not set in subprocess | Ensure using `services/pdf_subprocess.py` pattern (see Note 2026-01-05) |
-| `bun: command not found` | bun not installed | `brew install bun` |
+| `bun: command not found` | bun not installed | `brew install oven-sh/bun/bun` |
 | Tests fail with DB errors | Stale test DB | Delete `test_*.db` files |
 | Rollup circular dep warnings | Svelte internals | Safe to ignore if build succeeds |
 
