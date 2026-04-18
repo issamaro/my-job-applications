@@ -92,24 +92,15 @@ ok "Node dependencies"
 # ── .env ─────────────────────────────────────────────────────────────────────
 
 if [[ ! -f ".env" ]]; then
+    if [[ ! -f ".env.example" ]]; then
+        fail ".env.example is missing — run setup.sh from a full git clone of the repo."
+    fi
     echo ""
     warn "No .env file found. Creating one now."
     echo "You'll need API keys to use the AI features."
     echo ""
-
-    if [[ -f ".env.example" ]]; then
-        cp .env.example .env
-        warn ".env created from .env.example — open it and fill in your API keys."
-    else
-        cat > .env << 'EOF'
-# MyCV environment variables
-# Fill in your API keys before running the app.
-
-ANTHROPIC_API_KEY=
-GOOGLE_API_KEY=
-EOF
-        warn ".env created — open it and fill in your API keys."
-    fi
+    cp .env.example .env
+    warn ".env created from .env.example — open it and fill in your API keys."
 else
     ok ".env"
 fi

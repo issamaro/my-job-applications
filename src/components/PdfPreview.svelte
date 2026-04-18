@@ -11,7 +11,9 @@
       experience: 'Experience',
       education: 'Education',
       projects: 'Projects',
-      present: 'Present'
+      present: 'Present',
+      at: 'at',
+      in: 'in'
     },
     fr: {
       contact: 'Contact',
@@ -21,7 +23,9 @@
       experience: 'Expérience',
       education: 'Formation',
       projects: 'Projets',
-      present: 'Présent'
+      present: 'Présent',
+      at: 'chez',
+      in: 'en'
     },
     nl: {
       contact: 'Contact',
@@ -31,7 +35,9 @@
       experience: 'Werkervaring',
       education: 'Opleiding',
       projects: 'Projecten',
-      present: 'Heden'
+      present: 'Heden',
+      at: 'bij',
+      in: 'in'
     }
   };
 
@@ -135,7 +141,7 @@
               <div class="job">
                 <div class="job-header">
                   <span class="job-title">{exp.title}</span>
-                  <span class="job-company">at {exp.company}</span>
+                  <span class="job-company">{t.at} {exp.company}</span>
                   <span class="job-dates">{formatWorkDate(exp.start_date)} - {formatWorkDate(exp.end_date)}</span>
                 </div>
                 {#if exp.description}
@@ -151,7 +157,7 @@
             <h2>{t.education}</h2>
             {#each includedEducation as edu}
               <p>
-                <strong>{edu.degree}{edu.field_of_study ? ` in ${edu.field_of_study}` : ''}</strong>
+                <strong>{edu.degree}{edu.field_of_study ? ` ${t.in} ${edu.field_of_study}` : ''}</strong>
                 | {edu.institution}
                 {#if edu.graduation_year}| {edu.graduation_year}{/if}
               </p>
@@ -231,7 +237,7 @@
           <h2>{t.education}</h2>
           {#each includedEducation as edu}
             <p>
-              {edu.degree}{edu.field_of_study ? ` in ${edu.field_of_study}` : ''}
+              {edu.degree}{edu.field_of_study ? ` ${t.in} ${edu.field_of_study}` : ''}
               | {edu.institution}
               {#if edu.graduation_year}| {edu.graduation_year}{/if}
             </p>
@@ -296,7 +302,7 @@
         <div class="job">
           <div class="job-header">
             <span class="job-title">{exp.title}</span>
-            <span class="job-company">{template === 'classic' ? '|' : 'at'} {exp.company}</span>
+            <span class="job-company">{template === 'classic' ? '|' : t.at} {exp.company}</span>
             <span class="job-dates">{formatWorkDate(exp.start_date)} - {formatWorkDate(exp.end_date)}</span>
           </div>
           {#if exp.description}
@@ -328,9 +334,9 @@
         {#each includedEducation as edu}
         <p>
           {#if template === 'modern'}
-            <strong>{edu.degree}{edu.field_of_study ? ` in ${edu.field_of_study}` : ''}</strong>
+            <strong>{edu.degree}{edu.field_of_study ? ` ${t.in} ${edu.field_of_study}` : ''}</strong>
           {:else}
-            {edu.degree}{edu.field_of_study ? ` in ${edu.field_of_study}` : ''}
+            {edu.degree}{edu.field_of_study ? ` ${t.in} ${edu.field_of_study}` : ''}
           {/if}
           | {edu.institution}
           {#if edu.graduation_year}| {edu.graduation_year}{/if}
