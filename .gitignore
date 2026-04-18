@@ -44,3 +44,4 @@ archive/
 workbench/
 backlog/
 methodology-improvement/
+.coverage

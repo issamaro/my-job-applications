@@ -1,7 +1,4 @@
 import logging
-from dotenv import load_dotenv
-
-load_dotenv()
 
 # Configure logging to show INFO level for services
 logging.basicConfig(
