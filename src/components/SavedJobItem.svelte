@@ -233,6 +233,7 @@
 
   .job-info {
     flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -309,6 +310,7 @@
     font-size: 14px;
     color: rgb(var(--color-text-rgb) / 0.7);
     line-height: 1.4;
+    overflow-wrap: break-word;
   }
 
   .job-meta {
