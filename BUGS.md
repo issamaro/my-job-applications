@@ -1,6 +1,6 @@
 # Diagnosed Bugs
 
-Tracked bugs surfaced by codebase audit. Status as of 2026-04-19.
+Tracked bugs surfaced by codebase audit. Status as of 2026-04-19 — all 4 bugs fixed as of 2026-04-20.
 
 ---
 
@@ -58,37 +58,24 @@ branches.
 `chez Acme Corp` + `BS en Computer Science` (FR) and `bij Acme Corp` (NL)
 across Modern and Brussels templates.
 
----
-
-## Outstanding
-
 ### #4 — `ResumeView.svelte` edit pane hardcodes English `in`
 
+**Commit:** `26c9670`
 **File:** [src/components/ResumeView.svelte:326](src/components/ResumeView.svelte:326)
 
 Same class of bug as #3 but in a different component — the edit/view pane
 used when reviewing a generated resume before exporting.
 
-```svelte
-<p>{edu.degree} {edu.field_of_study ? `in ${edu.field_of_study}` : ''} · ...
-```
+**Fix:** Added `in` to `sectionTranslations` for all three languages
+(en: `"in"`, fr: `"en"`, nl: `"in"`) and replaced the hardcoded string on
+line 326 with `${labels.in}`. No `at` fix needed — work experience uses ` · `
+as a separator, not a connector word.
 
-`ResumeView.svelte` carries its own `sectionTranslations` table
-([src/components/ResumeView.svelte:18-46](src/components/ResumeView.svelte:18))
-with section headers only — no `in` key. A FR/NL user editing a resume sees
-`BS in Computer Science` in the editor but `BS en Computer Science` in the
-preview and PDF.
+---
 
-**Suggested fix:** Add `in` to `sectionTranslations` for all three languages
-(en: `"in"`, fr: `"en"`, nl: `"in"`) and replace the hardcoded string on
-line 326. No `at` fix is needed here — work experience uses ` · ` as a
-separator, not a connector word.
+## Outstanding
 
-**Related cleanup to consider at the same time:** the inline translation
-tables in `PdfPreview.svelte` and `ResumeView.svelte` duplicate the same
-strings that live in `translations/*.json`. A single source of truth
-(build-time JSON import or a shared JS module) would prevent future
-drift. Out of scope for the straight bug fix.
+None. All diagnosed bugs fixed as of commit `26c9670`.
 
 ---
 
