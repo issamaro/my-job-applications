@@ -36,6 +36,12 @@ class ResumeGeneratorService:
             # Remove photo from profile to avoid sending huge base64 data to LLM
             del profile_dict["personal_info"]["photo"]
 
+        if job_id is not None:
+            with get_db() as conn:
+                cursor = conn.execute("SELECT id FROM jobs WHERE id = ?", (job_id,))
+                if cursor.fetchone() is None:
+                    raise ValueError(f"Job with id {job_id} not found")
+
         llm_result = await llm_service.analyze_and_generate(job_description, profile_dict, language)
 
         # Restore photo to profile_dict for use in resume

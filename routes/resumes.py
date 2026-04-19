@@ -73,7 +73,7 @@ async def delete_resume(resume_id: int):
 
 
 @router.get("/{resume_id}/pdf")
-async def export_resume_pdf(
+def export_resume_pdf(
     resume_id: int,
     template: str = Query(default="classic", pattern="^(classic|modern|brussels|eu_classic)$"),
     language: str = Query(default="en", pattern="^(en|fr|nl)$")

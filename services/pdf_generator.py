@@ -1,18 +1,25 @@
-import os
-import subprocess
-import sys
-import tempfile
+# Lean Code — BSD 3-Clause License — Vivian Voss, 2026
+# Scope: Generate PDF resumes from HTML templates using Playwright Chromium.
+
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from playwright.sync_api import sync_playwright
 
 from services.translations import load_translations, format_date
+
+
+PAGE_SETTINGS = {
+    "classic":    {"format": "Letter", "margin": {"top": "0.75in", "right": "0.75in", "bottom": "0.75in", "left": "0.75in"}},
+    "modern":     {"format": "Letter", "margin": {"top": "0.75in", "right": "0.75in", "bottom": "0.75in", "left": "0.75in"}},
+    "brussels":   {"format": "A4", "margin": {"top": "20mm", "right": "20mm", "bottom": "20mm", "left": "20mm"}},
+    "eu_classic": {"format": "A4", "margin": {"top": "20mm", "right": "20mm", "bottom": "20mm", "left": "20mm"}},
+}
 
 
 class PdfGeneratorService:
     TEMPLATES_DIR = Path(__file__).parent.parent / "templates"
     VALID_TEMPLATES = ["classic", "modern", "brussels", "eu_classic"]
-    SUBPROCESS_SCRIPT = Path(__file__).parent / "pdf_subprocess.py"
 
     def __init__(self):
         self.env = Environment(
@@ -21,43 +28,33 @@ class PdfGeneratorService:
         )
 
     def generate_pdf(self, resume_data: dict, template: str = "classic", language: str = "en") -> bytes:
-        """Generate PDF from resume data using specified template.
-
-        Uses subprocess to bypass macOS SIP restrictions on DYLD_* variables.
-        """
         if template not in self.VALID_TEMPLATES:
             raise ValueError(f"Invalid template: {template}")
 
         html_template = self.env.get_template(f"resume_{template}.html")
         html_content = html_template.render(**self._prepare_context(resume_data, language))
-        css_path = self.TEMPLATES_DIR / "resume_base.css"
 
-        with tempfile.TemporaryDirectory() as tmpdir:
-            html_path = Path(tmpdir) / "resume.html"
-            pdf_path = Path(tmpdir) / "resume.pdf"
+        css_content = (self.TEMPLATES_DIR / "resume_base.css").read_text()
+        html_with_style = html_content.replace("</head>", f"<style>{css_content}</style></head>")
 
-            html_path.write_text(html_content)
+        settings = PAGE_SETTINGS[template]
 
-            env = os.environ.copy()
-            env["DYLD_FALLBACK_LIBRARY_PATH"] = "/opt/homebrew/lib"
-
-            result = subprocess.run(
-                [sys.executable, str(self.SUBPROCESS_SCRIPT), str(html_path), str(css_path), str(pdf_path)],
-                env=env,
-                capture_output=True,
-                text=True,
+        with sync_playwright() as playwright:
+            browser = playwright.chromium.launch()
+            page = browser.new_page()
+            page.set_content(html_with_style, wait_until="load")
+            pdf_bytes = page.pdf(
+                format=settings["format"],
+                margin=settings["margin"],
+                print_background=True,
             )
+            browser.close()
 
-            if result.returncode != 0:
-                raise RuntimeError(f"PDF generation failed: {result.stderr}")
-
-            return pdf_path.read_bytes()
+        return pdf_bytes
 
     def _prepare_context(self, resume_data: dict, language: str = "en") -> dict:
-        """Filter to only included sections and add translations."""
         translations = load_translations(language)
 
-        # Format dates in work experiences
         work_experiences = []
         for exp in resume_data.get("work_experiences", []):
             if exp.get("included", True):
@@ -91,7 +88,6 @@ class PdfGeneratorService:
         }
 
     def generate_filename(self, resume_data: dict, company_name: str | None) -> str:
-        """Generate PDF filename: FullName_Resume_Company.pdf"""
         name = resume_data.get("personal_info", {}).get("full_name", "Resume")
         company = company_name or "Company"
 

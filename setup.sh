@@ -83,6 +83,10 @@ step "Installing Python dependencies..."
 uv sync --quiet
 ok "Python dependencies"
 
+step "Installing Playwright browser..."
+uv run playwright install chromium 2>/dev/null
+ok "Playwright Chromium"
+
 # ── Node dependencies ─────────────────────────────────────────────────────────
 
 step "Installing Node dependencies..."
