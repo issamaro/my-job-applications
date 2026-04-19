@@ -23,7 +23,8 @@
       skills: 'Skills',
       education: 'Education',
       languages: 'Languages',
-      projects: 'Projects'
+      projects: 'Projects',
+      in: 'in'
     },
     fr: {
       resumeEditor: 'Éditeur de CV',
@@ -32,7 +33,8 @@
       skills: 'Compétences',
       education: 'Formation',
       languages: 'Langues',
-      projects: 'Projets'
+      projects: 'Projets',
+      in: 'en'
     },
     nl: {
       resumeEditor: 'CV Bewerken',
@@ -41,7 +43,8 @@
       skills: 'Vaardigheden',
       education: 'Opleiding',
       languages: 'Talen',
-      projects: 'Projecten'
+      projects: 'Projecten',
+      in: 'in'
     }
   };
 
@@ -323,7 +326,7 @@
     >
       {#snippet children()}
         {#each resumeData.education as edu}
-          <p>{edu.degree} {edu.field_of_study ? `in ${edu.field_of_study}` : ''} · {edu.institution} · {edu.graduation_year || ''}</p>
+          <p>{edu.degree} {edu.field_of_study ? `${labels.in} ${edu.field_of_study}` : ''} · {edu.institution} · {edu.graduation_year || ''}</p>
         {/each}
       {/snippet}
     </ResumeSection>
