@@ -5,9 +5,16 @@ from fastapi import HTTPException
 
 DATABASE = "app.db"
 
+VALID_TABLES = frozenset({
+    "users", "work_experiences", "education", "skills",
+    "projects", "languages", "jobs", "generated_resumes", "job_versions",
+})
+
 
 def get_or_404(conn, table: str, id: int, entity_name: str, model_class=None):
     """Fetch a row by ID or raise 404. Optionally return as Pydantic model."""
+    if table not in VALID_TABLES:
+        raise ValueError(f"Invalid table name: {table}")
     cursor = conn.execute(f"SELECT * FROM {table} WHERE id = ?", (id,))
     row = cursor.fetchone()
     if row is None:
@@ -19,6 +26,8 @@ def get_or_404(conn, table: str, id: int, entity_name: str, model_class=None):
 
 def exists_or_404(conn, table: str, id: int, entity_name: str):
     """Check existence or raise 404 (for UPDATE/DELETE)."""
+    if table not in VALID_TABLES:
+        raise ValueError(f"Invalid table name: {table}")
     cursor = conn.execute(f"SELECT id FROM {table} WHERE id = ?", (id,))
     if cursor.fetchone() is None:
         raise HTTPException(status_code=404, detail=f"{entity_name} not found")
@@ -26,6 +35,8 @@ def exists_or_404(conn, table: str, id: int, entity_name: str):
 
 def fetch_one(conn, table: str, id: int, model_class):
     """Fetch a row by ID and return as Pydantic model (use after INSERT/UPDATE)."""
+    if table not in VALID_TABLES:
+        raise ValueError(f"Invalid table name: {table}")
     cursor = conn.execute(f"SELECT * FROM {table} WHERE id = ?", (id,))
     return model_class.model_validate(dict(cursor.fetchone()))
 
