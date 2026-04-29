@@ -10,8 +10,8 @@ from services.translations import load_translations, format_date
 
 
 PAGE_SETTINGS = {
-    "classic":    {"format": "Letter", "margin": {"top": "0.75in", "right": "0.75in", "bottom": "0.75in", "left": "0.75in"}},
-    "modern":     {"format": "Letter", "margin": {"top": "0.75in", "right": "0.75in", "bottom": "0.75in", "left": "0.75in"}},
+    "classic":    {"format": "A4", "margin": {"top": "20mm", "right": "20mm", "bottom": "20mm", "left": "20mm"}},
+    "modern":     {"format": "A4", "margin": {"top": "20mm", "right": "20mm", "bottom": "20mm", "left": "20mm"}},
     "brussels":   {"format": "A4", "margin": {"top": "20mm", "right": "20mm", "bottom": "20mm", "left": "20mm"}},
     "eu_classic": {"format": "A4", "margin": {"top": "20mm", "right": "20mm", "bottom": "20mm", "left": "20mm"}},
 }

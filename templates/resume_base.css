@@ -1,9 +1,9 @@
 /* Base CSS for PDF Resume Templates */
 
-/* Page Configuration - US Letter, ATS-friendly margins */
+/* Page Configuration - A4 across all templates */
 @page {
-    size: letter;
-    margin: 0.75in;
+    size: A4;
+    margin: 20mm;
 }
 
 /* Reset */
@@ -232,11 +232,6 @@ body {
 }
 
 /* Brussels Template - Two Column with Sidebar */
-@page brussels {
-    size: A4;
-    margin: 20mm;
-}
-
 .template-brussels {
     font-family: Arial, Helvetica, sans-serif;
     font-size: 10pt;
@@ -397,11 +392,6 @@ body {
 }
 
 /* EU Classic Template - Single Column Traditional */
-@page eu_classic {
-    size: A4;
-    margin: 20mm;
-}
-
 .template-eu_classic {
     font-family: Georgia, "Times New Roman", serif;
     font-size: 11pt;
