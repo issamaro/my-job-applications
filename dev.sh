@@ -20,13 +20,6 @@ echo -e "${BLUE}╔════════════════════�
 echo -e "${BLUE}║       MyCV Development Server            ║${NC}"
 echo -e "${BLUE}╚══════════════════════════════════════════╝${NC}"
 
-# Check for .env file
-if [ ! -f ".env" ]; then
-    echo -e "${RED}Error: .env file not found${NC}"
-    echo -e "${YELLOW}Copy .env.example to .env and configure your API keys${NC}"
-    exit 1
-fi
-
 # Cleanup function
 cleanup() {
     echo -e "\n${YELLOW}Shutting down servers...${NC}"
