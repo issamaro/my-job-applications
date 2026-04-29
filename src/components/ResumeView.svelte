@@ -158,8 +158,9 @@
       toastType = 'success';
       toastMessage = 'PDF downloaded';
     } catch (e) {
+      console.error('PDF download failed:', e);
       toastType = 'error';
-      toastMessage = 'Could not generate PDF. Please try again.';
+      toastMessage = e?.message ? `PDF download failed: ${e.message}` : 'Could not generate PDF. Please try again.';
     } finally {
       isExporting = false;
     }

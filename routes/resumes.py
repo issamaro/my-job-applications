@@ -105,8 +105,9 @@ def export_resume_pdf(
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
-    except Exception:
-        raise HTTPException(status_code=500, detail="Could not generate PDF")
+    except Exception as e:
+        logger.exception("PDF generation failed")
+        raise HTTPException(status_code=500, detail=f"Could not generate PDF: {type(e).__name__}: {e}")
 
 
 profile_router = APIRouter(prefix="/api/profile", tags=["profile"])
