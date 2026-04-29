@@ -1,7 +1,6 @@
 <script>
   let { resumeData, template = 'classic', language = 'en' } = $props();
 
-  // Section header translations
   const translations = {
     en: {
       contact: 'Contact',
@@ -47,7 +46,6 @@
     if (!dateStr) return t.present;
     const [year, month] = dateStr.split('-');
     const date = new Date(parseInt(year), parseInt(month) - 1);
-    // Use localized month names
     const locales = { en: 'en-US', fr: 'fr-FR', nl: 'nl-NL' };
     return date.toLocaleDateString(locales[language] || 'en-US', { month: 'short', year: 'numeric' });
   }
@@ -67,25 +65,120 @@
   let includedLanguages = $derived(
     (resumeData?.languages || []).filter(lang => lang.included !== false)
   );
-
-  let isEuropeanTemplate = $derived(template === 'brussels' || template === 'eu_classic');
 </script>
+
+{#snippet photoOrPlaceholder(photo)}
+  {#if photo}
+    <img src={photo} alt="Profile photo" class="profile-photo">
+  {:else}
+    <div class="photo-placeholder" role="img" aria-label="Photo placeholder">
+      <svg viewBox="0 0 100 100" class="silhouette">
+        <circle cx="50" cy="35" r="20" fill="#9CA3AF"/>
+        <ellipse cx="50" cy="85" rx="35" ry="25" fill="#9CA3AF"/>
+      </svg>
+    </div>
+  {/if}
+{/snippet}
+
+{#snippet summarySection(text)}
+  {#if text}
+    <section class="summary">
+      <h2>{t.summary}</h2>
+      <p>{text}</p>
+    </section>
+  {/if}
+{/snippet}
+
+{#snippet experienceSection(items, connector)}
+  {#if items.length > 0}
+    <section class="experience">
+      <h2>{t.experience}</h2>
+      {#each items as exp}
+        <div class="job">
+          <div class="job-header">
+            <span class="job-title">{exp.title}</span>
+            <span class="job-company">{connector} {exp.company}</span>
+            <span class="job-dates">{formatWorkDate(exp.start_date)} - {formatWorkDate(exp.end_date)}</span>
+          </div>
+          {#if exp.description}
+            <p class="job-description">{exp.description}</p>
+          {/if}
+        </div>
+      {/each}
+    </section>
+  {/if}
+{/snippet}
+
+{#snippet educationSection(items, boldDegree)}
+  {#if items.length > 0}
+    <section class="education">
+      <h2>{t.education}</h2>
+      {#each items as edu}
+        <p>
+          {#if boldDegree}
+            <strong>{edu.degree}{edu.field_of_study ? ` ${t.in} ${edu.field_of_study}` : ''}</strong>
+          {:else}
+            {edu.degree}{edu.field_of_study ? ` ${t.in} ${edu.field_of_study}` : ''}
+          {/if}
+          | {edu.institution}
+          {#if edu.graduation_year}| {edu.graduation_year}{/if}
+        </p>
+      {/each}
+    </section>
+  {/if}
+{/snippet}
+
+{#snippet skillsAsChips(items)}
+  {#if items.length > 0}
+    <section class="skills">
+      <h2>{t.skills}</h2>
+      <div class="skills-list">
+        {#each items as skill}
+          <span class="skill-item">{skill.name}</span>
+        {/each}
+      </div>
+    </section>
+  {/if}
+{/snippet}
+
+{#snippet skillsAsText(items)}
+  {#if items.length > 0}
+    <section class="skills">
+      <h2>{t.skills}</h2>
+      <p>{items.map(s => s.name).join(', ')}</p>
+    </section>
+  {/if}
+{/snippet}
+
+{#snippet languagesAsText(items)}
+  {#if items.length > 0}
+    <section class="languages">
+      <h2>{t.languages}</h2>
+      <p>{items.map(l => `${l.name} - ${l.level}`).join(', ')}</p>
+    </section>
+  {/if}
+{/snippet}
+
+{#snippet projectsSection(items, techPrefix)}
+  {#if items.length > 0}
+    <section class="projects">
+      <h2>{t.projects}</h2>
+      {#each items as project}
+        <div class="project">
+          <p class="project-name">{project.name}</p>
+          {#if project.description}<p>{project.description}</p>{/if}
+          {#if project.technologies}<p class="technologies">{techPrefix}{project.technologies}</p>{/if}
+        </div>
+      {/each}
+    </section>
+  {/if}
+{/snippet}
 
 <div class="pdf-preview template-{template}">
   {#if resumeData}
     {#if template === 'brussels'}
-      <!-- Brussels Template: Two-column with sidebar -->
       <aside class="sidebar">
-        {#if resumeData.personal_info?.photo}
-          <img src={resumeData.personal_info.photo} alt="Profile photo" class="profile-photo">
-        {:else}
-          <div class="photo-placeholder" role="img" aria-label="Photo placeholder">
-            <svg viewBox="0 0 100 100" class="silhouette">
-              <circle cx="50" cy="35" r="20" fill="#9CA3AF"/>
-              <ellipse cx="50" cy="85" rx="35" ry="25" fill="#9CA3AF"/>
-            </svg>
-          </div>
-        {/if}
+        {@render photoOrPlaceholder(resumeData.personal_info?.photo)}
 
         <div class="contact">
           <h3>{t.contact}</h3>
@@ -126,61 +219,13 @@
 
       <main class="main-content">
         <h1 class="name">{resumeData.personal_info?.full_name || ''}</h1>
-
-        {#if resumeData.summary}
-          <section class="summary">
-            <h2>{t.summary}</h2>
-            <p>{resumeData.summary}</p>
-          </section>
-        {/if}
-
-        {#if includedWork.length > 0}
-          <section class="experience">
-            <h2>{t.experience}</h2>
-            {#each includedWork as exp}
-              <div class="job">
-                <div class="job-header">
-                  <span class="job-title">{exp.title}</span>
-                  <span class="job-company">{t.at} {exp.company}</span>
-                  <span class="job-dates">{formatWorkDate(exp.start_date)} - {formatWorkDate(exp.end_date)}</span>
-                </div>
-                {#if exp.description}
-                  <p class="job-description">{exp.description}</p>
-                {/if}
-              </div>
-            {/each}
-          </section>
-        {/if}
-
-        {#if includedEducation.length > 0}
-          <section class="education">
-            <h2>{t.education}</h2>
-            {#each includedEducation as edu}
-              <p>
-                <strong>{edu.degree}{edu.field_of_study ? ` ${t.in} ${edu.field_of_study}` : ''}</strong>
-                | {edu.institution}
-                {#if edu.graduation_year}| {edu.graduation_year}{/if}
-              </p>
-            {/each}
-          </section>
-        {/if}
-
-        {#if includedProjects.length > 0}
-          <section class="projects">
-            <h2>{t.projects}</h2>
-            {#each includedProjects as project}
-              <div class="project">
-                <p class="project-name">{project.name}</p>
-                {#if project.description}<p>{project.description}</p>{/if}
-                {#if project.technologies}<p class="technologies">Technologies: {project.technologies}</p>{/if}
-              </div>
-            {/each}
-          </section>
-        {/if}
+        {@render summarySection(resumeData.summary)}
+        {@render experienceSection(includedWork, t.at)}
+        {@render educationSection(includedEducation, true)}
+        {@render projectsSection(includedProjects, 'Technologies: ')}
       </main>
 
     {:else if template === 'eu_classic'}
-      <!-- EU Classic Template: Single-column with header photo -->
       <header class="cv-header">
         <div class="header-content">
           <h1 class="name">{resumeData.personal_info?.full_name || ''}</h1>
@@ -195,85 +240,17 @@
             </p>
           {/if}
         </div>
-        {#if resumeData.personal_info?.photo}
-          <img src={resumeData.personal_info.photo} alt="Profile photo" class="profile-photo">
-        {:else}
-          <div class="photo-placeholder" role="img" aria-label="Photo placeholder">
-            <svg viewBox="0 0 100 100" class="silhouette">
-              <circle cx="50" cy="35" r="20" fill="#9CA3AF"/>
-              <ellipse cx="50" cy="85" rx="35" ry="25" fill="#9CA3AF"/>
-            </svg>
-          </div>
-        {/if}
+        {@render photoOrPlaceholder(resumeData.personal_info?.photo)}
       </header>
 
-      {#if resumeData.summary}
-        <section class="summary">
-          <h2>{t.summary}</h2>
-          <p>{resumeData.summary}</p>
-        </section>
-      {/if}
-
-      {#if includedWork.length > 0}
-        <section class="experience">
-          <h2>{t.experience}</h2>
-          {#each includedWork as exp}
-            <div class="job">
-              <div class="job-header">
-                <span class="job-title">{exp.title}</span>
-                <span class="job-company">| {exp.company}</span>
-                <span class="job-dates">{formatWorkDate(exp.start_date)} - {formatWorkDate(exp.end_date)}</span>
-              </div>
-              {#if exp.description}
-                <p class="job-description">{exp.description}</p>
-              {/if}
-            </div>
-          {/each}
-        </section>
-      {/if}
-
-      {#if includedEducation.length > 0}
-        <section class="education">
-          <h2>{t.education}</h2>
-          {#each includedEducation as edu}
-            <p>
-              {edu.degree}{edu.field_of_study ? ` ${t.in} ${edu.field_of_study}` : ''}
-              | {edu.institution}
-              {#if edu.graduation_year}| {edu.graduation_year}{/if}
-            </p>
-          {/each}
-        </section>
-      {/if}
-
-      {#if includedSkills.length > 0}
-        <section class="skills">
-          <h2>{t.skills}</h2>
-          <p>{includedSkills.map(s => s.name).join(', ')}</p>
-        </section>
-      {/if}
-
-      {#if includedLanguages.length > 0}
-        <section class="languages">
-          <h2>{t.languages}</h2>
-          <p>{includedLanguages.map(l => `${l.name} - ${l.level}`).join(', ')}</p>
-        </section>
-      {/if}
-
-      {#if includedProjects.length > 0}
-        <section class="projects">
-          <h2>{t.projects}</h2>
-          {#each includedProjects as project}
-            <div class="project">
-              <p class="project-name">{project.name}</p>
-              {#if project.description}<p>{project.description}</p>{/if}
-              {#if project.technologies}<p class="technologies">{project.technologies}</p>{/if}
-            </div>
-          {/each}
-        </section>
-      {/if}
+      {@render summarySection(resumeData.summary)}
+      {@render experienceSection(includedWork, '|')}
+      {@render educationSection(includedEducation, false)}
+      {@render skillsAsText(includedSkills)}
+      {@render languagesAsText(includedLanguages)}
+      {@render projectsSection(includedProjects, '')}
 
     {:else}
-      <!-- Classic/Modern Templates -->
       <header>
         <h1 class="name">{resumeData.personal_info?.full_name || ''}</h1>
         <p class="contact">
@@ -281,89 +258,25 @@
           {#if resumeData.personal_info?.phone} | {resumeData.personal_info.phone}{/if}
         </p>
         {#if resumeData.personal_info?.location || resumeData.personal_info?.linkedin_url}
-        <p class="contact">
-          {resumeData.personal_info?.location || ''}
-          {#if resumeData.personal_info?.linkedin_url} | {resumeData.personal_info.linkedin_url}{/if}
-        </p>
+          <p class="contact">
+            {resumeData.personal_info?.location || ''}
+            {#if resumeData.personal_info?.linkedin_url} | {resumeData.personal_info.linkedin_url}{/if}
+          </p>
         {/if}
       </header>
 
-      {#if resumeData.summary}
-      <section class="summary">
-        <h2>{t.summary}</h2>
-        <p>{resumeData.summary}</p>
-      </section>
+      {@render summarySection(resumeData.summary)}
+      {@render experienceSection(includedWork, template === 'classic' ? '|' : t.at)}
+
+      {#if template === 'modern'}
+        {@render skillsAsChips(includedSkills)}
+      {:else}
+        {@render skillsAsText(includedSkills)}
       {/if}
 
-      {#if includedWork.length > 0}
-      <section class="experience">
-        <h2>{t.experience}</h2>
-        {#each includedWork as exp}
-        <div class="job">
-          <div class="job-header">
-            <span class="job-title">{exp.title}</span>
-            <span class="job-company">{template === 'classic' ? '|' : t.at} {exp.company}</span>
-            <span class="job-dates">{formatWorkDate(exp.start_date)} - {formatWorkDate(exp.end_date)}</span>
-          </div>
-          {#if exp.description}
-          <p class="job-description">{exp.description}</p>
-          {/if}
-        </div>
-        {/each}
-      </section>
-      {/if}
-
-      {#if includedSkills.length > 0}
-      <section class="skills">
-        <h2>{t.skills}</h2>
-        {#if template === 'modern'}
-        <div class="skills-list">
-          {#each includedSkills as skill}
-          <span class="skill-item">{skill.name}</span>
-          {/each}
-        </div>
-        {:else}
-        <p>{includedSkills.map(s => s.name).join(', ')}</p>
-        {/if}
-      </section>
-      {/if}
-
-      {#if includedEducation.length > 0}
-      <section class="education">
-        <h2>{t.education}</h2>
-        {#each includedEducation as edu}
-        <p>
-          {#if template === 'modern'}
-            <strong>{edu.degree}{edu.field_of_study ? ` ${t.in} ${edu.field_of_study}` : ''}</strong>
-          {:else}
-            {edu.degree}{edu.field_of_study ? ` ${t.in} ${edu.field_of_study}` : ''}
-          {/if}
-          | {edu.institution}
-          {#if edu.graduation_year}| {edu.graduation_year}{/if}
-        </p>
-        {/each}
-      </section>
-      {/if}
-
-      {#if includedLanguages.length > 0}
-      <section class="languages">
-        <h2>{t.languages}</h2>
-        <p>{includedLanguages.map(l => `${l.name} - ${l.level}`).join(', ')}</p>
-      </section>
-      {/if}
-
-      {#if includedProjects.length > 0}
-      <section class="projects">
-        <h2>{t.projects}</h2>
-        {#each includedProjects as project}
-        <div class="project">
-          <p class="project-name">{project.name}</p>
-          {#if project.description}<p>{project.description}</p>{/if}
-          {#if project.technologies}<p class="technologies">{template === 'modern' ? 'Technologies: ' : ''}{project.technologies}</p>{/if}
-        </div>
-        {/each}
-      </section>
-      {/if}
+      {@render educationSection(includedEducation, template === 'modern')}
+      {@render languagesAsText(includedLanguages)}
+      {@render projectsSection(includedProjects, template === 'modern' ? 'Technologies: ' : '')}
     {/if}
   {/if}
 </div>
