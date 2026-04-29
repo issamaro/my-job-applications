@@ -16,6 +16,8 @@ NC='\033[0m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+export PLAYWRIGHT_BROWSERS_PATH=0
+
 echo ""
 echo -e "${BOLD}MyCV — Setup${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
@@ -92,22 +94,6 @@ ok "Playwright Chromium"
 step "Installing Node dependencies..."
 bun install --silent
 ok "Node dependencies"
-
-# ── .env ─────────────────────────────────────────────────────────────────────
-
-if [[ ! -f ".env" ]]; then
-    if [[ ! -f ".env.example" ]]; then
-        fail ".env.example is missing — run setup.sh from a full git clone of the repo."
-    fi
-    echo ""
-    warn "No .env file found. Creating one now."
-    echo "You'll need API keys to use the AI features."
-    echo ""
-    cp .env.example .env
-    warn ".env created from .env.example — open it and fill in your API keys."
-else
-    ok ".env"
-fi
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 
