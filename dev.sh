@@ -16,6 +16,8 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+export PLAYWRIGHT_BROWSERS_PATH=0
+
 echo -e "${BLUE}╔══════════════════════════════════════════╗${NC}"
 echo -e "${BLUE}║       MyCV Development Server            ║${NC}"
 echo -e "${BLUE}╚══════════════════════════════════════════╝${NC}"

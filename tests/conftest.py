@@ -1,4 +1,7 @@
 import os
+
+os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "0")
+
 import tempfile
 import pytest
 from fastapi.testclient import TestClient
