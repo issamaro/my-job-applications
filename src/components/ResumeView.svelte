@@ -65,6 +65,7 @@
   let isExporting = $state(false);
   let toastMessage = $state(null);
   let toastType = $state('success');
+  let draggedIndex = $state(null);
 
   $effect(() => {
     if (resume?.resume) {
@@ -146,6 +147,43 @@
         included: !resumeData.languages[0]?.included
       }));
     }
+  }
+
+  function updateDraggedIndex(e, index) {
+    draggedIndex = index;
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+  function updateOrderOnHover(e, index) {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const next = [...resumeData.work_experiences];
+    const moved = next[draggedIndex];
+    next.splice(draggedIndex, 1);
+    next.splice(index, 0, moved);
+    resumeData.work_experiences = next;
+    draggedIndex = index;
+  }
+
+  async function writeReorderedOrder(e) {
+    e.preventDefault();
+    if (draggedIndex === null) return;
+
+    try {
+      await updateResume(resume.id, resumeData);
+      toastType = 'success';
+      toastMessage = 'Order saved';
+    } catch (err) {
+      toastType = 'error';
+      toastMessage = 'Could not save order. Reverting.';
+      resumeData = JSON.parse(JSON.stringify(resume.resume));
+    }
+    draggedIndex = null;
+  }
+
+  function deleteDraggedIndex() {
+    draggedIndex = null;
   }
 
   async function handleDownloadPdf() {
@@ -264,8 +302,17 @@
       {#snippet children()}
         <div class="work-list">
           {#each resumeData.work_experiences as exp, index}
-            <div class="work-item">
+            <div
+              class="work-item"
+              class:dragging={draggedIndex === index}
+              draggable={editingId !== exp.id}
+              ondragstart={(e) => updateDraggedIndex(e, index)}
+              ondragover={(e) => updateOrderOnHover(e, index)}
+              ondrop={writeReorderedOrder}
+              ondragend={deleteDraggedIndex}
+            >
               <div class="work-header">
+                <span class="drag-handle" aria-label="Drag to reorder">⋮⋮</span>
                 <span class="work-number">{index + 1}.</span>
                 <span class="work-title">{exp.title} · {exp.company}</span>
               </div>
@@ -505,6 +552,22 @@
     display: flex;
     align-items: baseline;
     gap: 8px;
+  }
+
+  .work-item.dragging {
+    opacity: 0.5;
+    background: #f0f0f0;
+  }
+
+  .work-item .drag-handle {
+    cursor: grab;
+    color: #999;
+    font-size: 16px;
+    user-select: none;
+  }
+
+  .work-item .drag-handle:active {
+    cursor: grabbing;
   }
 
   .work-number {

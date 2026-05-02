@@ -46,7 +46,6 @@ You must return valid JSON matching the specified schema.
 Guidelines:
 - Extract key requirements from the job description
 - Match candidate qualifications to job requirements
-- Reorder work experiences by relevance (most relevant first)
 - Enhance descriptions to emphasize matching skills (but never fabricate)
 - Calculate a realistic match score (0-100) based on requirement coverage
 - Be honest about gaps - don't claim matches that don't exist"""
@@ -121,7 +120,6 @@ Return a JSON object with exactly this structure:
 
 Important:
 - Only include profile items that are relevant to this job
-- Reorder work experiences by relevance (most relevant first)
 - For each included work experience, explain why it matches (match_reasons)
 - Be accurate with the match_score - it should reflect actual qualification coverage
 - Keep the original IDs from the profile for work_experiences, education, and projects

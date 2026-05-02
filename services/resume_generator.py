@@ -19,6 +19,10 @@ class ProfileIncompleteError(Exception):
     pass
 
 
+def read_experiences_chronologically(experiences: list[dict]) -> list[dict]:
+    return sorted(experiences, key=lambda we: we.get("start_date") or "", reverse=True)
+
+
 class ResumeGeneratorService:
     async def generate(self, job_description: str, job_id: int | None = None, language: str = "en") -> GeneratedResumeResponse:
         if not profile_service.has_work_experience():
@@ -64,6 +68,9 @@ class ResumeGeneratorService:
 
         with get_db() as conn:
             resume_content = llm_result.get("resume", {})
+            resume_content["work_experiences"] = read_experiences_chronologically(
+                resume_content.get("work_experiences", [])
+            )
             if profile_dict.get("personal_info"):
                 resume_content["personal_info"] = profile_dict["personal_info"]
 
