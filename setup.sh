@@ -95,6 +95,85 @@ step "Installing Node dependencies..."
 bun install --silent
 ok "Node dependencies"
 
+# ── API key ───────────────────────────────────────────────────────────────────
+
+setup_api_key() {
+    local shell_config="$HOME/.zshrc"
+    [[ "$SHELL" == */bash ]] && shell_config="$HOME/.bashrc"
+
+    echo ""
+    echo -e "${BOLD}AI provider setup${NC}"
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    echo "MyCV uses an AI model to tailor your CV."
+    echo "You need a free API key from one of these providers:"
+    echo ""
+    echo -e "  ${BOLD}1) Anthropic (Claude)${NC}  — https://console.anthropic.com/settings/keys"
+    echo -e "  ${BOLD}2) Google (Gemini)${NC}     — https://aistudio.google.com/app/apikey"
+    echo ""
+    echo -n "Which provider? [1/2]: "
+    read -r provider_choice
+
+    local var_name
+    local provider_label
+    if [[ "$provider_choice" == "2" ]]; then
+        var_name="GEMINI_API_KEY"
+        provider_label="Google Gemini"
+    else
+        var_name="ANTHROPIC_API_KEY"
+        provider_label="Anthropic Claude"
+    fi
+
+    if [[ -n "${!var_name}" ]]; then
+        ok "$var_name already set — skipping"
+        return
+    fi
+
+    echo ""
+    echo "Open the link above, create an account if needed, and generate a key."
+    echo "Paste it here (input is hidden):"
+    echo ""
+    echo -n "  $var_name: "
+    read -rs api_key
+    echo ""
+
+    if [[ -z "$api_key" ]]; then
+        warn "No key entered — skipping. Set $var_name manually before running the app."
+        return
+    fi
+
+    local export_line="export $var_name=\"$api_key\""
+
+    if grep -q "^export $var_name=" "$shell_config" 2>/dev/null; then
+        sed -i '' "s|^export $var_name=.*|$export_line|" "$shell_config"
+        ok "$var_name updated in $shell_config"
+    else
+        echo "" >> "$shell_config"
+        echo "$export_line" >> "$shell_config"
+        ok "$var_name saved to $shell_config"
+    fi
+
+    export "$var_name=$api_key"
+
+    if [[ "$provider_choice" != "2" ]]; then
+        local llm_line='export LLM_PROVIDER="claude"'
+        if ! grep -q "^export LLM_PROVIDER=" "$shell_config" 2>/dev/null; then
+            echo "$llm_line" >> "$shell_config"
+        fi
+        export LLM_PROVIDER="claude"
+    else
+        local llm_line='export LLM_PROVIDER="gemini"'
+        if ! grep -q "^export LLM_PROVIDER=" "$shell_config" 2>/dev/null; then
+            echo "$llm_line" >> "$shell_config"
+        fi
+        export LLM_PROVIDER="gemini"
+    fi
+
+    ok "$provider_label configured"
+}
+
+setup_api_key
+
 # ── Done ──────────────────────────────────────────────────────────────────────
 
 echo ""
