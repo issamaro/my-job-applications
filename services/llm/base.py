@@ -48,7 +48,17 @@ Guidelines:
 - Match candidate qualifications to job requirements
 - Enhance descriptions to emphasize matching skills (but never fabricate)
 - Calculate a realistic match score (0-100) based on requirement coverage
-- Be honest about gaps - don't claim matches that don't exist"""
+- Be honest about gaps - don't claim matches that don't exist
+
+Length limits (hard caps, do not exceed):
+- `resume.summary`: at most 350 characters total. Aim for 2-3 tight sentences.
+- Each `resume.work_experiences[*].description`: at most 350 characters. One focused paragraph, no bullet lists.
+- Cut filler ("responsible for", "tasked with", "in charge of"). Lead with the strongest verb and the highest-impact result.
+
+Voice for `resume.summary` (strict):
+- Write the summary in FIRST PERSON ("I led...", "I built...") OR ACTION-LED with no pronoun ("Led teams across...", "Built the platform that...").
+- NEVER use the candidate's first or last name as the subject of a sentence in the summary. Forbidden patterns include "{First} {Last} is...", "{First} {Last} has...", "{First} leads...", and any other third-person construction that names the candidate.
+- The summary must read as the candidate speaking, not as someone describing the candidate."""
 
 USER_PROMPT_TEMPLATE = """Analyze this job description and create a tailored resume from the candidate profile.
 
@@ -123,4 +133,6 @@ Important:
 - For each included work experience, explain why it matches (match_reasons)
 - Be accurate with the match_score - it should reflect actual qualification coverage
 - Keep the original IDs from the profile for work_experiences, education, and projects
-- Set included=false for items that are not relevant"""
+- Set included=false for items that are not relevant
+- HARD LIMIT: `resume.summary` and every `resume.work_experiences[*].description` must be 350 characters or fewer. Count characters before returning. If a draft exceeds the cap, rewrite it tighter — do not return overflow.
+- VOICE: write `resume.summary` in first person ("I ...") or action-led with no pronoun ("Led ...", "Built ..."). Do NOT begin with the candidate's name or refer to the candidate in the third person anywhere in the summary."""
