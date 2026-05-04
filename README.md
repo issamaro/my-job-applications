@@ -127,6 +127,12 @@ PLAYWRIGHT_BROWSERS_PATH=0 uv run playwright install chromium
 
 `PLAYWRIGHT_BROWSERS_PATH=0` installs Chromium inside the project's `.venv` instead of the user-wide cache, so each project owns its own browser.
 
+On Linux only, also install the system shared libraries Chromium needs (`libnspr4`, `libnss3`, etc.). These are OS-level packages — they cannot be scoped to `.venv`. Skip this on macOS.
+
+```bash
+sudo uv run playwright install-deps chromium
+```
+
 ```bash
 bun install
 ```
