@@ -122,6 +122,12 @@ uv sync
 ```
 
 ```bash
+PLAYWRIGHT_BROWSERS_PATH=0 uv run playwright install chromium
+```
+
+`PLAYWRIGHT_BROWSERS_PATH=0` installs Chromium inside the project's `.venv` instead of the user-wide cache, so each project owns its own browser.
+
+```bash
 bun install
 ```
 
