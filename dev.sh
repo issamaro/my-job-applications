@@ -34,15 +34,11 @@ cleanup() {
 
 trap cleanup SIGINT SIGTERM
 
-# Activate Python virtual environment if exists
-if [ -d ".venv" ]; then
-    echo -e "${GREEN}Activating Python virtual environment...${NC}"
-    source .venv/bin/activate
-fi
-
 # Sync Python dependencies with uv
 echo -e "${BLUE}Syncing Python dependencies...${NC}"
 uv sync --quiet 2>/dev/null || uv sync
+
+echo -e "${GREEN}Using LLM provider: ${YELLOW}${LLM_PROVIDER:-claude (default)}${NC}"
 
 # Start Rollup/Svelte watcher in background (CSS is bundled automatically)
 echo -e "${GREEN}Starting Svelte build watcher...${NC}"
@@ -68,7 +64,7 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo -e "${YELLOW}Press Ctrl+C to stop all servers${NC}"
 echo ""
 
-uvicorn main:app --reload --host 0.0.0.0 --port 8000 &
+uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 
 # Wait for all background processes

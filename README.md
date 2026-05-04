@@ -4,40 +4,98 @@ AI-powered CV/Resume builder.
 
 ## Getting started
 
-### 1. Install Git
+### 1. Install Homebrew, Git, and gh
 
 Open **Terminal** (press `Cmd + Space`, type "Terminal", hit Enter).
 
-Check if Git is already installed:
+If you don't already have [Homebrew](https://brew.sh/) installed, follow the install command on its homepage. Then install Git and the GitHub CLI:
 
 ```bash
-git --version
+brew install git gh
 ```
 
-If you see a version number, skip to step 2. Otherwise, macOS will prompt you to install it — follow the prompt.
+### 2. Authenticate to GitHub
 
-### 2. Download the project
+GitHub no longer accepts passwords for `git clone`, so log in once with the GitHub CLI:
 
 ```bash
-git clone https://github.com/issamaro/MyCV-2.git
-cd MyCV-2
+gh auth login
 ```
 
-### 3. Run setup
+Answer the prompts as follows:
+
+- **What account do you want to log into?** → `GitHub.com`
+- **What is your preferred protocol?** → `HTTPS`
+- **Authenticate Git with your GitHub credentials?** → `Yes`
+- **How would you like to authenticate?** → `Login with a web browser`
+
+Copy the 8-character code shown in Terminal, paste it into the browser tab that opens, and approve the request.
+
+When it succeeds you'll see:
+
+```
+✓ Logged in as <your-github-username>
+```
+
+If `gh` is not found, return to step 1 and run `brew install gh` again.
+
+### 3. Clone the project
+
+```bash
+gh repo clone issamaro/my-job-applications
+```
+
+Then enter the new folder:
+
+```bash
+cd my-job-applications
+```
+
+If you see `directory already exists`, you've already cloned it — just `cd my-job-applications` and skip ahead to step 4.
+
+### 4. Run setup
 
 ```bash
 ./setup.sh
 ```
 
-This installs all dependencies and walks you through getting an API key for the AI features.
+This installs all remaining dependencies and walks you through choosing an AI provider and pasting an API key. You can press `Ctrl + C` or type `cancel` at any prompt — nothing is written until you confirm a key.
 
-### 4. Start the app
+### 5. Start the app
 
 ```bash
 ./dev.sh
 ```
 
-Then open [http://localhost:5173](http://localhost:5173) in your browser.
+Then open [http://localhost:8000](http://localhost:8000) in your browser.
+
+If the backend fails to start with a message like `ANTHROPIC_API_KEY environment variable is not set` (or the Gemini equivalent) and you just ran `setup.sh`, your current Terminal window still has the old environment — open a new Terminal window or run `source ~/.zshrc`, then `./dev.sh` again. See section 6 for more recovery paths.
+
+### 6. If something goes wrong
+
+**App says `ANTHROPIC_API_KEY environment variable is not set` but I chose Gemini (or vice versa).**
+Open a new Terminal window, or run `source ~/.zshrc`. Then check what's actually set:
+
+```bash
+env | grep -E 'LLM_PROVIDER|API_KEY'
+```
+
+If `LLM_PROVIDER` and your chosen provider's key don't match, re-run `./setup.sh`.
+
+**`uvicorn: command not found` after I moved the project folder.**
+Run `uv sync` once, then `./dev.sh` again. This rewrite uses `uv run uvicorn` so the moved-folder case shouldn't happen — if it does, please file an issue.
+
+**Port 8000 already in use.**
+`dev.sh` handles this automatically (kills the existing process). If it doesn't, find and kill the offender:
+
+```bash
+lsof -ti:8000
+```
+
+Then `kill -9 <pid>`.
+
+**I had `LLM_PROVIDER` exported manually in my shell-rc from before.**
+The new `setup.sh` always overwrites `LLM_PROVIDER` on each run, so it self-heals. Just re-run `./setup.sh` once.
 
 ---
 
@@ -52,8 +110,18 @@ Then open [http://localhost:5173](http://localhost:5173) in your browser.
 ### Install
 
 ```bash
-brew install uv && brew install oven-sh/bun/bun
+brew install uv
+```
+
+```bash
+brew install oven-sh/bun/bun
+```
+
+```bash
 uv sync
+```
+
+```bash
 bun install
 ```
 
@@ -62,24 +130,32 @@ bun install
 The app reads the provider and key from environment variables. Add one of these to your `~/.zshrc`:
 
 **Anthropic (Claude):**
+
 ```bash
 export LLM_PROVIDER="claude"
+```
+
+```bash
 export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
 **Google (Gemini):**
+
 ```bash
 export LLM_PROVIDER="gemini"
+```
+
+```bash
 export GEMINI_API_KEY="AIza..."
 ```
 
 ### Run
 
 ```bash
-# Backend
 uv run uvicorn main:app --reload
+```
 
-# Frontend (separate terminal)
+```bash
 bun run dev
 ```
 
