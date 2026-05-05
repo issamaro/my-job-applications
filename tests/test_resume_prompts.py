@@ -33,3 +33,16 @@ def test_user_prompt_repeats_voice_rule():
     lowered = USER_PROMPT_TEMPLATE.lower()
     assert "first person" in lowered
     assert "third person" in lowered or "third-person" in lowered
+
+
+def test_user_prompt_requires_all_work_experiences_included():
+    assert "return ALL profile work_experiences" in USER_PROMPT_TEMPLATE
+    assert "included=true" in USER_PROMPT_TEMPLATE
+
+
+def test_user_prompt_forbids_setting_included_false_on_work_experience():
+    assert "NEVER set included=false on a work_experience" in USER_PROMPT_TEMPLATE
+
+
+def test_user_prompt_allows_empty_match_reasons():
+    assert "empty array is acceptable" in USER_PROMPT_TEMPLATE

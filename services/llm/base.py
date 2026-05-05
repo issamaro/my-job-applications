@@ -129,10 +129,11 @@ Return a JSON object with exactly this structure:
 }}
 
 Important:
-- Only include profile items that are relevant to this job
-- For each included work experience, explain why it matches (match_reasons)
+- Only include profile skills, education, and projects that are relevant to this job. ALL work_experiences are always included — see the work-experiences rule below.
+- For each work experience, populate match_reasons when there is overlap with the job; an empty array is acceptable when there is no overlap.
 - Be accurate with the match_score - it should reflect actual qualification coverage
 - Keep the original IDs from the profile for work_experiences, education, and projects
-- Set included=false for items that are not relevant
+- Set included=false for skills, education, or projects that are not relevant. NEVER set included=false on a work_experience.
+- WORK EXPERIENCES — return ALL profile work_experiences, every one with included=true. Do not drop any. Do not set included=false on any work experience under any circumstance. Tailor descriptions and provide match_reasons regardless of relevance. The user toggles inclusion in the UI, not the LLM.
 - HARD LIMIT: `resume.summary` and every `resume.work_experiences[*].description` must be 350 characters or fewer. Count characters before returning. If a draft exceeds the cap, rewrite it tighter — do not return overflow.
 - VOICE: write `resume.summary` in first person ("I ...") or action-led with no pronoun ("Led ...", "Built ..."). Do NOT begin with the candidate's name or refer to the candidate in the third person anywhere in the summary."""
