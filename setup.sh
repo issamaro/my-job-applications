@@ -12,14 +12,6 @@ BOLD='\033[1m'
 NC='\033[0m'
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
-
-export PLAYWRIGHT_BROWSERS_PATH=0
-
-echo ""
-echo -e "${BOLD}MyCV — Setup${NC}"
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo ""
 
 step() { echo -e "${BLUE}▸${NC} $1"; }
 ok()   { echo -e "${GREEN}✓${NC} $1"; }
@@ -28,60 +20,94 @@ fail() { echo -e "${RED}✗${NC} $1"; exit 1; }
 
 need_restart=false
 
-if ! command -v brew &>/dev/null; then
-    step "Installing Homebrew..."
-    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+create_dependencies() {
+    cd "$SCRIPT_DIR"
 
-    if [[ -f /opt/homebrew/bin/brew ]]; then
-        eval "$(/opt/homebrew/bin/brew shellenv)"
+    export PLAYWRIGHT_BROWSERS_PATH=0
+
+    echo ""
+    echo -e "${BOLD}MyCV — Setup${NC}"
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+
+    need_restart=false
+
+    if ! command -v brew &>/dev/null; then
+        step "Installing Homebrew..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+        if [[ -f /opt/homebrew/bin/brew ]]; then
+            eval "$(/opt/homebrew/bin/brew shellenv)"
+        fi
+        ok "Homebrew installed"
+    else
+        ok "Homebrew"
     fi
-    ok "Homebrew installed"
-else
-    ok "Homebrew"
-fi
 
-if ! command -v uv &>/dev/null || [[ "$(which uv)" != "/opt/homebrew/bin/uv" ]]; then
-    step "Installing uv via Homebrew..."
-    if [[ -f "$HOME/.local/bin/uv" ]]; then
-        warn "Removing curl-installed uv in favour of brew version..."
-        rm -f "$HOME/.local/bin/uv" "$HOME/.local/bin/uvx"
+    if ! command -v uv &>/dev/null || [[ "$(which uv)" != "/opt/homebrew/bin/uv" ]]; then
+        step "Installing uv via Homebrew..."
+        if [[ -f "$HOME/.local/bin/uv" ]]; then
+            warn "Removing curl-installed uv in favour of brew version..."
+            rm -f "$HOME/.local/bin/uv" "$HOME/.local/bin/uvx"
+        fi
+        brew install uv
+        ok "uv installed"
+    else
+        ok "uv"
     fi
-    brew install uv
-    ok "uv installed"
-else
-    ok "uv"
-fi
 
-step "Installing Python 3.13..."
-uv python install 3.13 --quiet
-ok "Python 3.13"
+    step "Installing Python 3.13..."
+    uv python install 3.13 --quiet
+    ok "Python 3.13"
 
-if ! command -v bun &>/dev/null; then
-    step "Installing bun via Homebrew..."
-    brew install oven-sh/bun/bun
-    ok "bun installed"
-    need_restart=true
-else
-    ok "bun"
-fi
+    if ! command -v bun &>/dev/null; then
+        step "Installing bun via Homebrew..."
+        brew install oven-sh/bun/bun
+        ok "bun installed"
+        need_restart=true
+    else
+        ok "bun"
+    fi
 
-step "Installing Python dependencies..."
-uv sync --quiet
-ok "Python dependencies"
+    step "Installing Python dependencies..."
+    uv sync --quiet
+    ok "Python dependencies"
 
-step "Installing Playwright browser..."
-uv run playwright install chromium 2>/dev/null
-ok "Playwright Chromium"
+    step "Installing Playwright browser..."
+    uv run playwright install chromium 2>/dev/null
+    ok "Playwright Chromium"
 
-step "Installing Node dependencies..."
-bun install --silent
-ok "Node dependencies"
+    step "Installing Node dependencies..."
+    bun install --silent
+    ok "Node dependencies"
+}
 
 find_current_shell() {
-    case "$(ps -p $$ -o comm= 2>/dev/null)" in
+    if [[ -n "$SHELL" ]]; then
+        case "$(basename "$SHELL")" in
+            zsh)  printf 'zsh';  return ;;
+            bash) printf 'bash'; return ;;
+        esac
+    fi
+    case "$(ps -p $PPID -o comm= 2>/dev/null)" in
         *zsh)  printf 'zsh' ;;
         *bash) printf 'bash' ;;
         *)     printf 'zsh' ;;
+    esac
+}
+
+find_rc_candidates() {
+    local shell_name="$1"
+    case "$shell_name" in
+        zsh)
+            printf '%s\n' "$HOME/.zshenv" "$HOME/.zprofile" "$HOME/.zshrc" "$HOME/.profile"
+            ;;
+        bash)
+            printf '%s\n' "$HOME/.bash_profile" "$HOME/.bashrc" "$HOME/.profile"
+            ;;
+        *)
+            printf '%s\n' "$HOME/.${shell_name}rc"
+            ;;
     esac
 }
 
@@ -144,6 +170,73 @@ find_var_value() {
           '
 }
 
+find_key_in_files() {
+    local var_name="$1"
+    local shell_name="$2"
+    local candidate file_content count value
+    while IFS= read -r candidate; do
+        [[ -z "$candidate" ]] && continue
+        file_content="$(read_rc_content "$candidate")"
+        count="$(find_var_count "$file_content" "$var_name")"
+        if (( count > 0 )); then
+            value="$(find_var_value "$file_content" "$var_name")"
+            if [[ -n "$value" ]]; then
+                printf '%s\t%s' "$candidate" "$value"
+                return 0
+            fi
+        fi
+    done < <(find_rc_candidates "$shell_name")
+    return 1
+}
+
+find_key_in_environment() {
+    local var_name="$1"
+    local value="${!var_name}"
+    if [[ -n "$value" ]]; then
+        printf '%s' "$value"
+    fi
+}
+
+find_var_with_source() {
+    local var_name="$1"
+    local shell_name="$2"
+    local hit env_value
+    VAR_VALUE=""
+    VAR_SOURCE=""
+    hit="$(find_key_in_files "$var_name" "$shell_name" 2>/dev/null || true)"
+    if [[ -n "$hit" ]]; then
+        VAR_SOURCE="${hit%%$'\t'*}"
+        VAR_VALUE="${hit#*$'\t'}"
+        return 0
+    fi
+    env_value="$(find_key_in_environment "$var_name")"
+    if [[ -n "$env_value" ]]; then
+        VAR_VALUE="$env_value"
+        VAR_SOURCE="live env only"
+    fi
+}
+
+find_existing_key() {
+    local provider="$1"
+    local shell_name="$2"
+    local key_var
+    key_var="$(read_provider_var "$provider")"
+    find_var_with_source "$key_var" "$shell_name"
+    EXISTING_KEY="$VAR_VALUE"
+    EXISTING_KEY_SOURCE="$VAR_SOURCE"
+}
+
+render_source_label() {
+    local source="$1"
+    if [[ -z "$source" ]]; then
+        printf ''
+    elif [[ "$source" == "live env only" ]]; then
+        printf '(live env only)'
+    else
+        printf '(from %s)' "${source/#$HOME/~}"
+    fi
+}
+
 read_provider_var() {
     local provider="$1"
     case "$provider" in
@@ -190,24 +283,39 @@ render_preflight_summary() {
     local rc_content="$1"
     local rc_path="$2"
     local rc_target="$3"
+    local shell_name="$4"
 
-    local current_provider current_anthropic current_gemini
-    current_provider="$(find_var_value "$rc_content" "LLM_PROVIDER")"
-    current_anthropic="$(find_var_value "$rc_content" "ANTHROPIC_API_KEY")"
-    current_gemini="$(find_var_value "$rc_content" "GEMINI_API_KEY")"
+    find_var_with_source "LLM_PROVIDER" "$shell_name"
+    local provider_value="$VAR_VALUE"
+    local provider_source="$VAR_SOURCE"
+
+    find_var_with_source "ANTHROPIC_API_KEY" "$shell_name"
+    local anthropic_value="$VAR_VALUE"
+    local anthropic_source="$VAR_SOURCE"
+
+    find_var_with_source "GEMINI_API_KEY" "$shell_name"
+    local gemini_value="$VAR_VALUE"
+    local gemini_source="$VAR_SOURCE"
 
     echo ""
-    echo -e "${BOLD}Current configuration in ${rc_target/#$HOME/~}:${NC}"
-    printf '  LLM_PROVIDER:        %s\n' "${current_provider:-not set}"
-    printf '  ANTHROPIC_API_KEY:   %s\n' "$(render_existence_for_key "$current_anthropic")"
-    printf '  GEMINI_API_KEY:      %s\n' "$(render_existence_for_key "$current_gemini")"
+    echo -e "${BOLD}Detected configuration:${NC}"
+    printf '  LLM_PROVIDER:        %-20s%s\n' "${provider_value:-not set}" "$(render_source_label "$provider_source")"
+    printf '  ANTHROPIC_API_KEY:   %-20s%s\n' "$(render_existence_for_key "$anthropic_value")" "$(render_source_label "$anthropic_source")"
+    printf '  GEMINI_API_KEY:      %-20s%s\n' "$(render_existence_for_key "$gemini_value")" "$(render_source_label "$gemini_source")"
+
+    printf '\n  Write target: %s\n' "${rc_target/#$HOME/~}"
 
     find_chain_warning "$rc_path" "$rc_target"
 
-    if [[ -n "$current_provider" ]] && ! check_provider_mismatch "$rc_content" "$current_provider"; then
-        local provider_upper
-        provider_upper="$(printf '%s' "$current_provider" | tr '[:lower:]' '[:upper:]')"
-        warn "Mismatch: LLM_PROVIDER says $current_provider but no ${provider_upper}_API_KEY found. Setup will fix this."
+    if [[ -n "$provider_value" ]]; then
+        local provider_key_var
+        provider_key_var="$(read_provider_var "$provider_value")"
+        find_var_with_source "$provider_key_var" "$shell_name"
+        if [[ -z "$VAR_VALUE" ]]; then
+            local provider_upper
+            provider_upper="$(printf '%s' "$provider_value" | tr '[:lower:]' '[:upper:]')"
+            warn "Mismatch: LLM_PROVIDER says $provider_value but no ${provider_upper}_API_KEY found. Setup will fix this."
+        fi
     fi
 
     local var n
@@ -255,8 +363,17 @@ read_provider_choice() {
 read_key_action() {
     local key_var="$1"
     local existing_key="$2"
+    local existing_source="$3"
+    local combined
+    if [[ "$existing_source" == "live env only" ]]; then
+        combined="(from live env only, ends in …${existing_key: -4})"
+    elif [[ -n "$existing_source" ]]; then
+        combined="(from ${existing_source/#$HOME/~}, ends in …${existing_key: -4})"
+    else
+        combined="$(render_key_suffix "$existing_key")"
+    fi
     echo ""
-    echo "You already have a $key_var in ~/.zshrc $(render_key_suffix "$existing_key")."
+    echo "You already have a $key_var $combined."
     echo "  [1] Keep the existing key"
     echo "  [2] Replace it with a new key"
     echo "  [3] Cancel setup"
@@ -268,6 +385,23 @@ read_key_action() {
         3) KEY_ACTION="cancel" ;;
         *) KEY_ACTION="keep" ;;
     esac
+}
+
+render_replace_warning() {
+    local source="$1"
+    local rc_target="$2"
+    local key_var="$3"
+    if [[ -z "$source" ]] || [[ "$source" == "live env only" ]]; then
+        return 0
+    fi
+    if [[ "$source" == "$rc_target" ]]; then
+        return 0
+    fi
+    if [[ -e "$source" ]] && [[ -e "$rc_target" ]] && [[ "$source" -ef "$rc_target" ]]; then
+        return 0
+    fi
+    warn "Existing key is exported from ${source/#$HOME/~}. New key will be written to ${rc_target/#$HOME/~}."
+    warn "  You may end up with two \`export $key_var\` lines across files."
 }
 
 read_new_key() {
@@ -404,6 +538,7 @@ update_provider_and_key() {
     local rc_path="$1"
     local rc_target="$2"
     local rc_content="$3"
+    local shell_name="$4"
 
     local cancel_requested=false
     PROVIDER_CHOICE=""
@@ -418,16 +553,21 @@ update_provider_and_key() {
 
     local key_var
     key_var="$(read_provider_var "$PROVIDER_CHOICE")"
-    local existing_key
-    existing_key="$(find_var_value "$rc_content" "$key_var")"
+
+    find_existing_key "$PROVIDER_CHOICE" "$shell_name"
+    local existing_key="$EXISTING_KEY"
+    local existing_source="$EXISTING_KEY_SOURCE"
 
     if [[ -n "$existing_key" ]]; then
-        read_key_action "$key_var" "$existing_key"
+        read_key_action "$key_var" "$existing_key" "$existing_source"
         if $cancel_requested; then return 0; fi
         case "$KEY_ACTION" in
             cancel)  render_cancel_message; trap - INT; return 0 ;;
             keep)    NEW_KEY="" ;;
-            replace) read_new_key "$PROVIDER_CHOICE" ;;
+            replace)
+                render_replace_warning "$existing_source" "$rc_target" "$key_var"
+                read_new_key "$PROVIDER_CHOICE"
+                ;;
         esac
     else
         read_new_key "$PROVIDER_CHOICE"
@@ -457,10 +597,13 @@ update_provider_and_key() {
     return 0
 }
 
-shell_name="$(find_current_shell)"
-rc_path="$HOME/.${shell_name}rc"
-rc_target="$(read_rc_path "$shell_name")"
-rc_content="$(read_rc_content "$rc_target")"
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    create_dependencies
+    shell_name="$(find_current_shell)"
+    rc_path="$HOME/.${shell_name}rc"
+    rc_target="$(read_rc_path "$shell_name")"
+    rc_content="$(read_rc_content "$rc_target")"
 
-render_preflight_summary "$rc_content" "$rc_path" "$rc_target"
-update_provider_and_key "$rc_path" "$rc_target" "$rc_content"
+    render_preflight_summary "$rc_content" "$rc_path" "$rc_target" "$shell_name"
+    update_provider_and_key "$rc_path" "$rc_target" "$rc_content" "$shell_name"
+fi
