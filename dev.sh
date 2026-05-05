@@ -64,7 +64,7 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo -e "${YELLOW}Press Ctrl+C to stop all servers${NC}"
 echo ""
 
-uv run uvicorn main:app --reload --host 0.0.0.0 --port 8000 &
+uv run python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 
 # Wait for all background processes

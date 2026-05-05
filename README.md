@@ -82,8 +82,14 @@ env | grep -E 'LLM_PROVIDER|API_KEY'
 
 If `LLM_PROVIDER` and your chosen provider's key don't match, re-run `./setup.sh`.
 
-**`uvicorn: command not found` after I moved the project folder.**
-Run `uv sync` once, then `./dev.sh` again. This rewrite uses `uv run uvicorn` so the moved-folder case shouldn't happen — if it does, please file an issue.
+**`Failed to spawn: uvicorn` (or `uvicorn: command not found`) after I moved the project folder.**
+`dev.sh` launches uvicorn through `uv run python -m uvicorn`, which goes through the still-valid Python symlink in `.venv/bin/` and bypasses the `.venv/bin/uvicorn` shim that breaks on a folder move — so this case is handled automatically. If you still see this error (rare; usually means the uv-managed Python interpreter was uninstalled separately), recover with:
+
+```bash
+rm -rf .venv && uv sync
+```
+
+Then `./dev.sh` again.
 
 **Port 8000 already in use.**
 `dev.sh` handles this automatically (kills the existing process). If it doesn't, find and kill the offender:
@@ -164,7 +170,7 @@ export GEMINI_API_KEY="AIza..."
 ### Run
 
 ```bash
-uv run uvicorn main:app --reload
+uv run python -m uvicorn main:app --reload
 ```
 
 ```bash

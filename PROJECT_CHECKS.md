@@ -152,8 +152,7 @@ wc -c public/build/bundle.js
 ./dev.sh
 
 # Or manually:
-source .venv/bin/activate
-uvicorn main:app --reload &
+uv run python -m uvicorn main:app --reload &
 bun run dev
 ```
 
