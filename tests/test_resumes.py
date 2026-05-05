@@ -222,6 +222,167 @@ def test_update_resume(mock_llm, client):
     assert response.json()["resume"]["summary"] == "Updated summary"
 
 
+@patch("services.resume_generator.llm_service.analyze_and_generate")
+def test_update_resume_skill_excluded(mock_llm, client):
+    """Excluding a skill persists included=False without dropping the entry."""
+    _create_work_experience(client)
+
+    mock_llm.return_value = {
+        "job_title": "Software Engineer",
+        "company_name": "TechCorp",
+        "match_score": 80.0,
+        "job_analysis": {"required_skills": [], "preferred_skills": []},
+        "resume": {
+            "summary": "S",
+            "work_experiences": [
+                {
+                    "id": 1,
+                    "company": "Acme Corp",
+                    "title": "Senior Developer",
+                    "start_date": "2020-01",
+                    "description": "Led team",
+                    "match_reasons": [],
+                    "included": True,
+                    "order": 1,
+                }
+            ],
+            "skills": [
+                {"name": "Python", "matched": True, "included": True},
+                {"name": "Java", "matched": False, "included": True},
+                {"name": "Brainfuck", "matched": False, "included": True},
+            ],
+            "education": [],
+            "projects": [],
+        },
+    }
+
+    long_jd = "A" * 150
+    create_response = client.post(
+        "/api/resumes/generate",
+        json={"job_description": long_jd},
+    )
+    resume_id = create_response.json()["id"]
+    original = create_response.json()["resume"]
+
+    original["skills"][2]["included"] = False
+    update_data = {"resume": original}
+
+    put_response = client.put(f"/api/resumes/{resume_id}", json=update_data)
+    assert put_response.status_code == 200
+
+    get_response = client.get(f"/api/resumes/{resume_id}")
+    assert get_response.status_code == 200
+    skills = get_response.json()["resume"]["skills"]
+    assert len(skills) == 3
+    assert skills[2]["name"] == "Brainfuck"
+    assert skills[2]["included"] is False
+    assert skills[0]["included"] is True
+    assert skills[1]["included"] is True
+
+
+@patch("services.resume_generator.llm_service.analyze_and_generate")
+def test_update_resume_skill_renamed(mock_llm, client):
+    """Renaming a skill preserves matched and included flags."""
+    _create_work_experience(client)
+
+    mock_llm.return_value = {
+        "job_title": "Software Engineer",
+        "company_name": "TechCorp",
+        "match_score": 80.0,
+        "job_analysis": {"required_skills": [], "preferred_skills": []},
+        "resume": {
+            "summary": "S",
+            "work_experiences": [
+                {
+                    "id": 1,
+                    "company": "Acme Corp",
+                    "title": "Senior Developer",
+                    "start_date": "2020-01",
+                    "description": "Led team",
+                    "match_reasons": [],
+                    "included": True,
+                    "order": 1,
+                }
+            ],
+            "skills": [
+                {"name": "Postgres", "matched": True, "included": True},
+            ],
+            "education": [],
+            "projects": [],
+        },
+    }
+
+    long_jd = "A" * 150
+    create_response = client.post(
+        "/api/resumes/generate",
+        json={"job_description": long_jd},
+    )
+    resume_id = create_response.json()["id"]
+    original = create_response.json()["resume"]
+
+    original["skills"][0]["name"] = "PostgreSQL"
+    update_data = {"resume": original}
+
+    put_response = client.put(f"/api/resumes/{resume_id}", json=update_data)
+    assert put_response.status_code == 200
+
+    get_response = client.get(f"/api/resumes/{resume_id}")
+    skills = get_response.json()["resume"]["skills"]
+    assert len(skills) == 1
+    assert skills[0]["name"] == "PostgreSQL"
+    assert skills[0]["matched"] is True
+    assert skills[0]["included"] is True
+
+
+@patch("services.resume_generator.llm_service.analyze_and_generate")
+def test_update_resume_summary_empty(mock_llm, client):
+    """Saving an empty summary persists as empty string, not None."""
+    _create_work_experience(client)
+
+    mock_llm.return_value = {
+        "job_title": "Software Engineer",
+        "company_name": "TechCorp",
+        "match_score": 80.0,
+        "job_analysis": {"required_skills": [], "preferred_skills": []},
+        "resume": {
+            "summary": "Versatile engineer with broad experience.",
+            "work_experiences": [
+                {
+                    "id": 1,
+                    "company": "Acme Corp",
+                    "title": "Senior Developer",
+                    "start_date": "2020-01",
+                    "description": "Led team",
+                    "match_reasons": [],
+                    "included": True,
+                    "order": 1,
+                }
+            ],
+            "skills": [],
+            "education": [],
+            "projects": [],
+        },
+    }
+
+    long_jd = "A" * 150
+    create_response = client.post(
+        "/api/resumes/generate",
+        json={"job_description": long_jd},
+    )
+    resume_id = create_response.json()["id"]
+    original = create_response.json()["resume"]
+
+    original["summary"] = ""
+    update_data = {"resume": original}
+
+    put_response = client.put(f"/api/resumes/{resume_id}", json=update_data)
+    assert put_response.status_code == 200
+
+    get_response = client.get(f"/api/resumes/{resume_id}")
+    summary = get_response.json()["resume"]["summary"]
+    assert summary == ""
+
+
 def test_update_resume_not_found(client):
     """Test updating a resume that doesn't exist."""
     update_data = {

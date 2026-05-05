@@ -4,7 +4,7 @@
   import TemplateSelector from './TemplateSelector.svelte';
   import PdfPreview from './PdfPreview.svelte';
   import Toast from './Toast.svelte';
-  import { updateResume, downloadPdf } from '../lib/api.js';
+  import { updateResume, downloadPdf, getSkills } from '../lib/api.js';
 
   let { resume, onBack, onRegenerate } = $props();
 
@@ -24,7 +24,8 @@
       education: 'Education',
       languages: 'Languages',
       projects: 'Projects',
-      in: 'in'
+      in: 'in',
+      availableSkills: 'Available skills'
     },
     fr: {
       resumeEditor: 'Éditeur de CV',
@@ -34,7 +35,8 @@
       education: 'Formation',
       languages: 'Langues',
       projects: 'Projets',
-      in: 'en'
+      in: 'en',
+      availableSkills: 'Available skills'
     },
     nl: {
       resumeEditor: 'CV Bewerken',
@@ -44,7 +46,8 @@
       education: 'Opleiding',
       languages: 'Talen',
       projects: 'Projecten',
-      in: 'in'
+      in: 'in',
+      availableSkills: 'Available skills'
     }
   };
 
@@ -60,6 +63,20 @@
   let saving = $state(false);
   let savedId = $state(null);
 
+  let editingSummary = $state(false);
+  let summaryDraft = $state('');
+  let editingSkillIndex = $state(null);
+  let skillDraft = $state('');
+  let savingSkillIndex = $state(null);
+  let profileSkills = $state([]);
+  let savingProfileSkillName = $state(null);
+
+  let availableProfileSkills = $derived.by(() => {
+    if (!resumeData?.skills) return [];
+    const present = new Set(resumeData.skills.map(s => s.name.toLowerCase()));
+    return profileSkills.filter(p => !present.has(p.name.toLowerCase()));
+  });
+
   let editMode = $state('edit');
   let selectedTemplate = $state('classic');
   let isExporting = $state(false);
@@ -72,6 +89,38 @@
       resumeData = JSON.parse(JSON.stringify(resume.resume));
     }
   });
+
+  async function readProfileSkills() {
+    try {
+      profileSkills = await getSkills();
+    } catch (e) {
+      profileSkills = [];
+    }
+  }
+
+  $effect(() => {
+    readProfileSkills();
+  });
+
+  async function createSkillFromProfile(name) {
+    if (!resume?.id) {
+      throw new Error('Cannot save: resume ID is missing');
+    }
+    savingProfileSkillName = name;
+    const previous = JSON.parse(JSON.stringify(resumeData.skills));
+    try {
+      resumeData.skills = [...resumeData.skills, { name, matched: false, included: true }];
+      await updateResume(resume.id, resumeData);
+      toastType = 'success';
+      toastMessage = 'Saved';
+    } catch (err) {
+      resumeData.skills = previous;
+      toastType = 'error';
+      toastMessage = 'Could not save skills. Try again.';
+    } finally {
+      savingProfileSkillName = null;
+    }
+  }
 
   function getScoreClass(score) {
     if (score >= 80) return 'score-high';
@@ -120,17 +169,127 @@
     editValue = '';
   }
 
-  function toggleSection(section) {
+  function startEditSummary() {
+    summaryDraft = resumeData.summary || '';
+    editingSummary = true;
+  }
+
+  function cancelEditSummary() {
+    editingSummary = false;
+    summaryDraft = '';
+  }
+
+  async function writeSummaryEdit() {
+    if (!resume?.id) {
+      throw new Error('Cannot save: resume ID is missing');
+    }
+    saving = true;
+    try {
+      resumeData.summary = summaryDraft;
+      await updateResume(resume.id, resumeData);
+      editingSummary = false;
+      savedId = '__summary__';
+      setTimeout(() => savedId = null, 2000);
+    } catch (e) {
+      console.error('Failed to save summary:', e);
+      toastType = 'error';
+      toastMessage = 'Could not save summary. Try again.';
+    } finally {
+      saving = false;
+    }
+  }
+
+  function readSummaryKey(e) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelEditSummary();
+    } else if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      writeSummaryEdit();
+    }
+  }
+
+  function startEditSkill(skillIndex) {
+    skillDraft = resumeData.skills[skillIndex].name;
+    editingSkillIndex = skillIndex;
+  }
+
+  function cancelEditSkill() {
+    editingSkillIndex = null;
+    skillDraft = '';
+  }
+
+  async function writeSkillRename(skillIndex) {
+    if (skillDraft.trim() === '') {
+      cancelEditSkill();
+      return;
+    }
+    if (!resume?.id) {
+      throw new Error('Cannot save: resume ID is missing');
+    }
+    savingSkillIndex = skillIndex;
+    try {
+      resumeData.skills[skillIndex].name = skillDraft.trim();
+      await updateResume(resume.id, resumeData);
+      toastType = 'success';
+      toastMessage = 'Saved';
+    } catch (err) {
+      resumeData = JSON.parse(JSON.stringify(resume.resume));
+      toastType = 'error';
+      toastMessage = 'Could not save skills. Try again.';
+    } finally {
+      savingSkillIndex = null;
+      editingSkillIndex = null;
+      skillDraft = '';
+    }
+  }
+
+  function readSkillKey(e, skillIndex) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      cancelEditSkill();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      writeSkillRename(skillIndex);
+    }
+  }
+
+  async function updateSkillInclusion(skillIndex, included) {
+    if (!resume?.id) {
+      throw new Error('Cannot save: resume ID is missing');
+    }
+    savingSkillIndex = skillIndex;
+    try {
+      resumeData.skills[skillIndex].included = included;
+      await updateResume(resume.id, resumeData);
+      toastType = 'success';
+      toastMessage = 'Saved';
+    } catch (err) {
+      resumeData = JSON.parse(JSON.stringify(resume.resume));
+      toastType = 'error';
+      toastMessage = 'Could not save skills. Try again.';
+    } finally {
+      savingSkillIndex = null;
+    }
+  }
+
+  async function toggleSection(section) {
     if (section === 'work') {
       resumeData.work_experiences = resumeData.work_experiences.map(we => ({
         ...we,
         included: !resumeData.work_experiences[0]?.included
       }));
     } else if (section === 'skills') {
-      resumeData.skills = resumeData.skills.map(s => ({
-        ...s,
-        included: !resumeData.skills[0]?.included
-      }));
+      const previous = JSON.parse(JSON.stringify(resumeData.skills));
+      const anyExcluded = resumeData.skills.some(s => s.included === false);
+      resumeData.skills = resumeData.skills.map(s => ({ ...s, included: anyExcluded }));
+      try {
+        await updateResume(resume.id, resumeData);
+      } catch (err) {
+        resumeData.skills = previous;
+        toastType = 'error';
+        toastMessage = 'Could not save skills. Try again.';
+      }
     } else if (section === 'education') {
       resumeData.education = resumeData.education.map(e => ({
         ...e,
@@ -288,9 +447,33 @@
         {#if resumeData.personal_info.linkedin_url} · {resumeData.personal_info.linkedin_url}{/if}
       </p>
       {/if}
-      {#if resumeData.summary}
-      <p class="summary">{resumeData.summary}</p>
-      {/if}
+      <div class="summary-edit">
+        {#if editingSummary}
+          <!-- svelte-ignore a11y_autofocus -->
+          <textarea
+            bind:value={summaryDraft}
+            onkeydown={readSummaryKey}
+            rows="4"
+            autofocus
+          ></textarea>
+          <div class="edit-actions">
+            <button class="btn" onclick={writeSummaryEdit} disabled={saving}>
+              {saving ? 'Saving...' : 'Save'}
+            </button>
+            <button class="btn" onclick={cancelEditSummary} disabled={saving}>Cancel</button>
+          </div>
+        {:else if resumeData.summary}
+          <p class="summary">{resumeData.summary}</p>
+          <div class="summary-footer">
+            <button class="edit-btn" onclick={startEditSummary}>Edit</button>
+            {#if savedId === '__summary__'}
+              <span class="saved-indicator" aria-live="polite">Saved</span>
+            {/if}
+          </div>
+        {:else}
+          <button class="edit-btn summary-add-btn" onclick={startEditSummary}>Add summary</button>
+        {/if}
+      </div>
     </div>
     {/if}
 
@@ -353,17 +536,61 @@
 
     <ResumeSection
       title={labels.skills}
-      included={resumeData.skills?.[0]?.included !== false}
+      included={true}
       onToggle={() => toggleSection('skills')}
     >
       {#snippet children()}
-        <div class="skill-tags">
-          {#each resumeData.skills as skill}
-            <span class="skill-tag" class:matched={skill.matched}>
-              {skill.name} {skill.matched ? '✓' : ''}
-            </span>
-          {/each}
-        </div>
+        {#if resumeData.skills.length === 0 && availableProfileSkills.length === 0}
+          <p class="empty-note">No skills.</p>
+        {:else}
+          <div class="skill-tags">
+            {#each resumeData.skills as skill, index}
+              {#if skill.included !== false}
+                <span class="skill-tag" class:matched={skill.matched} class:saving-skill={savingSkillIndex === index}>
+                  {#if editingSkillIndex === index}
+                    <!-- svelte-ignore a11y_autofocus -->
+                    <input
+                      bind:value={skillDraft}
+                      onkeydown={(e) => readSkillKey(e, index)}
+                      aria-label="Rename skill {skill.name}"
+                      autofocus
+                    />
+                    <button class="skill-action" onclick={() => writeSkillRename(index)} aria-label="Save skill name">✓</button>
+                    <button class="skill-action" onclick={cancelEditSkill} aria-label="Cancel rename">×</button>
+                  {:else}
+                    <span class="skill-name">{skill.name}{skill.matched ? ' ✓' : ''}</span>
+                    <button class="skill-action" onclick={() => startEditSkill(index)} aria-label="Rename skill {skill.name}">✎</button>
+                    <button class="skill-action" onclick={() => updateSkillInclusion(index, false)} aria-label="Exclude skill {skill.name}">×</button>
+                  {/if}
+                </span>
+              {/if}
+            {/each}
+          </div>
+
+          {#if resumeData.skills.some(s => s.included === false) || availableProfileSkills.length > 0}
+            <h4 class="available-skills-header">{labels.availableSkills}</h4>
+            <div class="skill-tags available">
+              {#each resumeData.skills as skill, index}
+                {#if skill.included === false}
+                  <span class="skill-tag excluded" class:saving-skill={savingSkillIndex === index}>
+                    <span class="skill-name">{skill.name}</span>
+                    <button class="skill-action" onclick={() => updateSkillInclusion(index, true)} aria-label="Re-include skill {skill.name}">+</button>
+                  </span>
+                {/if}
+              {/each}
+              {#each availableProfileSkills as profileSkill (profileSkill.id)}
+                <span class="skill-tag excluded" class:saving-skill={savingProfileSkillName === profileSkill.name}>
+                  <span class="skill-name">{profileSkill.name}</span>
+                  <button class="skill-action" onclick={() => createSkillFromProfile(profileSkill.name)} aria-label="Add skill {profileSkill.name}">+</button>
+                </span>
+              {/each}
+            </div>
+          {/if}
+
+          {#if resumeData.skills.length > 0 && resumeData.skills.every(s => s.included === false)}
+            <p class="all-excluded-note">All skills excluded — re-include one below, or use the section toggle.</p>
+          {/if}
+        {/if}
       {/snippet}
     </ResumeSection>
 
@@ -705,6 +932,7 @@
   .skill-tag {
     display: inline-flex;
     align-items: center;
+    gap: 4px;
     padding: 4px 8px;
     font-size: 14px;
     background: rgb(var(--color-primary-rgb) / 0.1);
@@ -716,5 +944,103 @@
       background: rgb(var(--color-success-rgb) / 0.1);
       border-color: rgb(var(--color-success-rgb) / 0.3);
     }
+
+    &.saving-skill {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    &.excluded {
+      opacity: 0.5;
+    }
+
+    .skill-action {
+      border: none;
+      background: none;
+      cursor: pointer;
+      padding: 0 2px;
+      font-size: 12px;
+      line-height: 1;
+      opacity: 0.6;
+      color: inherit;
+      font-family: inherit;
+
+      &:hover {
+        opacity: 1;
+      }
+
+      &:focus {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 1px;
+      }
+    }
+
+    input {
+      min-width: 100px;
+      max-width: 300px;
+      width: auto;
+      field-sizing: content;
+      font-size: 14px;
+      font-family: inherit;
+      padding: 0 4px;
+    }
+  }
+
+  @supports not (field-sizing: content) {
+    .skill-tag input {
+      width: 160px;
+    }
+  }
+
+  .skill-tags.available {
+    margin-top: 4px;
+  }
+
+  .available-skills-header {
+    font-size: 12px;
+    color: rgb(var(--color-text-rgb) / 0.6);
+    margin-top: 12px;
+    margin-bottom: 6px;
+    font-weight: 500;
+    text-transform: uppercase;
+  }
+
+  .all-excluded-note {
+    font-size: 13px;
+    color: rgb(var(--color-text-rgb) / 0.6);
+    font-style: italic;
+    margin-top: 8px;
+  }
+
+  .empty-note {
+    font-size: 13px;
+    color: rgb(var(--color-text-rgb) / 0.6);
+    font-style: italic;
+    margin: 0;
+  }
+
+  .summary-edit {
+    margin-top: var(--spacing-grid);
+
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      margin-bottom: 8px;
+      font-family: inherit;
+      font-size: 14px;
+    }
+  }
+
+  .summary-footer {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-grid);
+    font-size: 14px;
+    margin-top: 4px;
+  }
+
+  .saved-indicator {
+    color: var(--color-success);
+    font-size: 13px;
   }
 </style>
