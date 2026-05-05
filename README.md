@@ -1,4 +1,4 @@
-# MyCV
+# My Job Applications
 
 AI-powered CV/Resume builder.
 
