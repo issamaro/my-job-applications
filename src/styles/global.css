@@ -1,33 +1,134 @@
-/* global.css - CSS Custom Properties + reset + layout + utilities + shared styles */
+/* Lean Code — BSD 3-Clause License — Vivian Voss, 2026 */
+/* Scope: Editorial design tokens, primitives, and legacy layout utilities. */
+
+/* WARNING (slice 1 / editorial-design-system, 2026-05-06):
+   --color-error currently resolves to --accent (terracotta).
+   The editorial palette has no dedicated error token. Do NOT
+   introduce new error semantics on this alias — replace it with
+   a slice-specific token before adding any new validation UI. */
 
 /* ============================================
    Design Tokens (CSS Custom Properties)
    ============================================ */
 :root {
-  /* Colors */
-  --color-text: #1a1a1a;
-  --color-background: #ffffff;
-  --color-border: #e0e0e0;
-  --color-primary: #0066cc;
-  --color-error: #cc0000;
-  --color-success: #008800;
+  /* Editorial type stacks */
+  --font-display: 'Instrument Serif', 'Fraunces', Georgia, serif;
+  --font-serif: 'Fraunces', Georgia, serif;
+  --font-ui: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
-  /* RGB variants for alpha transparency */
-  --color-text-rgb: 26 26 26;
-  --color-primary-rgb: 0 102 204;
-  --color-error-rgb: 204 0 0;
-  --color-success-rgb: 0 136 0;
-  --color-border-rgb: 224 224 224;
+  /* Editorial palette — paper */
+  --paper: #f4f1ec;
+  --paper-2: #ece7df;
+  --paper-3: #e0d9cd;
 
-  /* Typography */
-  --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  /* Editorial palette — ink */
+  --ink: #1a1814;
+  --ink-2: #3a342c;
+  --ink-3: #6b6358;
+  --ink-4: #9c9387;
+
+  /* Editorial palette — structure */
+  --rule: #c8bfb1;
+  --rule-soft: #ddd5c7;
+  --card: #fbfaf6;
+
+  /* Editorial palette — accent + status */
+  --accent: #b8442a;
+  --accent-soft: #e9c8bd;
+  --positive: #4a6b3a;
+  --positive-soft: #d6dec9;
+  --warn: #a07024;
+  --warn-soft: #ead8b6;
+
+  /* Density — spacious baked in */
+  --d-pad: 36px;
+  --d-gap: 28px;
+  --d-row: 64px;
+
+  /* Radius */
+  --r-sm: 2px;
+  --r-md: 4px;
+  --r-lg: 6px;
+
+  /* Shadow — reserved for slices 7 & 8 */
+  --shadow-card: 0 1px 0 rgba(26,24,20,0.04), 0 12px 32px -16px rgba(26,24,20,0.18);
+
+  /* Kept legacy non-color tokens — referenced by src/components/ */
   --font-size-body: 16px;
   --font-size-heading: 20px;
-
-  /* Spacing */
   --spacing-grid: 16px;
   --spacing-section: 24px;
   --spacing-field: 12px;
+
+  /* Legacy color aliases — map old names onto editorial tokens */
+  --color-text: var(--ink);
+  --color-background: var(--paper);
+  --color-border: var(--rule);
+  --color-primary: var(--accent);
+  --color-error: var(--accent);
+  --color-success: var(--positive);
+
+  /* Legacy *-rgb variants — recomputed to match resolved hex values */
+  --color-text-rgb: 26 24 20;
+  --color-primary-rgb: 184 68 42;
+  --color-error-rgb: 184 68 42;
+  --color-success-rgb: 74 107 58;
+  --color-border-rgb: 200 191 177;
+}
+
+/* ============================================
+   Editorial typography primitives
+   ============================================ */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  color: var(--ink);
+}
+
+.serif-italic {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================
+   Rules / dividers — editorial
+   ============================================ */
+.rule {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 0;
+}
+.rule-soft {
+  border: 0;
+  border-top: 1px solid var(--rule-soft);
+  margin: 0;
+}
+
+/* ============================================
+   Card — editorial
+   ============================================ */
+.card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-md);
 }
 
 /* ============================================
@@ -42,11 +143,13 @@
 body {
   margin: 0;
   padding: var(--spacing-section);
-  font-family: var(--font-stack);
-  font-size: var(--font-size-body);
+  font-family: var(--font-ui);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 14px;
   line-height: 1.5;
-  color: var(--color-text);
-  background: var(--color-background);
+  font-feature-settings: 'ss01', 'cv11';
+  -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -122,40 +225,86 @@ p {
 }
 
 /* ============================================
-   Buttons (shared)
+   Buttons — editorial
    ============================================ */
 .btn {
-  padding: 8px var(--spacing-grid);
-  font-size: var(--font-size-body);
-  font-family: inherit;
-  border: 1px solid var(--color-border);
-  border-radius: 2px;
-  background: var(--color-background);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--card);
+  color: var(--ink);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
   cursor: pointer;
-
-  &:hover {
-    background: rgb(0 0 0 / 0.05);
-  }
-
-  &:focus {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 1px;
-  }
+  transition: all .15s;
 }
+.btn:hover { background: var(--paper-2); border-color: var(--ink-3); }
 
 .btn-primary {
-  color: #fff;
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-
-  &:hover {
-    background: #0052a3;
-  }
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
 }
+.btn-primary:hover { background: var(--ink-2); border-color: var(--ink-2); }
+
+.btn-accent {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--ink-2);
+}
+.btn-ghost:hover { background: var(--paper-2); }
 
 .btn-add {
   padding: 4px 8px;
   font-size: 14px;
+}
+
+/* ============================================
+   Pills — editorial
+   ============================================ */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  color: var(--ink-3);
+  background: transparent;
+}
+.pill-accent {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.pill-positive {
+  color: var(--positive);
+  border-color: var(--positive);
+  background: var(--positive-soft);
+}
+.pill-warn {
+  color: var(--warn);
+  border-color: var(--warn);
+  background: var(--warn-soft);
+}
+.pill-solid {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
 }
 
 /* ============================================
@@ -188,6 +337,9 @@ label {
   font-weight: 500;
 }
 
+/* Note: the rules below style raw input/textarea/select for
+   legacy forms; editorial `.input` / `.textarea` classes layer
+   on top for new consumers. */
 input,
 textarea,
 select {
@@ -209,6 +361,23 @@ select {
     border-color: var(--color-error);
   }
 }
+
+/* ============================================
+   Inputs — editorial
+   ============================================ */
+.input, .textarea {
+  width: 100%;
+  padding: 10px 12px;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
+  outline: none;
+}
+.input:focus, .textarea:focus { border-color: var(--ink); }
+.textarea { resize: vertical; }
 
 textarea {
   min-height: 80px;
