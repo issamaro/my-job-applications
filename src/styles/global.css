@@ -1,45 +1,47 @@
 /* Lean Code — BSD 3-Clause License — Vivian Voss, 2026 */
 /* Scope: Editorial design tokens, primitives, and legacy layout utilities. */
 
-/* WARNING (slice 1 / editorial-design-system, 2026-05-06):
-   --color-error currently resolves to --accent (terracotta).
-   The editorial palette has no dedicated error token. Do NOT
-   introduce new error semantics on this alias — replace it with
-   a slice-specific token before adding any new validation UI. */
-
 /* ============================================
    Design Tokens (CSS Custom Properties)
    ============================================ */
 :root {
-  /* Editorial type stacks */
+  /* Type stacks */
   --font-display: 'Instrument Serif', 'Fraunces', Georgia, serif;
   --font-serif: 'Fraunces', Georgia, serif;
   --font-ui: 'Inter Tight', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
-  /* Editorial palette — paper */
-  --paper: #f4f1ec;
-  --paper-2: #ece7df;
-  --paper-3: #e0d9cd;
+  /* Paper — cool tech */
+  --paper:   #f4f6fb;
+  --paper-2: #e9edf6;
+  --paper-3: #dbe2ee;
 
-  /* Editorial palette — ink */
-  --ink: #1a1814;
-  --ink-2: #3a342c;
-  --ink-3: #6b6358;
-  --ink-4: #9c9387;
+  /* Ink — near-black with navy undertone */
+  --ink:   #0a1228;
+  --ink-2: #1f2a44;
+  --ink-3: #5b6781;
+  --ink-4: #94a0bd;
 
-  /* Editorial palette — structure */
-  --rule: #c8bfb1;
-  --rule-soft: #ddd5c7;
-  --card: #fbfaf6;
+  /* Structure */
+  --rule:      #c5cee0;
+  --rule-soft: #dde4ef;
+  --card:      #ffffff;
 
-  /* Editorial palette — accent + status */
-  --accent: #b8442a;
-  --accent-soft: #e9c8bd;
-  --positive: #4a6b3a;
-  --positive-soft: #d6dec9;
-  --warn: #a07024;
-  --warn-soft: #ead8b6;
+  /* Primary — electric cobalt */
+  --accent:      #2d5bff;
+  --accent-soft: #d6e0ff;
+  --accent-deep: #1d3fc4;
+
+  /* Supporting tech hues — consumed by slices 7/8 (dashboard, kanban) */
+  --aqua:    #00b8d9;  --aqua-soft:    #c5edf6;
+  --violet:  #7c3aed;  --violet-soft:  #e3d4fd;
+  --lime:    #84cc16;  --lime-soft:    #e4f3c4;
+  --magenta: #ec4899;  --magenta-soft: #fbd1e3;
+
+  /* Status */
+  --positive: #008f5d;  --positive-soft: #c5ecdb;
+  --warn:     #d97706;  --warn-soft:     #fde4c4;
+  --negative: #dc2626;  --negative-soft: #fecaca;
 
   /* Density — spacious baked in */
   --d-pad: 36px;
@@ -52,7 +54,7 @@
   --r-lg: 6px;
 
   /* Shadow — reserved for slices 7 & 8 */
-  --shadow-card: 0 1px 0 rgba(26,24,20,0.04), 0 12px 32px -16px rgba(26,24,20,0.18);
+  --shadow-card: 0 1px 0 rgba(10,18,40,0.04), 0 12px 32px -16px rgba(10,18,40,0.18);
 
   /* Kept legacy non-color tokens — referenced by src/components/ */
   --font-size-body: 16px;
@@ -61,20 +63,22 @@
   --spacing-section: 24px;
   --spacing-field: 12px;
 
-  /* Legacy color aliases — map old names onto editorial tokens */
+  /* Legacy color aliases — map old names onto current tokens */
   --color-text: var(--ink);
   --color-background: var(--paper);
   --color-border: var(--rule);
   --color-primary: var(--accent);
-  --color-error: var(--accent);
+  --color-error: var(--negative);
   --color-success: var(--positive);
 
-  /* Legacy *-rgb variants — recomputed to match resolved hex values */
-  --color-text-rgb: 26 24 20;
-  --color-primary-rgb: 184 68 42;
-  --color-error-rgb: 184 68 42;
-  --color-success-rgb: 74 107 58;
-  --color-border-rgb: 200 191 177;
+  /* Legacy *-rgb variants — must match resolved hex values by hand;
+     rgba overlays consume these directly, so a stale triplet renders
+     the wrong colour silently. */
+  --color-text-rgb:    10 18 40;
+  --color-primary-rgb: 45 91 255;
+  --color-error-rgb:   220 38 38;
+  --color-success-rgb: 0 143 93;
+  --color-border-rgb:  197 206 224;
 }
 
 /* ============================================
