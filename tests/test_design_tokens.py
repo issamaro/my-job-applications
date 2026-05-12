@@ -69,8 +69,8 @@ def test_body_renders_editorial_tokens(public_url):
         finally:
             browser.close()
 
-    assert styles["backgroundColor"] == "rgb(244, 241, 236)"
-    assert styles["color"] == "rgb(26, 24, 20)"
+    assert styles["backgroundColor"] == "oklch(0.97 0.01 260)"
+    assert styles["color"] == "oklch(0.16 0.04 265)"
     assert styles["fontFamily"].startswith('"Inter Tight"')
     assert styles["fontSize"] == "14px"
     assert styles["lineHeight"] == "21px"

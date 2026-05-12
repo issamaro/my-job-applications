@@ -1,29 +1,29 @@
+<!-- Lean Code — BSD 3-Clause License — Vivian Voss, 2026 -->
+<!-- Scope: App shell — mounts editorial Topbar and renders the active screen. -->
+
 <script>
-  import TabNav from './components/TabNav.svelte';
+  import Topbar from './components/Topbar.svelte';
   import ProfileEditor from './components/ProfileEditor.svelte';
   import ResumeGenerator from './components/ResumeGenerator.svelte';
 
   let activeTab = $state('profile');
 
-  function handleTabChange(tab) {
+  function updateActiveTab(tab) {
     activeTab = tab;
   }
 
   $effect(() => {
-    function handleSwitchTab(e) {
+    function updateTabFromEvent(e) {
       activeTab = e.detail;
     }
-    window.addEventListener('switchTab', handleSwitchTab);
-    return () => window.removeEventListener('switchTab', handleSwitchTab);
+    window.addEventListener('switchTab', updateTabFromEvent);
+    return () => window.removeEventListener('switchTab', updateTabFromEvent);
   });
 </script>
 
-<div class="container">
-  <header class="header">
-    <h1>MyCV</h1>
-    <TabNav {activeTab} onTabChange={handleTabChange} />
-  </header>
+<Topbar {activeTab} onTabChange={updateActiveTab} />
 
+<div class="container">
   {#if activeTab === 'profile'}
     <ProfileEditor />
   {:else if activeTab === 'resume'}

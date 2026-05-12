@@ -149,7 +149,7 @@
 
 body {
   margin: 0;
-  padding: var(--spacing-section);
+  padding: 0;
   font-family: var(--font-ui);
   background: var(--paper);
   color: var(--ink);
@@ -175,6 +175,7 @@ p {
 .container {
   max-width: 800px;
   margin: 0 auto;
+  padding: var(--spacing-section);
 }
 
 .header {
