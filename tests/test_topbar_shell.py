@@ -1,6 +1,7 @@
 # Lean Code — BSD 3-Clause License — Vivian Voss, 2026
 # Scope: Smoke-test the editorial Topbar shell reaches the served bundle.
 
+import json
 import socket
 import threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -8,6 +9,22 @@ from pathlib import Path
 
 import pytest
 from playwright.sync_api import sync_playwright
+
+
+def create_users_mock(page, full_name="Issa Maro"):
+    def write_users_response(route, request):
+        if request.method == "GET":
+            route.fulfill(
+                status=200,
+                content_type="application/json",
+                body=json.dumps({
+                    "full_name": full_name,
+                    "email": "test@example.com",
+                }),
+            )
+        else:
+            route.continue_()
+    page.route("**/api/users", write_users_response)
 
 
 PUBLIC_DIR = Path(__file__).parent.parent / "public"
@@ -333,7 +350,15 @@ def test_search_pill_content(public_url):
 
 def test_user_initials_circle(public_url):
     with sync_playwright() as playwright:
-        browser, context, page = create_loaded_page(playwright, public_url)
+        browser = playwright.chromium.launch()
+        context = browser.new_context()
+        page = context.new_page()
+        create_users_mock(page, "Issa Maro")
+        page.goto(public_url, wait_until="load")
+        page.wait_for_selector(".editor-main")
+        page.wait_for_function(
+            "() => document.querySelector('.topbar-user')?.textContent?.trim() === 'IM'"
+        )
         try:
             user = page.evaluate(
                 """() => {
@@ -355,7 +380,7 @@ def test_user_initials_circle(public_url):
             context.close()
             browser.close()
 
-    assert user["text"] == "LM"
+    assert user["text"] == "IM"
     assert user["width"] == "30px"
     assert user["height"] == "30px"
     assert user["borderRadius"] == "50%"

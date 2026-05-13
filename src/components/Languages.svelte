@@ -1,3 +1,6 @@
+<!-- Lean Code — BSD 3-Clause License — Vivian Voss, 2026 -->
+<!-- Scope: Editorial languages grid — CEFR cards, drag reorder, edit form, count bindable. -->
+
 <script>
   import { getLanguages, createLanguage, updateLanguage, deleteLanguage, reorderLanguages } from '../lib/api.js';
   import ConfirmDialog from './ConfirmDialog.svelte';
@@ -10,6 +13,8 @@
     { value: 'C1', label: 'C1 (Advanced)' },
     { value: 'C2', label: 'C2 (Proficient)' }
   ];
+
+  let { count = $bindable(0) } = $props();
 
   let items = $state([]);
   let loading = $state(true);
@@ -33,6 +38,10 @@
     loadData();
   });
 
+  $effect(() => {
+    count = items.length;
+  });
+
   async function loadData() {
     try {
       loading = true;
@@ -49,6 +58,11 @@
     formData = { ...emptyForm };
     showForm = true;
     fieldErrors = {};
+  }
+
+  function readCefrLabel(level) {
+    const entry = CEFR_LEVELS.find(l => l.value === level);
+    return entry ? entry.label : level;
   }
 
   function edit(item) {
@@ -179,16 +193,17 @@
 {:else if items.length === 0 && !showForm}
   <div class="empty-state">No languages added yet.</div>
 {:else}
-  <div class="item-list">
+  <div class="lang-grid">
     {#each items as item, index}
       {#if editingId === item.id && showForm}
-        <div class="item">
+        <div class="lang-edit-block">
           <form class="form" onsubmit={(e) => e.preventDefault()}>
             <div class="form-row-inline">
               <div class="form-row">
                 <label for="name" class="required">Language</label>
                 <input
                   id="name"
+                  class="input"
                   type="text"
                   bind:value={formData.name}
                   class:error={fieldErrors.name}
@@ -205,6 +220,7 @@
                 <label for="level" class="required">Level</label>
                 <select
                   id="level"
+                  class="input"
                   bind:value={formData.level}
                   class:error={fieldErrors.level}
                   aria-required="true"
@@ -233,7 +249,7 @@
         </div>
       {:else}
         <div
-          class="item"
+          class="lang-card"
           class:dragging={draggedIndex === index}
           draggable="true"
           ondragstart={(e) => handleDragStart(e, index)}
@@ -241,16 +257,12 @@
           ondrop={handleDrop}
           ondragend={handleDragEnd}
         >
-          <div class="item-header">
-            <div class="drag-handle-wrapper">
-              <span class="drag-handle" aria-label="Drag to reorder">&#8942;&#8942;</span>
-              <div>
-                <div class="item-title">{item.name}</div>
-                <div class="item-subtitle">{item.level}</div>
-              </div>
-            </div>
-            <button class="edit-btn" onclick={() => edit(item)}>Edit</button>
+          <div class="lang-label">
+            <div class="lang-name">{item.name}</div>
+            <div class="lang-level">{readCefrLabel(item.level)}</div>
           </div>
+          <span class="num lang-code">{item.level}</span>
+          <button class="btn btn-ghost lang-edit" onclick={() => edit(item)}>Edit</button>
         </div>
       {/if}
     {/each}
@@ -258,13 +270,14 @@
 {/if}
 
 {#if showForm && !editingId}
-  <div class="item" style="border-top: 1px solid #e0e0e0; margin-top: 16px;">
+  <div class="lang-add-block">
     <form class="form" onsubmit={(e) => e.preventDefault()}>
       <div class="form-row-inline">
         <div class="form-row">
           <label for="new_name" class="required">Language</label>
           <input
             id="new_name"
+            class="input"
             type="text"
             bind:value={formData.name}
             class:error={fieldErrors.name}
@@ -281,6 +294,7 @@
           <label for="new_level" class="required">Level</label>
           <select
             id="new_level"
+            class="input"
             bind:value={formData.level}
             class:error={fieldErrors.level}
             aria-required="true"
@@ -308,34 +322,45 @@
   </div>
 {/if}
 
+<button class="btn lang-add" onclick={() => add()}>
+  <span aria-hidden="true">+</span> Add language
+</button>
+
 {#if saved}
   <span class="saved-indicator" class:fading={!saving}>Saved</span>
 {/if}
 
 <style>
-  .drag-handle-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 12px;
+  .lang-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
-
-  .drag-handle {
+  .lang-card {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: baseline;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: var(--r-sm);
     cursor: grab;
-    color: #999;
-    font-size: 16px;
-    user-select: none;
   }
-
-  .drag-handle:active {
-    cursor: grabbing;
+  .lang-card.dragging { opacity: 0.5; }
+  .lang-name { font-size: 13px; font-weight: 500; }
+  .lang-level { font-size: 11px; color: var(--ink-3); margin-top: 1px; }
+  .lang-code { font-size: 11px; color: var(--ink-3); }
+  .lang-edit { padding: 4px 8px; font-size: 11px; }
+  .lang-add { margin-top: 12px; font-size: 12px; }
+  .lang-edit-block {
+    grid-column: 1 / -1;
+    padding: 16px 0;
+    border-top: 1px solid var(--rule-soft);
   }
-
-  .item.dragging {
-    opacity: 0.5;
-    background: #f0f0f0;
-  }
-
-  .item[draggable="true"] {
-    cursor: default;
+  .lang-add-block {
+    padding: 16px 0;
+    border-top: 1px solid var(--rule-soft);
+    margin-top: 16px;
   }
 </style>

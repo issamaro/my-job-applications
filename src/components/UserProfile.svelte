@@ -1,189 +1,143 @@
+<!-- Lean Code — BSD 3-Clause License — Vivian Voss, 2026 -->
+<!-- Scope: Identity card — avatar plus five-field grid bound to the shared profile store. -->
+
 <script>
-  import { getUser, updateUser } from '../lib/api.js';
+  import { store, readProfile, writeProfile } from '../lib/profileStore.svelte.js';
   import PhotoUpload from './PhotoUpload.svelte';
 
-  let data = $state({
-    full_name: '',
-    email: '',
-    phone: '',
-    location: '',
-    linkedin_url: '',
-    summary: '',
-    photo: null
-  });
-  let loading = $state(true);
-  let saving = $state(false);
-  let saved = $state(false);
-  let error = $state(null);
   let fieldErrors = $state({});
   let saveTimeout = null;
-  let savedTimeout = null;
 
   $effect(() => {
-    loadData();
-    return () => {
-      if (saveTimeout) clearTimeout(saveTimeout);
-      if (savedTimeout) clearTimeout(savedTimeout);
-    };
+    void readProfile();
+    return () => { if (saveTimeout) clearTimeout(saveTimeout); };
   });
 
-  async function loadData() {
-    try {
-      loading = true;
-      const result = await getUser();
-      if (result) {
-        data = { ...data, ...result };
-      }
-    } catch (e) {
-      error = 'Could not load profile. Please refresh.';
-    } finally {
-      loading = false;
-    }
-  }
-
   function handleBlur() {
-    if (!data.full_name || !data.email) return;
-
+    if (!store.profile.full_name || !store.profile.email) return;
     if (saveTimeout) clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(save, 500);
+    saveTimeout = setTimeout(checkAndWrite, 500);
   }
 
-  async function save() {
+  function checkAndWrite() {
     fieldErrors = {};
-
-    if (!data.full_name.trim()) {
-      fieldErrors.full_name = 'Required';
-    }
-    if (!data.email.trim()) {
-      fieldErrors.email = 'Required';
-    } else if (!/^[^@]+@[^@]+\.[^@]+$/.test(data.email)) {
+    if (!store.profile.full_name.trim()) fieldErrors.full_name = 'Required';
+    if (!store.profile.email.trim()) fieldErrors.email = 'Required';
+    else if (!/^[^@]+@[^@]+\.[^@]+$/.test(store.profile.email))
       fieldErrors.email = 'Invalid email address';
-    }
-
     if (Object.keys(fieldErrors).length > 0) return;
-
-    try {
-      saving = true;
-      await updateUser(data);
-      saved = true;
-      if (savedTimeout) clearTimeout(savedTimeout);
-      savedTimeout = setTimeout(() => { saved = false; }, 2000);
-    } catch (e) {
-      error = 'Could not save. Please try again.';
-    } finally {
-      saving = false;
-    }
+    void writeProfile();
   }
 </script>
 
-{#if loading}
+{#if !store.loaded && !store.error}
   <div class="form">
     <div class="skeleton" style="width: 100%; height: 40px;"></div>
     <div class="skeleton" style="width: 100%; height: 40px;"></div>
     <div class="skeleton" style="width: 100%; height: 40px;"></div>
   </div>
+{:else if store.error}
+  <div class="form-error">{store.error}</div>
 {:else}
-  {#if error}
-    <div class="form-error">{error}</div>
-  {/if}
-
-  <div class="personal-info-layout">
-    <PhotoUpload bind:photo={data.photo} />
-
-    <form class="form personal-info-form" onsubmit={(e) => e.preventDefault()}>
-    <div class="form-row">
-      <label for="full_name" class="required">Name</label>
-      <input
-        id="full_name"
-        type="text"
-        bind:value={data.full_name}
-        onblur={handleBlur}
-        class:error={fieldErrors.full_name}
-        aria-required="true"
-        aria-describedby={fieldErrors.full_name ? 'full_name_error' : undefined}
-      />
-      {#if fieldErrors.full_name}
-        <span id="full_name_error" class="error-message">{fieldErrors.full_name}</span>
-      {/if}
+  <div class="identity-card">
+    <div class="identity-avatar" aria-hidden="true">
+      <PhotoUpload bind:photo={store.profile.photo} />
     </div>
+    <div class="identity-grid">
+      <div class="form-row">
+        <label for="full_name" class="eyebrow required">Full name</label>
+        <input
+          id="full_name"
+          class="input"
+          type="text"
+          bind:value={store.profile.full_name}
+          onblur={handleBlur}
+          class:error={fieldErrors.full_name}
+          aria-required="true"
+          aria-describedby={fieldErrors.full_name ? 'full_name_error' : undefined}
+        />
+        {#if fieldErrors.full_name}
+          <span id="full_name_error" class="error-message">{fieldErrors.full_name}</span>
+        {/if}
+      </div>
 
-    <div class="form-row">
-      <label for="email" class="required">Email</label>
-      <input
-        id="email"
-        type="email"
-        bind:value={data.email}
-        onblur={handleBlur}
-        class:error={fieldErrors.email}
-        aria-required="true"
-        aria-describedby={fieldErrors.email ? 'email_error' : undefined}
-      />
-      {#if fieldErrors.email}
-        <span id="email_error" class="error-message">{fieldErrors.email}</span>
-      {/if}
+      <div class="form-row">
+        <label for="email" class="eyebrow required">Email</label>
+        <input
+          id="email"
+          class="input"
+          type="email"
+          bind:value={store.profile.email}
+          onblur={handleBlur}
+          class:error={fieldErrors.email}
+          aria-required="true"
+          aria-describedby={fieldErrors.email ? 'email_error' : undefined}
+        />
+        {#if fieldErrors.email}
+          <span id="email_error" class="error-message">{fieldErrors.email}</span>
+        {/if}
+      </div>
+
+      <div class="form-row">
+        <label for="phone" class="eyebrow">Phone</label>
+        <input
+          id="phone"
+          class="input"
+          type="tel"
+          bind:value={store.profile.phone}
+          onblur={handleBlur}
+        />
+      </div>
+
+      <div class="form-row">
+        <label for="location" class="eyebrow">Location</label>
+        <input
+          id="location"
+          class="input"
+          type="text"
+          bind:value={store.profile.location}
+          onblur={handleBlur}
+        />
+      </div>
+
+      <div class="form-row">
+        <label for="linkedin_url" class="eyebrow">LinkedIn</label>
+        <input
+          id="linkedin_url"
+          class="input"
+          type="url"
+          bind:value={store.profile.linkedin_url}
+          onblur={handleBlur}
+        />
+      </div>
     </div>
-
-    <div class="form-row">
-      <label for="phone">Phone</label>
-      <input
-        id="phone"
-        type="tel"
-        bind:value={data.phone}
-        onblur={handleBlur}
-      />
-    </div>
-
-    <div class="form-row">
-      <label for="location">Location</label>
-      <input
-        id="location"
-        type="text"
-        bind:value={data.location}
-        onblur={handleBlur}
-      />
-    </div>
-
-    <div class="form-row">
-      <label for="linkedin_url">LinkedIn</label>
-      <input
-        id="linkedin_url"
-        type="url"
-        bind:value={data.linkedin_url}
-        onblur={handleBlur}
-      />
-    </div>
-
-    <div class="form-row">
-      <label for="summary">Summary</label>
-      <textarea
-        id="summary"
-        bind:value={data.summary}
-        onblur={handleBlur}
-      ></textarea>
-    </div>
-
-    {#if saved}
-      <span class="saved-indicator" class:fading={!saving}>Saved</span>
-    {/if}
-    </form>
   </div>
+  {#if store.saved}
+    <span class="saved-indicator" class:fading={!store.saving}>Saved</span>
+  {/if}
 {/if}
 
 <style>
-  .personal-info-layout {
+  .identity-card {
     display: flex;
     gap: 24px;
     align-items: flex-start;
   }
-
-  .personal-info-form {
-    flex: 1;
+  .identity-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--ink);
+    color: var(--paper);
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
   }
-
-  @media (max-width: 600px) {
-    .personal-info-layout {
-      flex-direction: column;
-      align-items: center;
-    }
+  .identity-grid {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
 </style>

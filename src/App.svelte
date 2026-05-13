@@ -23,7 +23,7 @@
 
 <Topbar {activeTab} onTabChange={updateActiveTab} />
 
-<div class="container">
+<div class="container" class:container-wide={activeTab === 'profile'}>
   {#if activeTab === 'profile'}
     <ProfileEditor />
   {:else if activeTab === 'resume'}

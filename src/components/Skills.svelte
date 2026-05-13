@@ -1,6 +1,11 @@
+<!-- Lean Code — BSD 3-Clause License — Vivian Voss, 2026 -->
+<!-- Scope: Editorial skills cluster — pill chips, dashed add pill, count bindable. -->
+
 <script>
   import { getSkills, createSkills, deleteSkill } from '../lib/api.js';
   import ConfirmDialog from './ConfirmDialog.svelte';
+
+  let { count = $bindable(0) } = $props();
 
   let items = $state([]);
   let loading = $state(true);
@@ -15,6 +20,10 @@
     loadData();
   });
 
+  $effect(() => {
+    count = items.length;
+  });
+
   async function loadData() {
     try {
       loading = true;
@@ -26,10 +35,8 @@
     }
   }
 
-  export function add() {
-    // Focus the input when Add is clicked
-    const input = document.getElementById('skill-input');
-    if (input) input.focus();
+  function focusInput() {
+    document.getElementById('skill-input')?.focus();
   }
 
   async function handleKeydown(e) {
@@ -45,7 +52,6 @@
     try {
       saving = true;
       const newSkills = await createSkills(inputValue);
-      // Reload to get proper alphabetical order
       await loadData();
       inputValue = '';
       saved = true;
@@ -87,40 +93,37 @@
 {:else if error}
   <div class="form-error">{error}</div>
 {:else}
-  {#if items.length === 0}
-    <div class="empty-state">No skills added yet.</div>
-  {:else}
-    <div class="tags">
-      {#each items as item}
-        <span class="tag">
-          {item.name}
-          <button
-            class="tag-remove"
-            onclick={() => requestDelete(item.id)}
-            aria-label="Remove {item.name}"
-          >×</button>
-        </span>
-      {/each}
-    </div>
-  {/if}
+  <div class="skill-cluster">
+    {#each items as item}
+      <span class="pill skill-pill">
+        {item.name}
+        <button
+          class="skill-remove"
+          onclick={() => requestDelete(item.id)}
+          aria-label="Remove {item.name}"
+        >×</button>
+      </span>
+    {/each}
+    <button class="pill skill-pill-add" onclick={focusInput}>+ add</button>
+  </div>
 
-  <div class="form" style="margin-top: 16px;">
-    <div class="form-row">
-      <label for="skill-input">Add skills (comma-separated)</label>
-      <div style="display: flex; gap: 8px;">
-        <input
-          id="skill-input"
-          type="text"
-          placeholder="Python, FastAPI, SQL"
-          bind:value={inputValue}
-          onkeydown={handleKeydown}
-          disabled={saving}
-        />
-        <button class="btn btn-primary" onclick={addSkills} disabled={saving || !inputValue.trim()}>
-          {saving ? 'Adding...' : 'Add'}
-        </button>
-      </div>
-    </div>
+  <div class="skill-input-row">
+    <input
+      id="skill-input"
+      class="input"
+      type="text"
+      placeholder="Python, FastAPI, SQL"
+      bind:value={inputValue}
+      onkeydown={handleKeydown}
+      disabled={saving}
+    />
+    <button
+      class="btn btn-primary"
+      onclick={addSkills}
+      disabled={saving || !inputValue.trim()}
+    >
+      {saving ? 'Adding...' : 'Add'}
+    </button>
   </div>
 
   {#if saved}
@@ -129,39 +132,42 @@
 {/if}
 
 <style>
-  .tags {
+  .skill-cluster {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
   }
-
-  .tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 8px;
-    font-size: 14px;
-    background: rgb(var(--color-primary-rgb) / 0.1);
-    border: 1px solid rgb(var(--color-primary-rgb) / 0.3);
-    border-radius: 2px;
+  .skill-pill {
+    padding: 5px 10px;
+    font-size: 12px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule-soft);
+    border-radius: var(--r-sm);
+    color: var(--ink);
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: var(--font-ui);
   }
-
-  .tag-remove {
+  .skill-pill-add {
+    background: transparent;
+    border: 1px dashed var(--rule);
+    color: var(--ink-3);
+    cursor: pointer;
+  }
+  .skill-remove {
     padding: 0;
-    font-size: 16px;
+    margin-left: 4px;
+    font-size: 14px;
     line-height: 1;
-    color: rgb(var(--color-text-rgb) / 0.6);
+    color: var(--ink-3);
     background: none;
     border: none;
     cursor: pointer;
-
-    &:hover {
-      color: var(--color-error);
-    }
-
-    &:focus {
-      outline: 2px solid var(--color-primary);
-      outline-offset: 2px;
-    }
+  }
+  .skill-remove:hover { color: var(--negative); }
+  .skill-input-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
   }
 </style>

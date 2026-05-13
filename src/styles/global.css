@@ -178,6 +178,11 @@ p {
   padding: var(--spacing-section);
 }
 
+.container-wide {
+  max-width: none;
+  padding: 0;
+}
+
 .header {
   display: flex;
   justify-content: space-between;

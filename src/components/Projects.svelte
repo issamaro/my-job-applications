@@ -1,6 +1,11 @@
+<!-- Lean Code — BSD 3-Clause License — Vivian Voss, 2026 -->
+<!-- Scope: Editorial projects list — 2-col rows, edit form, count bindable. -->
+
 <script>
   import { getProjects, createProject, updateProject, deleteProject } from '../lib/api.js';
   import ConfirmDialog from './ConfirmDialog.svelte';
+
+  let { count = $bindable(0) } = $props();
 
   let items = $state([]);
   let loading = $state(true);
@@ -25,6 +30,10 @@
 
   $effect(() => {
     loadData();
+  });
+
+  $effect(() => {
+    count = items.length;
   });
 
   async function loadData() {
@@ -137,15 +146,16 @@
 {:else if items.length === 0 && !showForm}
   <div class="empty-state">No projects added yet.</div>
 {:else}
-  <div class="item-list">
-    {#each items as item}
+  <div class="proj-list">
+    {#each items as item, i}
       {#if editingId === item.id && showForm}
-        <div class="item">
+        <div class="proj-edit-block">
           <form class="form" onsubmit={(e) => e.preventDefault()}>
             <div class="form-row">
               <label for="name" class="required">Name</label>
               <input
                 id="name"
+                class="input"
                 type="text"
                 bind:value={formData.name}
                 class:error={fieldErrors.name}
@@ -160,6 +170,7 @@
               <label for="proj_url">URL</label>
               <input
                 id="proj_url"
+                class="input"
                 type="url"
                 bind:value={formData.url}
               />
@@ -169,6 +180,7 @@
               <label for="technologies">Technologies</label>
               <input
                 id="technologies"
+                class="input"
                 type="text"
                 placeholder="Svelte, Python, SQL"
                 bind:value={formData.technologies}
@@ -179,6 +191,7 @@
               <label for="proj_description">Description</label>
               <textarea
                 id="proj_description"
+                class="textarea"
                 bind:value={formData.description}
               ></textarea>
             </div>
@@ -193,23 +206,23 @@
           </form>
         </div>
       {:else}
-        <div class="item">
-          <div class="item-header">
-            <div>
-              <div class="item-title">{item.name}</div>
-              <div class="item-subtitle">
+        <div class="proj-row" class:not-first={i > 0}>
+          <div>
+            <div class="proj-name">{item.name}</div>
+            {#if item.technologies || item.url}
+              <div class="proj-sub">
                 {#if item.technologies}{item.technologies}{/if}
                 {#if item.url}
                   {#if item.technologies} · {/if}
                   <a href={item.url} target="_blank" rel="noopener">{item.url}</a>
                 {/if}
               </div>
-            </div>
-            <button class="edit-btn" onclick={() => edit(item)}>Edit</button>
+            {/if}
+            {#if item.description}
+              <div class="proj-desc">{item.description}</div>
+            {/if}
           </div>
-          {#if item.description}
-            <div class="item-description">{item.description}</div>
-          {/if}
+          <button class="btn btn-ghost proj-edit" onclick={() => edit(item)}>Edit</button>
         </div>
       {/if}
     {/each}
@@ -217,12 +230,13 @@
 {/if}
 
 {#if showForm && !editingId}
-  <div class="item" style="border-top: 1px solid #e0e0e0; margin-top: 16px;">
+  <div class="proj-add-block">
     <form class="form" onsubmit={(e) => e.preventDefault()}>
       <div class="form-row">
         <label for="new_name" class="required">Name</label>
         <input
           id="new_name"
+          class="input"
           type="text"
           bind:value={formData.name}
           class:error={fieldErrors.name}
@@ -237,6 +251,7 @@
         <label for="new_proj_url">URL</label>
         <input
           id="new_proj_url"
+          class="input"
           type="url"
           bind:value={formData.url}
         />
@@ -246,6 +261,7 @@
         <label for="new_technologies">Technologies</label>
         <input
           id="new_technologies"
+          class="input"
           type="text"
           placeholder="Svelte, Python, SQL"
           bind:value={formData.technologies}
@@ -256,6 +272,7 @@
         <label for="new_proj_description">Description</label>
         <textarea
           id="new_proj_description"
+          class="textarea"
           bind:value={formData.description}
         ></textarea>
       </div>
@@ -270,6 +287,32 @@
   </div>
 {/if}
 
+<button class="btn proj-add" onclick={() => add()}>
+  <span aria-hidden="true">+</span> Add project
+</button>
+
 {#if saved}
   <span class="saved-indicator" class:fading={!saving}>Saved</span>
 {/if}
+
+<style>
+  .proj-list { display: flex; flex-direction: column; }
+  .proj-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 18px;
+    padding: 16px 0;
+  }
+  .proj-row.not-first { border-top: 1px solid var(--rule-soft); }
+  .proj-name { font-size: 14px; font-weight: 600; }
+  .proj-sub { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+  .proj-desc {
+    font-size: 13px; color: var(--ink-2);
+    margin-top: 8px; line-height: 1.55;
+    white-space: pre-wrap;
+  }
+  .proj-edit { padding: 4px 8px; font-size: 11px; }
+  .proj-add { margin-top: 12px; font-size: 12px; }
+  .proj-edit-block { padding: 16px 0; border-top: 1px solid var(--rule-soft); }
+  .proj-add-block { padding: 16px 0; border-top: 1px solid var(--rule-soft); margin-top: 16px; }
+</style>

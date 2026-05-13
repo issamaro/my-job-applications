@@ -2,6 +2,8 @@
 <!-- Scope: Editorial Topbar shell — wordmark, primary nav, search pill, user mark. -->
 
 <script>
+  import { store, readInitials, readProfile } from '../lib/profileStore.svelte.js';
+
   let { activeTab, onTabChange } = $props();
 
   const slots = [
@@ -14,6 +16,11 @@
   ];
 
   const activeSlotId = $derived(slots.find(s => s.tab === activeTab)?.id);
+  const initials = $derived(readInitials());
+
+  $effect(() => {
+    void readProfile();
+  });
 </script>
 
 <header class="topbar" role="banner">
@@ -48,7 +55,7 @@
       <span>Find a job, resume…</span>
       <span class="topbar-search-kbd num">⌘K</span>
     </div>
-    <div class="topbar-user" aria-hidden="true">LM</div>
+    <div class="topbar-user" aria-hidden="true">{initials}</div>
   </div>
 </header>
 
