@@ -206,15 +206,15 @@
 <style>
   .photo-upload-container {
     position: relative;
-    width: 120px;
-    height: 120px;
+    width: 100%;
+    height: 100%;
     flex-shrink: 0;
   }
 
   .upload-zone {
-    width: 120px;
-    height: 120px;
-    border: 2px dashed #ccc;
+    width: 100%;
+    height: 100%;
+    border: 1px dashed var(--rule);
     border-radius: 50%;
     display: flex;
     flex-direction: column;
@@ -222,46 +222,54 @@
     justify-content: center;
     cursor: pointer;
     transition: border-color 0.2s, background-color 0.2s;
-    background: #fafafa;
+    background: var(--paper-2);
+    padding: 4px;
+    box-sizing: border-box;
   }
 
   .upload-zone:hover,
   .upload-zone:focus {
-    border-color: #666;
+    border-color: var(--ink-3);
     outline: none;
   }
 
   .upload-zone:focus {
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 0 3px var(--accent-soft);
   }
 
   .upload-zone.drag-over {
-    border-color: #333;
+    border-color: var(--ink);
     border-style: solid;
-    background: #f0f0f0;
+    background: var(--paper-3);
   }
 
   .upload-icon {
-    color: #999;
-    margin-bottom: 4px;
+    color: var(--ink-3);
+    margin-bottom: 2px;
+  }
+
+  .upload-icon svg {
+    width: 22px;
+    height: 22px;
   }
 
   .upload-text {
-    font-size: 12px;
-    color: #666;
+    font-size: 10px;
+    color: var(--ink-3);
     text-align: center;
+    line-height: 1.2;
   }
 
   .upload-hint {
-    font-size: 10px;
-    color: #999;
-    margin-top: 2px;
+    font-size: 9px;
+    color: var(--ink-4);
+    margin-top: 1px;
   }
 
   .photo-display {
     position: relative;
-    width: 120px;
-    height: 120px;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
     overflow: hidden;
   }
