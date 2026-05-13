@@ -2,7 +2,7 @@
 <!-- Scope: Editorial Topbar shell — wordmark, primary nav, search pill, user mark. -->
 
 <script>
-  import { store, readInitials, readProfile } from '../lib/profileStore.svelte.js';
+  import { readInitials, readProfile } from '../lib/profileStore.svelte.js';
 
   let { activeTab, onTabChange } = $props();
 

@@ -1,3 +1,6 @@
+<!-- Lean Code — BSD 3-Clause License — Vivian Voss, 2026 -->
+<!-- Scope: Job requirements card — skill match pills and inline experience/education rows. -->
+
 <script>
   let { jobAnalysis = null } = $props();
 
@@ -5,24 +8,27 @@
 </script>
 
 {#if jobAnalysis}
-<div class="requirements-card">
-  <button
-    class="requirements-header"
-    onclick={() => collapsed = !collapsed}
-    aria-expanded={!collapsed}
-  >
-    <h3>Job Requirements</h3>
-    <span class="collapse-toggle">{collapsed ? '[+]' : '[-]'}</span>
-  </button>
+<div class="card resume-job-analysis">
+  <div class="resume-job-analysis-header">
+    <span class="eyebrow">JOB · REQUIREMENTS</span>
+    <button
+      type="button"
+      class="btn-ghost resume-job-analysis-toggle"
+      onclick={() => collapsed = !collapsed}
+      aria-expanded={!collapsed}
+    >
+      {collapsed ? 'Show' : 'Hide'}
+    </button>
+  </div>
 
   {#if !collapsed}
-  <div class="requirements-content">
+  <div class="resume-job-analysis-body">
     {#if jobAnalysis.required_skills?.length > 0}
-    <div class="requirement-section">
-      <h4>Required Skills</h4>
-      <div class="skill-tags">
+    <div class="resume-job-analysis-group">
+      <span class="eyebrow">Required skills</span>
+      <div class="resume-job-analysis-pills">
         {#each jobAnalysis.required_skills as skill}
-          <span class="skill-tag" class:matched={skill.matched} class:unmatched={!skill.matched}>
+          <span class="pill {skill.matched ? 'pill-positive' : 'pill-warn'}">
             {skill.name} {skill.matched ? '✓' : '✗'}
           </span>
         {/each}
@@ -31,11 +37,11 @@
     {/if}
 
     {#if jobAnalysis.preferred_skills?.length > 0}
-    <div class="requirement-section">
-      <h4>Preferred Skills</h4>
-      <div class="skill-tags">
+    <div class="resume-job-analysis-group">
+      <span class="eyebrow">Preferred skills</span>
+      <div class="resume-job-analysis-pills">
         {#each jobAnalysis.preferred_skills as skill}
-          <span class="skill-tag" class:matched={skill.matched} class:unmatched={!skill.matched}>
+          <span class="pill {skill.matched ? 'pill-positive' : 'pill-warn'}">
             {skill.name} {skill.matched ? '✓' : '✗'}
           </span>
         {/each}
@@ -44,18 +50,18 @@
     {/if}
 
     {#if jobAnalysis.experience_years}
-    <div class="requirement-section requirement-inline">
-      <span>Experience: {jobAnalysis.experience_years.required}+ years</span>
-      <span class="match-indicator" class:matched={jobAnalysis.experience_years.matched}>
+    <div class="resume-job-analysis-inline">
+      <span class="resume-job-analysis-label">Experience: {jobAnalysis.experience_years.required}+ yrs</span>
+      <span class="pill {jobAnalysis.experience_years.matched ? 'pill-positive' : 'pill-warn'}">
         {jobAnalysis.experience_years.matched ? '✓' : '✗'}
       </span>
     </div>
     {/if}
 
     {#if jobAnalysis.education}
-    <div class="requirement-section requirement-inline">
-      <span>Education: {jobAnalysis.education.required}</span>
-      <span class="match-indicator" class:matched={jobAnalysis.education.matched}>
+    <div class="resume-job-analysis-inline">
+      <span class="resume-job-analysis-label">Education: {jobAnalysis.education.required}</span>
+      <span class="pill {jobAnalysis.education.matched ? 'pill-positive' : 'pill-warn'}">
         {jobAnalysis.education.matched ? '✓' : '✗'}
       </span>
     </div>
@@ -66,105 +72,48 @@
 {/if}
 
 <style>
-  .requirements-card {
-    border: 1px solid var(--color-border);
-    border-radius: 2px;
-    margin-bottom: var(--spacing-section);
+  .resume-job-analysis {
+    margin: 0 0 var(--d-gap);
   }
 
-  .requirements-header {
+  .resume-job-analysis-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 100%;
-    padding: var(--spacing-grid);
-    background: none;
-    border: none;
-    cursor: pointer;
-    text-align: left;
-    font-family: inherit;
-
-    h3 {
-      margin: 0;
-    }
-
-    &:hover {
-      background: rgb(0 0 0 / 0.02);
-    }
-
-    &:focus {
-      outline: 2px solid var(--color-primary);
-      outline-offset: -2px;
-    }
+    gap: 12px;
   }
 
-  .collapse-toggle {
-    font-family: monospace;
-    color: rgb(var(--color-text-rgb) / 0.6);
+  .resume-job-analysis-toggle {
+    font-size: 11px;
   }
 
-  .requirements-content {
-    padding: var(--spacing-grid);
-    border-top: 1px solid var(--color-border);
-  }
-
-  .requirement-section {
-    margin-bottom: var(--spacing-grid);
-
-    h4 {
-      font-size: 14px;
-      margin-bottom: 8px;
-      font-weight: 500;
-    }
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-
-  .requirement-inline {
+  .resume-job-analysis-body {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .resume-job-analysis-group {
+    display: flex;
+    flex-direction: column;
     gap: 8px;
   }
 
-  .skill-tags {
+  .resume-job-analysis-pills {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
   }
 
-  .skill-tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 4px 8px;
-    font-size: 14px;
-    background: rgb(var(--color-primary-rgb) / 0.1);
-    border: 1px solid rgb(var(--color-primary-rgb) / 0.3);
-    border-radius: 2px;
-
-    &.matched {
-      color: var(--color-success);
-      background: rgb(var(--color-success-rgb) / 0.1);
-      border-color: rgb(var(--color-success-rgb) / 0.3);
-    }
-
-    &.unmatched {
-      color: var(--color-error);
-      background: rgb(var(--color-error-rgb) / 0.05);
-      border-color: rgb(var(--color-error-rgb) / 0.2);
-    }
+  .resume-job-analysis-inline {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
   }
 
-  .match-indicator {
-    font-weight: bold;
-
-    &.matched {
-      color: var(--color-success);
-    }
-
-    &:not(.matched) {
-      color: var(--color-error);
-    }
+  .resume-job-analysis-label {
+    color: var(--ink-2);
+    font-size: 13px;
   }
 </style>

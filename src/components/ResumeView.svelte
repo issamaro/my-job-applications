@@ -1,6 +1,9 @@
+<!-- Lean Code — BSD 3-Clause License — Vivian Voss, 2026 -->
+<!-- Scope: Resume preview screen — editorial chrome, left rail, Edit/Preview pane. -->
+
 <script>
   import JobAnalysis from './JobAnalysis.svelte';
-  import ResumeSection from './ResumeSection.svelte';
+  import EditorialSection from './EditorialSection.svelte';
   import TemplateSelector from './TemplateSelector.svelte';
   import PdfPreview from './PdfPreview.svelte';
   import Toast from './Toast.svelte';
@@ -8,18 +11,9 @@
 
   let { resume, onBack, onRegenerate } = $props();
 
-  const languageLabels = {
-    en: 'English',
-    fr: 'Français',
-    nl: 'Nederlands'
-  };
-
-  // Section translations for edit view
   const sectionTranslations = {
     en: {
-      resumeEditor: 'Resume Editor',
-      resumePreview: 'Resume Preview',
-      workExperience: 'Work Experience',
+      workExperience: 'Experience',
       skills: 'Skills',
       education: 'Education',
       languages: 'Languages',
@@ -28,8 +22,6 @@
       availableSkills: 'Available skills'
     },
     fr: {
-      resumeEditor: 'Éditeur de CV',
-      resumePreview: 'Aperçu du CV',
       workExperience: 'Expérience',
       skills: 'Compétences',
       education: 'Formation',
@@ -39,8 +31,6 @@
       availableSkills: 'Available skills'
     },
     nl: {
-      resumeEditor: 'CV Bewerken',
-      resumePreview: 'CV Voorbeeld',
       workExperience: 'Werkervaring',
       skills: 'Vaardigheden',
       education: 'Opleiding',
@@ -51,7 +41,12 @@
     }
   };
 
-  // Reactive translations based on resume.language
+  const languageLockedLabels = {
+    en: 'Resume language: English (locked)',
+    fr: 'Resume language: French (locked)',
+    nl: 'Resume language: Dutch (locked)'
+  };
+
   let labels = $derived.by(() => {
     const lang = resume?.language || 'en';
     return sectionTranslations[lang] || sectionTranslations.en;
@@ -83,6 +78,26 @@
   let toastMessage = $state(null);
   let toastType = $state('success');
   let draggedIndex = $state(null);
+
+  let sectionRows = $derived.by(() => {
+    if (!resumeData) return [];
+    const work = resumeData.work_experiences?.[0]?.included !== false;
+    const skills = resumeData.skills?.length > 0
+      ? !resumeData.skills.every(s => s.included === false)
+      : true;
+    const edu = resumeData.education?.[0]?.included !== false;
+    const langs = resumeData.languages?.[0]?.included !== false;
+    const projs = resumeData.projects?.[0]?.included === true;
+    return [
+      { key: null,        label: 'Identity',   included: true,   disabled: true  },
+      { key: null,        label: 'Summary',    included: true,   disabled: true  },
+      { key: 'work',      label: labels.workExperience, included: work,   disabled: false },
+      { key: 'education', label: labels.education,      included: edu,    disabled: false },
+      { key: 'skills',    label: labels.skills,         included: skills, disabled: false },
+      { key: 'languages', label: labels.languages,      included: langs,  disabled: false },
+      { key: 'projects',  label: labels.projects,       included: projs,  disabled: false }
+    ];
+  });
 
   $effect(() => {
     if (resume?.resume) {
@@ -122,10 +137,29 @@
     }
   }
 
-  function getScoreClass(score) {
-    if (score >= 80) return 'score-high';
-    if (score >= 60) return 'score-medium';
-    return 'score-low';
+  function findMatchPillVariant(score) {
+    if (score == null) return null;
+    if (score >= 80) return 'pill-positive';
+    if (score >= 60) return 'pill-warn';
+    return 'pill-accent';
+  }
+
+  function findMatchAriaLabel(score) {
+    if (score == null) return null;
+    const rounded = Math.round(score);
+    if (score >= 80) return `Match score: ${rounded} percent, strong fit`;
+    if (score >= 60) return `Match score: ${rounded} percent, moderate fit`;
+    return `Match score: ${rounded} percent, weak fit`;
+  }
+
+  function readSectionAriaLabel(row) {
+    if (row.disabled) return `${row.label} — always shown`;
+    return `${row.label} — ${row.included ? 'included' : 'excluded'}`;
+  }
+
+  function updateSectionFromRail(row) {
+    if (row.disabled || !row.key) return;
+    toggleSection(row.key);
   }
 
   function formatDate(dateStr) {
@@ -345,7 +379,7 @@
     draggedIndex = null;
   }
 
-  async function handleDownloadPdf() {
+  async function writeDownloadedPdf() {
     if (!resume?.id) {
       throw new Error('Cannot download PDF: resume ID is missing');
     }
@@ -362,297 +396,393 @@
       isExporting = false;
     }
   }
+
+  function findRowIncluded(key) {
+    return sectionRows.find(r => r.key === key)?.included ?? true;
+  }
 </script>
 
 <div class="resume-preview">
-  <div class="preview-header">
-    <button class="back-link" onclick={onBack}>
-      ← Back to Input
-    </button>
-    <span class="match-score {getScoreClass(resume.match_score)}">
-      Match Score: {resume.match_score?.toFixed(0) || 0}%
-    </span>
-  </div>
+  <header class="resume-page-header">
+    <button
+      type="button"
+      class="btn-ghost"
+      onclick={onBack}
+      aria-label="Back to job input"
+    >← Back to Input</button>
 
-  <div class="preview-title">
-    <h2>{resume.job_title || 'Untitled'} · {resume.company_name || 'Unknown'}</h2>
-    <p class="preview-date">
-      Generated {formatDate(resume.created_at)}
-      {#if resume.language}
-        <span class="language-badge">{languageLabels[resume.language] || resume.language}</span>
-      {/if}
-    </p>
-  </div>
-
-  <hr />
-
-  <JobAnalysis jobAnalysis={resume.job_analysis} />
-
-  <hr />
-
-  <div class="view-mode-container">
-    <div class="view-mode-toggle" role="tablist" aria-label="View mode">
-      <button
-        type="button"
-        class="view-mode-btn"
-        class:active={editMode === 'edit'}
-        onclick={() => editMode = 'edit'}
-        role="tab"
-        aria-selected={editMode === 'edit'}
-      >
-        Edit
-      </button>
-      <button
-        type="button"
-        class="view-mode-btn"
-        class:active={editMode === 'preview'}
-        onclick={() => editMode = 'preview'}
-        role="tab"
-        aria-selected={editMode === 'preview'}
-      >
-        Preview
-      </button>
-    </div>
-
-    {#if editMode === 'preview'}
-    <div class="preview-controls">
-      <TemplateSelector bind:selected={selectedTemplate} />
-      <button
-        type="button"
-        class="btn btn-primary download-btn"
-        onclick={handleDownloadPdf}
-        disabled={isExporting}
-        aria-live="polite"
-      >
-        {isExporting ? 'Generating...' : 'Download PDF'}
-      </button>
-    </div>
-    {/if}
-  </div>
-
-  {#if editMode === 'edit'}
-  <h3 class="section-heading">{labels.resumeEditor}</h3>
-
-  {#if resumeData}
-    {#if resumeData.personal_info}
-    <div class="personal-info-preview">
-      <h4>{resumeData.personal_info.full_name}</h4>
-      <p class="contact-line">
-        {resumeData.personal_info.email}
-        {#if resumeData.personal_info.phone} · {resumeData.personal_info.phone}{/if}
-      </p>
-      {#if resumeData.personal_info.location || resumeData.personal_info.linkedin_url}
-      <p class="contact-line">
-        {resumeData.personal_info.location || ''}
-        {#if resumeData.personal_info.linkedin_url} · {resumeData.personal_info.linkedin_url}{/if}
-      </p>
-      {/if}
-      <div class="summary-edit">
-        {#if editingSummary}
-          <!-- svelte-ignore a11y_autofocus -->
-          <textarea
-            bind:value={summaryDraft}
-            onkeydown={readSummaryKey}
-            rows="4"
-            autofocus
-          ></textarea>
-          <div class="edit-actions">
-            <button class="btn" onclick={writeSummaryEdit} disabled={saving}>
-              {saving ? 'Saving...' : 'Save'}
-            </button>
-            <button class="btn" onclick={cancelEditSummary} disabled={saving}>Cancel</button>
-          </div>
-        {:else if resumeData.summary}
-          <p class="summary">{resumeData.summary}</p>
-          <div class="summary-footer">
-            <button class="edit-btn" onclick={startEditSummary}>Edit</button>
-            {#if savedId === '__summary__'}
-              <span class="saved-indicator" aria-live="polite">Saved</span>
-            {/if}
-          </div>
-        {:else}
-          <button class="edit-btn summary-add-btn" onclick={startEditSummary}>Add summary</button>
+    <div class="resume-page-title">
+      <span class="eyebrow">RESUME · FOR JOB</span>
+      <h1 class="display">{resume.job_title || 'Untitled'} · {resume.company_name || 'Unknown'}</h1>
+      <div class="resume-page-meta">
+        <span>Generated {formatDate(resume.created_at)}</span>
+        {#if resume.match_score != null}
+          <span
+            class="pill {findMatchPillVariant(resume.match_score)}"
+            aria-label={findMatchAriaLabel(resume.match_score)}
+          >Match {Math.round(resume.match_score)}%</span>
         {/if}
       </div>
     </div>
-    {/if}
 
-    <ResumeSection
-      title={labels.workExperience}
-      included={resumeData.work_experiences?.[0]?.included !== false}
-      onToggle={() => toggleSection('work')}
-    >
-      {#snippet children()}
-        <div class="work-list">
-          {#each resumeData.work_experiences as exp, index}
-            <div
-              class="work-item"
-              class:dragging={draggedIndex === index}
-              draggable={editingId !== exp.id}
-              ondragstart={(e) => updateDraggedIndex(e, index)}
-              ondragover={(e) => updateOrderOnHover(e, index)}
-              ondrop={writeReorderedOrder}
-              ondragend={deleteDraggedIndex}
+    <button type="button" class="btn" onclick={onRegenerate}>Regenerate</button>
+  </header>
+
+  <JobAnalysis jobAnalysis={resume.job_analysis} />
+
+  <div class="resume-3col">
+    <aside class="resume-rail" aria-label="Resume controls">
+      <div class="resume-rail-group">
+        <span class="eyebrow">Templates · 04</span>
+        <TemplateSelector bind:selected={selectedTemplate} />
+      </div>
+
+      <hr class="rule-soft" />
+
+      <div class="resume-rail-group">
+        <span class="eyebrow">Language</span>
+        <span
+          class="pill pill-solid resume-rail-language"
+          aria-label={languageLockedLabels[resume?.language || 'en']}
+        >{(resume?.language || 'en').toUpperCase()}</span>
+      </div>
+
+      <hr class="rule-soft" />
+
+      <div class="resume-rail-group">
+        <span class="eyebrow">Sections</span>
+        <div class="resume-rail-sections">
+          {#each sectionRows as row (row.label)}
+            <button
+              type="button"
+              class="rail-section-row"
+              class:included={row.included && !row.disabled}
+              class:disabled={row.disabled}
+              aria-pressed={row.disabled ? undefined : row.included}
+              aria-disabled={row.disabled ? 'true' : undefined}
+              aria-label={readSectionAriaLabel(row)}
+              tabindex={row.disabled ? -1 : 0}
+              onclick={() => updateSectionFromRail(row)}
             >
-              <div class="work-header">
-                <span class="drag-handle" aria-label="Drag to reorder">⋮⋮</span>
-                <span class="work-number">{index + 1}.</span>
-                <span class="work-title">{exp.title} · {exp.company}</span>
+              <span class="rail-section-checkbox" aria-hidden="true"></span>
+              <span class="rail-section-label">{row.label}</span>
+            </button>
+          {/each}
+        </div>
+      </div>
+    </aside>
+
+    <div class="resume-pane">
+      <div class="resume-tabs" role="tablist" aria-label="View mode">
+        <button
+          type="button"
+          class:btn={editMode === 'edit'}
+          class:btn-ghost={editMode !== 'edit'}
+          role="tab"
+          aria-selected={editMode === 'edit'}
+          tabindex={editMode === 'edit' ? 0 : -1}
+          onclick={() => editMode = 'edit'}
+        >Edit</button>
+        <button
+          type="button"
+          class:btn={editMode === 'preview'}
+          class:btn-ghost={editMode !== 'preview'}
+          role="tab"
+          aria-selected={editMode === 'preview'}
+          tabindex={editMode === 'preview' ? 0 : -1}
+          onclick={() => editMode = 'preview'}
+        >Preview</button>
+      </div>
+
+      {#if editMode === 'preview'}
+        <div class="resume-pane-preview">
+          <div class="resume-page-meta-eyebrow">
+            <span class="eyebrow num">A4 · 210 × 297</span>
+            <span class="resume-page-count">1 / 1 page</span>
+          </div>
+          <div class="resume-page">
+            <PdfPreview {resumeData} template={selectedTemplate} language={resume?.language || 'en'} />
+          </div>
+          <div class="resume-pane-actions">
+            <button
+              type="button"
+              class="btn btn-primary"
+              onclick={writeDownloadedPdf}
+              disabled={isExporting}
+              aria-live="polite"
+            >{isExporting ? 'Generating…' : 'Download PDF'}</button>
+          </div>
+        </div>
+      {:else}
+        <div class="resume-pane-edit">
+          {#if resumeData}
+            {#if resumeData.personal_info}
+              <div class="resume-block-wrapper">
+                <EditorialSection number="01" title="Identity">
+                  {#snippet children()}
+                    <div class="resume-identity">
+                      <p class="resume-identity-name">{resumeData.personal_info.full_name}</p>
+                      <p class="resume-identity-contact">
+                        {resumeData.personal_info.email}
+                        {#if resumeData.personal_info.phone} · {resumeData.personal_info.phone}{/if}
+                      </p>
+                      {#if resumeData.personal_info.location || resumeData.personal_info.linkedin_url}
+                        <p class="resume-identity-contact">
+                          {resumeData.personal_info.location || ''}
+                          {#if resumeData.personal_info.linkedin_url} · {resumeData.personal_info.linkedin_url}{/if}
+                        </p>
+                      {/if}
+                    </div>
+                  {/snippet}
+                </EditorialSection>
               </div>
-              <p class="work-dates">{formatWorkDate(exp.start_date)} – {formatWorkDate(exp.end_date)}</p>
+            {/if}
 
-              {#if editingId === exp.id}
-                <div class="inline-edit">
-                  <textarea
-                    bind:value={editValue}
-                    rows="4"
-                  ></textarea>
-                  <div class="edit-actions">
-                    <button class="btn" onclick={() => saveEdit(index)} disabled={saving}>
-                      {saving ? 'Saving...' : 'Save'}
-                    </button>
-                    <button class="btn" onclick={cancelEdit}>Cancel</button>
-                  </div>
-                </div>
-              {:else}
-                <p class="work-description">{exp.description}</p>
-                <div class="work-footer">
-                  {#if exp.match_reasons?.length > 0}
-                    <span class="match-reasons">Match: {exp.match_reasons.join(', ')}</span>
-                  {/if}
-                  <button class="edit-btn" onclick={() => startEdit(exp.id, exp.description)}>
-                    Edit
-                  </button>
-                  {#if savedId === exp.id}
-                    <span class="saved-indicator">Saved</span>
-                  {/if}
-                </div>
-              {/if}
-            </div>
-          {/each}
-        </div>
-      {/snippet}
-    </ResumeSection>
-
-    <ResumeSection
-      title={labels.skills}
-      included={true}
-      onToggle={() => toggleSection('skills')}
-    >
-      {#snippet children()}
-        {#if resumeData.skills.length === 0 && availableProfileSkills.length === 0}
-          <p class="empty-note">No skills.</p>
-        {:else}
-          <div class="skill-tags">
-            {#each resumeData.skills as skill, index}
-              {#if skill.included !== false}
-                <span class="skill-tag" class:matched={skill.matched} class:saving-skill={savingSkillIndex === index}>
-                  {#if editingSkillIndex === index}
+            <div class="resume-block-wrapper">
+              <EditorialSection number="02" title="Summary">
+                {#snippet children()}
+                  {#if editingSummary}
                     <!-- svelte-ignore a11y_autofocus -->
-                    <input
-                      bind:value={skillDraft}
-                      onkeydown={(e) => readSkillKey(e, index)}
-                      aria-label="Rename skill {skill.name}"
+                    <textarea
+                      class="textarea"
+                      bind:value={summaryDraft}
+                      onkeydown={readSummaryKey}
+                      rows="4"
                       autofocus
-                    />
-                    <button class="skill-action" onclick={() => writeSkillRename(index)} aria-label="Save skill name">✓</button>
-                    <button class="skill-action" onclick={cancelEditSkill} aria-label="Cancel rename">×</button>
+                    ></textarea>
+                    <div class="resume-edit-actions">
+                      <button type="button" class="btn btn-primary" onclick={writeSummaryEdit} disabled={saving}>
+                        {saving ? 'Saving…' : 'Save'}
+                      </button>
+                      <button type="button" class="btn-ghost" onclick={cancelEditSummary} disabled={saving}>Cancel</button>
+                    </div>
+                  {:else if resumeData.summary}
+                    <p class="resume-summary-text">{resumeData.summary}</p>
+                    <div class="resume-edit-actions">
+                      <button type="button" class="btn-ghost" onclick={startEditSummary}>Edit</button>
+                      {#if savedId === '__summary__'}
+                        <span class="resume-saved-indicator" aria-live="polite">Saved</span>
+                      {/if}
+                    </div>
                   {:else}
-                    <span class="skill-name">{skill.name}{skill.matched ? ' ✓' : ''}</span>
-                    <button class="skill-action" onclick={() => startEditSkill(index)} aria-label="Rename skill {skill.name}">✎</button>
-                    <button class="skill-action" onclick={() => updateSkillInclusion(index, false)} aria-label="Exclude skill {skill.name}">×</button>
+                    <button type="button" class="btn-ghost" onclick={startEditSummary}>Add summary</button>
                   {/if}
-                </span>
-              {/if}
-            {/each}
-          </div>
-
-          {#if resumeData.skills.some(s => s.included === false) || availableProfileSkills.length > 0}
-            <h4 class="available-skills-header">{labels.availableSkills}</h4>
-            <div class="skill-tags available">
-              {#each resumeData.skills as skill, index}
-                {#if skill.included === false}
-                  <span class="skill-tag excluded" class:saving-skill={savingSkillIndex === index}>
-                    <span class="skill-name">{skill.name}</span>
-                    <button class="skill-action" onclick={() => updateSkillInclusion(index, true)} aria-label="Re-include skill {skill.name}">+</button>
-                  </span>
-                {/if}
-              {/each}
-              {#each availableProfileSkills as profileSkill (profileSkill.id)}
-                <span class="skill-tag excluded" class:saving-skill={savingProfileSkillName === profileSkill.name}>
-                  <span class="skill-name">{profileSkill.name}</span>
-                  <button class="skill-action" onclick={() => createSkillFromProfile(profileSkill.name)} aria-label="Add skill {profileSkill.name}">+</button>
-                </span>
-              {/each}
+                {/snippet}
+              </EditorialSection>
             </div>
+
+            {@const workIncluded = findRowIncluded('work')}
+            <div class="resume-block-wrapper" class:section-dimmed={!workIncluded}>
+              <EditorialSection number="03" title={labels.workExperience} count={resumeData.work_experiences?.length ?? 0}>
+                {#snippet children()}
+                  {#if !workIncluded}
+                    <p class="resume-block-excluded">Hidden from resume — re-check {labels.workExperience} in the left rail to include.</p>
+                  {/if}
+                  <div class="resume-work-list">
+                    {#each resumeData.work_experiences as exp, index}
+                      <div
+                        class="resume-work-row"
+                        class:dragging={draggedIndex === index}
+                        draggable={editingId !== exp.id}
+                        ondragstart={(e) => updateDraggedIndex(e, index)}
+                        ondragover={(e) => updateOrderOnHover(e, index)}
+                        ondrop={writeReorderedOrder}
+                        ondragend={deleteDraggedIndex}
+                      >
+                        <span class="num resume-work-dates">
+                          {formatWorkDate(exp.start_date)} — {formatWorkDate(exp.end_date)}
+                        </span>
+                        <div class="resume-work-body">
+                          <div class="resume-work-title-row">
+                            <span class="resume-work-handle" aria-label="Drag to reorder">⋮⋮</span>
+                            <span class="resume-work-title">
+                              {exp.title} <span class="resume-work-company">· {exp.company}</span>
+                            </span>
+                          </div>
+                          {#if editingId === exp.id}
+                            <textarea
+                              class="textarea"
+                              bind:value={editValue}
+                              rows="4"
+                            ></textarea>
+                            <div class="resume-edit-actions">
+                              <button type="button" class="btn btn-primary" onclick={() => saveEdit(index)} disabled={saving}>
+                                {saving ? 'Saving…' : 'Save'}
+                              </button>
+                              <button type="button" class="btn-ghost" onclick={cancelEdit}>Cancel</button>
+                            </div>
+                          {:else}
+                            <p class="resume-work-description">{exp.description}</p>
+                            {#if exp.match_reasons?.length > 0}
+                              <p class="resume-work-match">Match: {exp.match_reasons.join(', ')}</p>
+                            {/if}
+                          {/if}
+                        </div>
+                        <div class="resume-work-actions">
+                          {#if editingId !== exp.id}
+                            <button type="button" class="btn-ghost" onclick={() => startEdit(exp.id, exp.description)}>Edit</button>
+                          {/if}
+                          {#if savedId === exp.id}
+                            <span class="resume-saved-indicator">Saved</span>
+                          {/if}
+                        </div>
+                      </div>
+                    {/each}
+                    {#if resumeData.work_experiences.length === 0}
+                      <p class="resume-empty">No experiences added.</p>
+                    {/if}
+                  </div>
+                {/snippet}
+              </EditorialSection>
+            </div>
+
+            {@const eduIncluded = findRowIncluded('education')}
+            <div class="resume-block-wrapper" class:section-dimmed={!eduIncluded}>
+              <EditorialSection number="04" title={labels.education} count={resumeData.education?.length ?? 0}>
+                {#snippet children()}
+                  {#if !eduIncluded}
+                    <p class="resume-block-excluded">Hidden from resume — re-check {labels.education} in the left rail to include.</p>
+                  {/if}
+                  <div class="resume-education-list">
+                    {#each resumeData.education as edu}
+                      <div class="resume-education-row">
+                        <span class="num resume-education-year">{edu.graduation_year || ''}</span>
+                        <div class="resume-education-body">
+                          <span class="resume-education-degree">{edu.degree}{edu.field_of_study ? ` ${labels.in} ${edu.field_of_study}` : ''}</span>
+                          <span class="resume-education-institution"> · {edu.institution}</span>
+                        </div>
+                      </div>
+                    {/each}
+                    {#if resumeData.education.length === 0}
+                      <p class="resume-empty">No education added.</p>
+                    {/if}
+                  </div>
+                {/snippet}
+              </EditorialSection>
+            </div>
+
+            {@const skillsIncluded = findRowIncluded('skills')}
+            <div class="resume-block-wrapper" class:section-dimmed={!skillsIncluded}>
+              <EditorialSection number="05" title={labels.skills} count={resumeData.skills?.length ?? 0}>
+                {#snippet children()}
+                  {#if !skillsIncluded}
+                    <p class="resume-block-excluded">Hidden from resume — re-check {labels.skills} in the left rail to include.</p>
+                  {/if}
+                  {#if resumeData.skills.length === 0 && availableProfileSkills.length === 0}
+                    <p class="resume-empty">No skills.</p>
+                  {:else}
+                    <div class="resume-skills-cluster">
+                      {#each resumeData.skills as skill, index}
+                        {#if skill.included !== false}
+                          <span
+                            class="pill skill-chip"
+                            class:pill-positive={skill.matched}
+                            class:saving-skill={savingSkillIndex === index}
+                          >
+                            {#if editingSkillIndex === index}
+                              <!-- svelte-ignore a11y_autofocus -->
+                              <input
+                                class="skill-chip-input"
+                                bind:value={skillDraft}
+                                onkeydown={(e) => readSkillKey(e, index)}
+                                aria-label="Rename skill {skill.name}"
+                                autofocus
+                              />
+                              <button type="button" class="skill-chip-action" onclick={() => writeSkillRename(index)} aria-label="Save skill name">✓</button>
+                              <button type="button" class="skill-chip-action" onclick={cancelEditSkill} aria-label="Cancel rename">×</button>
+                            {:else}
+                              <span class="skill-chip-name">{skill.name}{skill.matched ? ' ✓' : ''}</span>
+                              <button type="button" class="skill-chip-action" onclick={() => startEditSkill(index)} aria-label="Rename skill {skill.name}">✎</button>
+                              <button type="button" class="skill-chip-action" onclick={() => updateSkillInclusion(index, false)} aria-label="Exclude skill {skill.name}">×</button>
+                            {/if}
+                          </span>
+                        {/if}
+                      {/each}
+                    </div>
+
+                    {#if resumeData.skills.some(s => s.included === false) || availableProfileSkills.length > 0}
+                      <span class="eyebrow resume-skills-available-eyebrow">{labels.availableSkills}</span>
+                      <div class="resume-skills-cluster">
+                        {#each resumeData.skills as skill, index}
+                          {#if skill.included === false}
+                            <span class="pill skill-chip-available" class:saving-skill={savingSkillIndex === index}>
+                              <span class="skill-chip-name">{skill.name}</span>
+                              <button type="button" class="skill-chip-action" onclick={() => updateSkillInclusion(index, true)} aria-label="Re-include skill {skill.name}">+</button>
+                            </span>
+                          {/if}
+                        {/each}
+                        {#each availableProfileSkills as profileSkill (profileSkill.id)}
+                          <span class="pill skill-chip-available" class:saving-skill={savingProfileSkillName === profileSkill.name}>
+                            <span class="skill-chip-name">{profileSkill.name}</span>
+                            <button type="button" class="skill-chip-action" onclick={() => createSkillFromProfile(profileSkill.name)} aria-label="Add skill {profileSkill.name}">+</button>
+                          </span>
+                        {/each}
+                      </div>
+                    {/if}
+
+                    {#if resumeData.skills.length > 0 && resumeData.skills.every(s => s.included === false)}
+                      <p class="resume-empty">All skills excluded — re-include one below, or use the section toggle.</p>
+                    {/if}
+                  {/if}
+                {/snippet}
+              </EditorialSection>
+            </div>
+
+            {#if resumeData.languages?.length > 0}
+              {@const langsIncluded = findRowIncluded('languages')}
+              <div class="resume-block-wrapper" class:section-dimmed={!langsIncluded}>
+                <EditorialSection number="06" title={labels.languages} count={resumeData.languages.length}>
+                  {#snippet children()}
+                    {#if !langsIncluded}
+                      <p class="resume-block-excluded">Hidden from resume — re-check {labels.languages} in the left rail to include.</p>
+                    {/if}
+                    <div class="resume-languages-grid">
+                      {#each resumeData.languages as lang}
+                        <div class="resume-language-card">
+                          <span class="resume-language-name">{lang.name}</span>
+                          <span class="resume-language-level">{lang.level}</span>
+                        </div>
+                      {/each}
+                    </div>
+                  {/snippet}
+                </EditorialSection>
+              </div>
+            {/if}
+
+            {@const projsIncluded = findRowIncluded('projects')}
+            <div class="resume-block-wrapper" class:section-dimmed={!projsIncluded}>
+              <EditorialSection number="07" title={labels.projects} count={resumeData.projects?.length ?? 0}>
+                {#snippet children()}
+                  {#if !projsIncluded}
+                    <p class="resume-block-excluded">Hidden from resume — re-check {labels.projects} in the left rail to include.</p>
+                  {/if}
+                  <div class="resume-projects-list">
+                    {#each resumeData.projects as project}
+                      <div class="resume-project-row">
+                        <div class="resume-project-body">
+                          <p class="resume-project-name">{project.name}</p>
+                          {#if project.description}
+                            <p class="resume-project-description">{project.description}</p>
+                          {/if}
+                          {#if project.technologies}
+                            <p class="resume-project-tech">{project.technologies}</p>
+                          {/if}
+                        </div>
+                      </div>
+                    {/each}
+                    {#if resumeData.projects.length === 0}
+                      <p class="resume-empty">No projects.</p>
+                    {/if}
+                  </div>
+                {/snippet}
+              </EditorialSection>
+            </div>
+          {:else}
+            <p class="resume-loading-note">Loading resume…</p>
           {/if}
-
-          {#if resumeData.skills.length > 0 && resumeData.skills.every(s => s.included === false)}
-            <p class="all-excluded-note">All skills excluded — re-include one below, or use the section toggle.</p>
-          {/if}
-        {/if}
-      {/snippet}
-    </ResumeSection>
-
-    <ResumeSection
-      title={labels.education}
-      included={resumeData.education?.[0]?.included !== false}
-      onToggle={() => toggleSection('education')}
-    >
-      {#snippet children()}
-        {#each resumeData.education as edu}
-          <p>{edu.degree} {edu.field_of_study ? `${labels.in} ${edu.field_of_study}` : ''} · {edu.institution} · {edu.graduation_year || ''}</p>
-        {/each}
-      {/snippet}
-    </ResumeSection>
-
-    {#if resumeData.languages?.length > 0}
-    <ResumeSection
-      title={labels.languages}
-      included={resumeData.languages?.[0]?.included !== false}
-      onToggle={() => toggleSection('languages')}
-    >
-      {#snippet children()}
-        <div class="languages-list">
-          {#each resumeData.languages as lang, i}
-            <span class="language-item">{lang.name} - {lang.level}{#if i < resumeData.languages.length - 1},{/if}</span>{' '}
-          {/each}
         </div>
-      {/snippet}
-    </ResumeSection>
-    {/if}
-
-    <ResumeSection
-      title={labels.projects}
-      included={resumeData.projects?.[0]?.included === true}
-      onToggle={() => toggleSection('projects')}
-    >
-      {#snippet children()}
-        {#each resumeData.projects as project}
-          <div class="project-item">
-            <p class="project-name">{project.name}</p>
-            {#if project.description}
-              <p class="project-description">{project.description}</p>
-            {/if}
-            {#if project.technologies}
-              <p class="project-tech">{project.technologies}</p>
-            {/if}
-          </div>
-        {/each}
-      {/snippet}
-    </ResumeSection>
-  {/if}
-  {:else}
-  <h3 class="section-heading">{labels.resumePreview}</h3>
-  <PdfPreview {resumeData} template={selectedTemplate} language={resume?.language || 'en'} />
-  {/if}
-
-  <hr />
-
-  <div class="preview-actions">
-    <button class="btn btn-primary" onclick={onRegenerate}>
-      Regenerate
-    </button>
+      {/if}
+    </div>
   </div>
 </div>
 
@@ -660,387 +790,505 @@
 
 <style>
   .resume-preview {
-    hr {
-      border: none;
-      border-top: 1px solid var(--color-border);
-      margin: var(--spacing-section) 0;
-    }
+    padding: var(--d-pad);
+    display: flex;
+    flex-direction: column;
+    gap: var(--d-gap);
   }
 
-  .preview-header {
+  .resume-page-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-grid);
+    gap: 16px;
+    padding-bottom: var(--d-gap);
+    border-bottom: 1px solid var(--rule-soft);
   }
 
-  .back-link {
-    color: var(--color-primary);
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: var(--font-size-body);
+  .resume-page-title {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .resume-page-title h1 {
+    font-size: 32px;
+    line-height: 1.15;
+    margin: 0;
+    color: var(--ink);
+    text-align: center;
+  }
+
+  .resume-page-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    color: var(--ink-3);
+    font-size: 12px;
+  }
+
+  .resume-3col {
+    display: flex;
+    gap: var(--d-gap);
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .resume-rail {
+    width: 240px;
+    flex-shrink: 0;
+    min-width: 240px;
+    padding-right: var(--d-pad);
+    border-right: 1px solid var(--rule);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .resume-rail-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 0;
+  }
+
+  .resume-rail hr {
+    margin: 8px 0;
+  }
+
+  .resume-rail-language {
+    align-self: flex-start;
+    cursor: default;
+  }
+
+  .resume-rail-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .rail-section-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+    background: transparent;
+    border: 0;
     font-family: inherit;
-    padding: 0;
-
-    &:hover {
-      text-decoration: underline;
-    }
-
-    &:focus {
-      outline: 2px solid var(--color-primary);
-      outline-offset: 2px;
-    }
+    text-align: left;
+    cursor: pointer;
+    color: var(--ink-3);
   }
 
-  .match-score {
-    font-size: var(--font-size-heading);
-    font-weight: bold;
-
-    &.score-high {
-      color: var(--color-success);
-    }
-
-    &.score-medium {
-      color: var(--color-text);
-    }
-
-    &.score-low {
-      color: #cc6600;
-    }
+  .rail-section-row.included {
+    color: var(--ink);
   }
 
-  .preview-title {
-    h2 {
-      margin-bottom: 4px;
-    }
+  .rail-section-row.disabled {
+    color: var(--ink-4);
+    cursor: default;
   }
 
-  .preview-date {
-    color: rgb(var(--color-text-rgb) / 0.6);
-    font-size: 14px;
+  .rail-section-checkbox {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    border: 1px solid var(--rule);
+    background: transparent;
+    flex-shrink: 0;
+    display: inline-block;
+  }
+
+  .rail-section-row.included .rail-section-checkbox {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+
+  .rail-section-row.disabled .rail-section-checkbox {
+    border-color: var(--rule-soft);
+  }
+
+  .rail-section-label {
+    font-size: 12px;
+  }
+
+  .rail-section-row:not(.disabled):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .resume-pane {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--d-gap);
+  }
+
+  .resume-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    align-self: flex-start;
+  }
+
+  .resume-tabs button {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  .resume-pane-preview {
+    background: var(--paper-3);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .resume-page-meta-eyebrow {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+
+  .resume-page-count {
+    color: var(--ink-3);
+    font-size: 11px;
+  }
+
+  .resume-page {
+    width: 600px;
+    max-width: 100%;
+    min-height: 848px;
+    background: white;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 24px 48px -16px rgba(0, 0, 0, 0.18);
+    overflow: auto;
+  }
+
+  .resume-pane-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .resume-pane-edit {
+    display: flex;
+    flex-direction: column;
+    gap: var(--d-row);
+  }
+
+  .resume-block-wrapper {
+    display: flex;
+    flex-direction: column;
+  }
+
+  :global(.resume-block-wrapper.section-dimmed .editorial-section-title) {
+    color: var(--ink-3);
+  }
+
+  :global(.resume-block-wrapper.section-dimmed .editorial-section-header .eyebrow) {
+    color: var(--ink-4);
+  }
+
+  .resume-block-excluded {
+    color: var(--ink-3);
+    font-size: 12px;
+    font-style: italic;
+    margin: 0 0 16px;
+  }
+
+  .resume-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .resume-identity-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
     margin: 0;
   }
 
-  .language-badge {
-    display: inline-block;
-    margin-left: 8px;
-    padding: 2px 8px;
+  .resume-identity-contact {
     font-size: 12px;
-    font-weight: 500;
-    background-color: rgb(var(--color-primary-rgb) / 0.1);
-    color: var(--color-primary);
-    border-radius: 4px;
+    color: var(--ink-3);
+    margin: 0;
   }
 
-  .section-heading {
-    margin-bottom: var(--spacing-grid);
+  .resume-summary-text {
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.5;
+    margin: 0;
   }
 
-  .personal-info-preview {
-    margin-bottom: var(--spacing-section);
-    padding: var(--spacing-grid);
-    border: 1px solid var(--color-border);
-    border-radius: 2px;
-
-    h4 {
-      margin-bottom: 4px;
-    }
-
-    .contact-line {
-      font-size: 14px;
-      color: rgb(var(--color-text-rgb) / 0.7);
-      margin-bottom: 4px;
-    }
-
-    .summary {
-      margin-top: var(--spacing-grid);
-      font-size: 14px;
-    }
+  .resume-edit-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
   }
 
-  .work-list {
+  .resume-saved-indicator {
+    color: var(--positive);
+    font-size: 11px;
+  }
+
+  .resume-work-list,
+  .resume-education-list,
+  .resume-projects-list {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-grid);
   }
 
-  .work-item {
-    padding-bottom: var(--spacing-grid);
-    border-bottom: 1px solid var(--color-border);
-
-    &:last-child {
-      padding-bottom: 0;
-      border-bottom: none;
-    }
+  .resume-work-row {
+    display: grid;
+    grid-template-columns: 110px 1fr auto;
+    gap: 18px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    align-items: start;
   }
 
-  .work-header {
+  .resume-work-row:last-child {
+    border-bottom: 0;
+  }
+
+  .resume-work-row.dragging {
+    opacity: 0.5;
+    background: var(--paper-2);
+  }
+
+  .resume-work-dates {
+    color: var(--ink-3);
+    font-size: 11px;
+    padding-top: 2px;
+  }
+
+  .resume-work-body {
+    min-width: 0;
+  }
+
+  .resume-work-title-row {
     display: flex;
     align-items: baseline;
     gap: 8px;
   }
 
-  .work-item.dragging {
-    opacity: 0.5;
-    background: #f0f0f0;
-  }
-
-  .work-item .drag-handle {
+  .resume-work-handle {
+    color: var(--ink-3);
     cursor: grab;
-    color: #999;
-    font-size: 16px;
     user-select: none;
+    font-size: 14px;
   }
 
-  .work-item .drag-handle:active {
+  .resume-work-handle:active {
     cursor: grabbing;
   }
 
-  .work-number {
+  .resume-work-title {
     font-weight: 600;
-    color: rgb(var(--color-text-rgb) / 0.5);
-  }
-
-  .work-title {
-    font-weight: 600;
-  }
-
-  .work-dates {
     font-size: 14px;
-    color: rgb(var(--color-text-rgb) / 0.6);
-    margin: 4px 0;
+    color: var(--ink);
   }
 
-  .work-description {
-    font-size: 14px;
+  .resume-work-company {
+    font-weight: 400;
+    color: var(--ink-3);
+  }
+
+  .resume-work-description {
+    font-size: 13px;
+    color: var(--ink-2);
     white-space: pre-wrap;
-    margin: 8px 0;
+    margin: 8px 0 0;
   }
 
-  .work-footer {
+  .resume-work-match {
+    font-size: 11px;
+    color: var(--positive);
+    margin: 4px 0 0;
+  }
+
+  .resume-work-actions {
     display: flex;
-    align-items: center;
-    gap: var(--spacing-grid);
-    font-size: 14px;
-  }
-
-  .match-reasons {
-    color: var(--color-success);
-  }
-
-  .inline-edit {
-    margin-top: 8px;
-
-    textarea {
-      margin-bottom: 8px;
-    }
-  }
-
-  .edit-actions {
-    display: flex;
-    gap: 8px;
-  }
-
-  .project-item {
-    margin-bottom: var(--spacing-grid);
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-
-  .project-name {
-    font-weight: 600;
-    margin-bottom: 4px;
-  }
-
-  .project-description {
-    font-size: 14px;
-    margin-bottom: 4px;
-  }
-
-  .project-tech {
-    font-size: 14px;
-    color: rgb(var(--color-text-rgb) / 0.6);
-  }
-
-  .preview-actions {
-    margin-top: var(--spacing-section);
-  }
-
-  .view-mode-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-section);
-    flex-wrap: wrap;
-    gap: var(--spacing-grid);
-  }
-
-  .view-mode-toggle {
-    display: flex;
-    gap: 0;
-  }
-
-  .view-mode-btn {
-    padding: 8px var(--spacing-grid);
-    font-size: var(--font-size-body);
-    font-family: inherit;
-    color: var(--color-text);
-    background: none;
-    border: none;
-    cursor: pointer;
-    border-bottom: 2px solid transparent;
-
-    &:hover {
-      color: var(--color-primary);
-    }
-
-    &:focus {
-      outline: 2px solid var(--color-primary);
-      outline-offset: 2px;
-    }
-
-    &.active {
-      border-bottom-color: var(--color-primary);
-      color: var(--color-primary);
-    }
-  }
-
-  .preview-controls {
-    display: flex;
-    gap: var(--spacing-grid);
-    align-items: center;
-  }
-
-  .download-btn {
-    min-width: 120px;
-
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-  }
-
-  .skill-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .skill-tag {
-    display: inline-flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-end;
     gap: 4px;
-    padding: 4px 8px;
-    font-size: 14px;
-    background: rgb(var(--color-primary-rgb) / 0.1);
-    border: 1px solid rgb(var(--color-primary-rgb) / 0.3);
-    border-radius: 2px;
-
-    &.matched {
-      color: var(--color-success);
-      background: rgb(var(--color-success-rgb) / 0.1);
-      border-color: rgb(var(--color-success-rgb) / 0.3);
-    }
-
-    &.saving-skill {
-      opacity: 0.5;
-      pointer-events: none;
-    }
-
-    &.excluded {
-      opacity: 0.5;
-    }
-
-    .skill-action {
-      border: none;
-      background: none;
-      cursor: pointer;
-      padding: 0 2px;
-      font-size: 12px;
-      line-height: 1;
-      opacity: 0.6;
-      color: inherit;
-      font-family: inherit;
-
-      &:hover {
-        opacity: 1;
-      }
-
-      &:focus {
-        outline: 2px solid var(--color-primary);
-        outline-offset: 1px;
-      }
-    }
-
-    input {
-      min-width: 100px;
-      max-width: 300px;
-      width: auto;
-      field-sizing: content;
-      font-size: 14px;
-      font-family: inherit;
-      padding: 0 4px;
-    }
   }
 
-  @supports not (field-sizing: content) {
-    .skill-tag input {
-      width: 160px;
-    }
+  .resume-education-row {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    gap: 18px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--rule-soft);
   }
 
-  .skill-tags.available {
-    margin-top: 4px;
+  .resume-education-row:last-child {
+    border-bottom: 0;
   }
 
-  .available-skills-header {
-    font-size: 12px;
-    color: rgb(var(--color-text-rgb) / 0.6);
+  .resume-education-year {
+    color: var(--ink-3);
+    font-size: 11px;
+  }
+
+  .resume-education-body {
+    font-size: 13px;
+    color: var(--ink);
+  }
+
+  .resume-education-degree {
+    font-weight: 600;
+  }
+
+  .resume-education-institution {
+    color: var(--ink-3);
+  }
+
+  .resume-skills-cluster {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .skill-chip {
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: var(--font-ui);
+    font-size: 11px;
+    gap: 4px;
+  }
+
+  .skill-chip-available {
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: var(--font-ui);
+    font-size: 11px;
+    border-style: dashed;
+    gap: 4px;
+  }
+
+  .saving-skill {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .skill-chip-action {
+    background: none;
+    border: 0;
+    cursor: pointer;
+    padding: 0 2px;
+    font-size: 11px;
+    line-height: 1;
+    opacity: 0.6;
+    color: inherit;
+    font-family: inherit;
+  }
+
+  .skill-chip-action:hover {
+    opacity: 1;
+  }
+
+  .skill-chip-input {
+    min-width: 100px;
+    max-width: 300px;
+    width: auto;
+    field-sizing: content;
+    font-size: 11px;
+    font-family: inherit;
+    padding: 0 4px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+  }
+
+  .resume-skills-available-eyebrow {
     margin-top: 12px;
-    margin-bottom: 6px;
-    font-weight: 500;
-    text-transform: uppercase;
   }
 
-  .all-excluded-note {
-    font-size: 13px;
-    color: rgb(var(--color-text-rgb) / 0.6);
-    font-style: italic;
-    margin-top: 8px;
+  .resume-languages-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
 
-  .empty-note {
-    font-size: 13px;
-    color: rgb(var(--color-text-rgb) / 0.6);
-    font-style: italic;
+  .resume-language-card {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px;
+    background: var(--paper-2);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-sm);
+  }
+
+  .resume-language-name {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 14px;
+  }
+
+  .resume-language-level {
+    color: var(--ink-3);
+    font-size: 12px;
+  }
+
+  .resume-project-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  .resume-project-row:last-child {
+    border-bottom: 0;
+  }
+
+  .resume-project-name {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 14px;
     margin: 0;
   }
 
-  .summary-edit {
-    margin-top: var(--spacing-grid);
-
-    textarea {
-      width: 100%;
-      box-sizing: border-box;
-      margin-bottom: 8px;
-      font-family: inherit;
-      font-size: 14px;
-    }
-  }
-
-  .summary-footer {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-grid);
-    font-size: 14px;
-    margin-top: 4px;
-  }
-
-  .saved-indicator {
-    color: var(--color-success);
+  .resume-project-description {
+    color: var(--ink-2);
     font-size: 13px;
+    margin: 4px 0 0;
+  }
+
+  .resume-project-tech {
+    color: var(--ink-3);
+    font-size: 11px;
+    margin: 4px 0 0;
+  }
+
+  .resume-loading-note {
+    color: var(--ink-3);
+    font-size: 13px;
+    text-align: center;
+    font-style: italic;
+  }
+
+  .resume-empty {
+    color: var(--ink-3);
+    font-size: 12px;
+    font-style: italic;
+    margin: 8px 0 0;
+  }
+
+  .resume-preview button:focus-visible,
+  .resume-preview input:focus-visible,
+  .resume-preview textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 </style>
