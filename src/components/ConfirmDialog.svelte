@@ -48,26 +48,38 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgb(0 0 0 / 0.5);
+    background: oklch(0 0 0 / 0.5);
     z-index: 1000;
   }
 
   .dialog {
-    max-width: 400px;
-    padding: var(--spacing-section);
-    background: var(--color-background);
-    border-radius: 2px;
+    min-width: 320px;
+    max-width: 440px;
+    padding: 24px 28px;
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-md);
+    box-shadow: 0 12px 36px oklch(0 0 0 / 0.18);
+  }
+
+  .dialog:focus {
+    outline: 1px solid var(--accent);
+    outline-offset: 2px;
   }
 
   .dialog-title {
-    margin: 0 0 var(--spacing-grid);
-    font-size: var(--font-size-heading);
+    margin: 0 0 18px;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--ink);
   }
 
   .dialog-actions {
     display: flex;
-    gap: var(--spacing-grid);
+    gap: 10px;
     justify-content: flex-end;
-    margin-top: var(--spacing-section);
+    margin-top: 20px;
   }
 </style>
