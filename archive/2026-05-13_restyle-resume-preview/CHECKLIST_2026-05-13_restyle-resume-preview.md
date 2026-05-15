@@ -129,7 +129,7 @@ n/a — no project-checks.md found (searched root and `.claude/` directory)
 
 ## Pre-flight (Section P)
 
-- [ ] **PDF baseline capture (FIRST — before any source edit).** Run `bun run build && bun run dev`, pick one saved resume, download all 12 `(template, language)` PDFs, save to `workbench-v6/3-build/pdf-baselines/` named `{template}_{language}.pdf`. If no saved resume exists, STOP and surface before proceeding.  → source: IMPL_PLAN "Build & verify steps" step 1
+- [ ] **PDF baseline capture (FIRST — before any source edit).** Run `bun run build && bun run dev`, pick one saved resume, download all 12 `(template, language)` PDFs, save to `workbench/3-build/pdf-baselines/` named `{template}_{language}.pdf`. If no saved resume exists, STOP and surface before proceeding.  → source: IMPL_PLAN "Build & verify steps" step 1
 - [ ] **Working tree clean before edits begin.** `git status` shows no uncommitted changes to `src/`, `templates/`, or `tests/` before the first edit.  → source: IMPL_PLAN "Build & verify steps" step 3 — ordered edit sequence
 
 ---
@@ -204,7 +204,7 @@ n/a — no project-checks.md found (searched root and `.claude/` directory)
 - [ ] **Legacy token grep — zero matches outside protected zone:** `grep -nE '(--color-border|--color-primary|--color-primary-rgb|--color-text-rgb|--color-success|--color-success-rgb|--color-error|--color-error-rgb|--spacing-grid|--spacing-section|--spacing-field)' src/components/ResumeView.svelte src/components/TemplateSelector.svelte src/components/JobAnalysis.svelte src/components/PdfPreview.svelte` returns zero matches outside the protected PDF zone  → source: FEATURE_SPEC Scenario 16; IMPL_PLAN "Build & verify steps" step 7
 - [ ] **Topbar store-import grep — zero matches:** `grep -nE "\bstore\b" src/components/Topbar.svelte` returns zero matches after the edit  → source: IMPL_PLAN §2; FEATURE_SPEC Scenario 17
 - [ ] **Protected files untouched:** `git diff --stat templates/ src/components/PdfPreview.svelte` shows zero lines changed  → source: IMPL_PLAN Risk R-4; FEATURE_SPEC Must-have 12
-- [ ] **PDF byte-identity for all 12 combinations:** for each `(template, language)` in `{classic, modern, brussels, eu_classic} × {en, fr, nl}`, run `cmp workbench-v6/3-build/pdf-baselines/{template}_{language}.pdf <post-slice download>` — zero bytes differ for all 12 pairs  → source: IMPL_PLAN "Build & verify steps" step 6; FEATURE_SPEC Must-have 12 / Scenario 14
+- [ ] **PDF byte-identity for all 12 combinations:** for each `(template, language)` in `{classic, modern, brussels, eu_classic} × {en, fr, nl}`, run `cmp workbench/3-build/pdf-baselines/{template}_{language}.pdf <post-slice download>` — zero bytes differ for all 12 pairs  → source: IMPL_PLAN "Build & verify steps" step 6; FEATURE_SPEC Must-have 12 / Scenario 14
 
 ---
 
@@ -250,7 +250,7 @@ n/a — no project-checks.md found (searched root and `.claude/` directory)
 
 - [ ] **I-19. Topbar import cleanup.** `grep -n "\bstore\b" src/components/Topbar.svelte` returns zero matches. `bun run build` succeeds.  → source: IMPL_PLAN "Manual inspection bullets" I-19
 
-- [ ] **I-20. PDF byte-identity (the load-bearing gate).** Capture pre-slice baseline PDFs for one representative resume: `(classic, en), (modern, en), (brussels, en), (eu_classic, en), (classic, fr), …, (eu_classic, nl)` = 12 PDFs. After this slice, download the 12 PDFs again from the same resume. Diff byte-by-byte (`cmp pre.pdf post.pdf`). Zero bytes differ. Implementation: capture baselines BEFORE editing any source file. Store under `workbench-v6/3-build/pdf-baselines/`.  → source: IMPL_PLAN "Manual inspection bullets" I-20
+- [ ] **I-20. PDF byte-identity (the load-bearing gate).** Capture pre-slice baseline PDFs for one representative resume: `(classic, en), (modern, en), (brussels, en), (eu_classic, en), (classic, fr), …, (eu_classic, nl)` = 12 PDFs. After this slice, download the 12 PDFs again from the same resume. Diff byte-by-byte (`cmp pre.pdf post.pdf`). Zero bytes differ. Implementation: capture baselines BEFORE editing any source file. Store under `workbench/3-build/pdf-baselines/`.  → source: IMPL_PLAN "Manual inspection bullets" I-20
 
 - [ ] **I-21. `pytest tests/` zero regressions.** Particular attention to the PDF suite. Zero test files modified.  → source: IMPL_PLAN "Manual inspection bullets" I-21
 

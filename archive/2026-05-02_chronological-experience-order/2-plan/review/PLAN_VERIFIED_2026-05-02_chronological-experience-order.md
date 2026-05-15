@@ -4,10 +4,10 @@ date: 2026-05-02
 status: VERIFIED
 reviewer: plan-reviewer
 inputs_reviewed:
-  - workbench-v6/1-analyze/spec/FEATURE_SPEC_2026-05-02_chronological-experience-order.md
-  - workbench-v6/2-plan/design/IMPL_PLAN_2026-05-02_chronological-experience-order.md
-  - workbench-v6/1-analyze/ux/UX_DESIGN_2026-05-02_chronological-experience-order.md
-  - workbench-v6/2-plan/checks/CHECKLIST_2026-05-02_chronological-experience-order.md
+  - workbench/1-analyze/spec/FEATURE_SPEC_2026-05-02_chronological-experience-order.md
+  - workbench/2-plan/design/IMPL_PLAN_2026-05-02_chronological-experience-order.md
+  - workbench/1-analyze/ux/UX_DESIGN_2026-05-02_chronological-experience-order.md
+  - workbench/2-plan/checks/CHECKLIST_2026-05-02_chronological-experience-order.md
   - source files referenced by the plan (read-only verification)
 library_notes: none (plan declared no external docs needed; in-repo references only)
 ---

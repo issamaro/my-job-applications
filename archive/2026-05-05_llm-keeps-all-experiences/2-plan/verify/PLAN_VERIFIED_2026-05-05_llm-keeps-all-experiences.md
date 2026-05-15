@@ -7,8 +7,8 @@ reviewer: plan-reviewer
 ceremony_level: S
 inputs_reviewed:
 - backlog/refined/llm-keeps-all-experiences.md (used in lieu of FEATURE_SPEC for ceremony S)
-- workbench-v6/2-plan/design/IMPL_PLAN_2026-05-05_llm-keeps-all-experiences.md
-- workbench-v6/2-plan/checklist/CHECKLIST_2026-05-05_llm-keeps-all-experiences.md (NOT PRESENT — concurrent build, skipped per instructions)
+- workbench/2-plan/design/IMPL_PLAN_2026-05-05_llm-keeps-all-experiences.md
+- workbench/2-plan/checklist/CHECKLIST_2026-05-05_llm-keeps-all-experiences.md (NOT PRESENT — concurrent build, skipped per instructions)
 
 ## 1. Traceability table
 
@@ -148,7 +148,7 @@ The plan is otherwise structurally sound: file paths and symbols all verify, no 
 
 ```
 status: ISSUES
-artifact: /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench-v6/2-plan/verify/PLAN_VERIFIED_2026-05-05_llm-keeps-all-experiences.md
+artifact: /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench/2-plan/verify/PLAN_VERIFIED_2026-05-05_llm-keeps-all-experiences.md
 traceability: covered=6/7, missing=0, deferred=0, partial=1
 hallucinated_files: 0
 hallucinated_symbols: 0

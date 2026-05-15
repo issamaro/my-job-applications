@@ -6,8 +6,8 @@ reviewer: plan-reviewer
 ceremony_level: S
 inputs_reviewed:
   - backlog/refined/topbar-shell.md
-  - workbench-v6/2-plan/design/IMPL_PLAN_2026-05-11_topbar-shell.md
-  - workbench-v6/2-plan/checks/CHECKLIST_2026-05-11_topbar-shell.md
+  - workbench/2-plan/design/IMPL_PLAN_2026-05-11_topbar-shell.md
+  - workbench/2-plan/checks/CHECKLIST_2026-05-11_topbar-shell.md
   - design-bundle/project/shell.jsx (design source)
   - src/App.svelte
   - src/styles/global.css
@@ -190,7 +190,7 @@ These are spots that *looked* sketchy on first pass but verification cleared the
 
 ```
 status: ISSUES
-artifact: /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench-v6/2-plan/PLAN_VERIFIED_2026-05-11_topbar-shell.md
+artifact: /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench/2-plan/PLAN_VERIFIED_2026-05-11_topbar-shell.md
 traceability: covered=9/9 must-have-bullets, missing=0, deferred=0
 hallucinated_files: 0
 hallucinated_symbols: 0

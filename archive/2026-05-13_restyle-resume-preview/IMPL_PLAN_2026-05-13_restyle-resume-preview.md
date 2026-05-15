@@ -4,12 +4,12 @@ Date: 2026-05-13
 Ceremony: M (full)
 Slice: 4 of 9 — editorial redesign initiative
 References:
-- `workbench-v6/1-analyze/spec/FEATURE_SPEC_2026-05-13_restyle-resume-preview.md`
-- `workbench-v6/1-analyze/ux/UX_DESIGN_2026-05-13_restyle-resume-preview.md`
-- `workbench-v6/2-plan/research/SVELTE5_BINDABLE_NOTES_2026-05-13_restyle-resume-preview.md`
-- `workbench-v6/2-plan/research/SVELTE5_NOTES_2026-05-13_restyle-resume-preview.md`
+- `workbench/1-analyze/spec/FEATURE_SPEC_2026-05-13_restyle-resume-preview.md`
+- `workbench/1-analyze/ux/UX_DESIGN_2026-05-13_restyle-resume-preview.md`
+- `workbench/2-plan/research/SVELTE5_BINDABLE_NOTES_2026-05-13_restyle-resume-preview.md`
+- `workbench/2-plan/research/SVELTE5_NOTES_2026-05-13_restyle-resume-preview.md`
 - `design-bundle/project/screen-resume.jsx`
-- Slice 3 baseline: `archive-v6/2026-05-13_restyle-profile-editor/`
+- Slice 3 baseline: `archive/2026-05-13_restyle-profile-editor/`
 
 ## Architecture summary
 
@@ -914,7 +914,7 @@ I-20. **PDF byte-identity (the load-bearing gate).** Capture pre-
       download the 12 PDFs again from the same resume. Diff
       byte-by-byte (`cmp pre.pdf post.pdf`). Zero bytes differ.
       Implementation: capture baselines BEFORE editing any source
-      file. Store under `workbench-v6/3-build/pdf-baselines/`.
+      file. Store under `workbench/3-build/pdf-baselines/`.
 
 I-21. **`pytest tests/` zero regressions.** Particular attention to
       the PDF suite. Zero test files modified.
@@ -944,7 +944,7 @@ checkboxes in CHECKLIST.
 ## Library patterns to use (cite SVELTE5_NOTES)
 
 - **`$bindable` for `selected` in TemplateSelector.** Pattern Q1 in
-  `workbench-v6/2-plan/research/SVELTE5_BINDABLE_NOTES_2026-05-13_restyle-
+  `workbench/2-plan/research/SVELTE5_BINDABLE_NOTES_2026-05-13_restyle-
   resume-preview.md`. Parent: `<TemplateSelector bind:selected=
   {selectedTemplate}/>`. Child: `let { selected = $bindable('classic') } =
   $props();`. **Same pattern slice 3 used; no deviation.**
@@ -1109,7 +1109,7 @@ R-15. **`bun run dev` HMR + Svelte 5 props.** The restyle is large
 1. **PDF baseline capture (FIRST).** Before any source edit, run
    `bun run build && bun run dev` (or use the existing dev server).
    Pick one representative saved resume, generate and download all 12
-   `(template, language)` PDFs. Save under `workbench-v6/3-build/pdf-
+   `(template, language)` PDFs. Save under `workbench/3-build/pdf-
    baselines/` named `{template}_{language}.pdf`. **If this step
    fails (no saved resume to test against), STOP — surface via Q3 or
    note-capturer; do not proceed.**

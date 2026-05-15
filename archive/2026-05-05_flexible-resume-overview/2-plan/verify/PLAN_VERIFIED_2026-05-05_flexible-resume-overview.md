@@ -3,10 +3,10 @@ date: 2026-05-05
 status: VERIFIED
 reviewer: plan-reviewer
 inputs_reviewed:
-- /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench-v6/1-analyze/spec/FEATURE_SPEC_2026-05-05_flexible-resume-overview.md
-- /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench-v6/1-analyze/ux/UX_DESIGN_2026-05-05_flexible-resume-overview.md
-- /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench-v6/2-plan/design/IMPL_PLAN_2026-05-05_flexible-resume-overview.md
-- /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench-v6/2-plan/checklist/CHECKLIST_2026-05-05_flexible-resume-overview.md
+- /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench/1-analyze/spec/FEATURE_SPEC_2026-05-05_flexible-resume-overview.md
+- /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench/1-analyze/ux/UX_DESIGN_2026-05-05_flexible-resume-overview.md
+- /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench/2-plan/design/IMPL_PLAN_2026-05-05_flexible-resume-overview.md
+- /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench/2-plan/checklist/CHECKLIST_2026-05-05_flexible-resume-overview.md
 note: rebuilt CHECKLIST re-review after the prior ISSUES verdict. The previous round flagged five MAJOR drifts between IMPL_PLAN and CHECKLIST (stale `$effect`/`bind:this` requirement, seven-vars-not-five, two stale "invariant comment" entries, conftest-vs-decorator misclassification of `mock_llm`). All five drifts are now resolved in the rebuilt CHECKLIST.
 
 ---
@@ -156,7 +156,7 @@ Proceed to /v5-build.
 
 ```
 status: VERIFIED
-artifact: /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench-v6/2-plan/verify/PLAN_VERIFIED_2026-05-05_flexible-resume-overview.md
+artifact: /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench/2-plan/verify/PLAN_VERIFIED_2026-05-05_flexible-resume-overview.md
 traceability: covered=6/6, missing=0, deferred=0
 hallucinated_files: 0
 hallucinated_symbols: 0

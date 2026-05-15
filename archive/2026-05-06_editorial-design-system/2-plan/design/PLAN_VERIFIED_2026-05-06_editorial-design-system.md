@@ -3,11 +3,11 @@ date: 2026-05-06
 status: VERIFIED
 reviewer: plan-reviewer
 inputs_reviewed:
-- workbench-v6/1-analyze/spec/FEATURE_SPEC_2026-05-06_editorial-design-system.md
-- workbench-v6/2-plan/design/IMPL_PLAN_2026-05-06_editorial-design-system.md
-- workbench-v6/2-plan/checks/CHECKLIST_2026-05-06_editorial-design-system.md
-- workbench-v6/1-analyze/ux/UX_DESIGN_2026-05-06_editorial-design-system.md
-- workbench-v6/2-plan/research/LIB_NOTES_2026-05-06_playwright-python.md
+- workbench/1-analyze/spec/FEATURE_SPEC_2026-05-06_editorial-design-system.md
+- workbench/2-plan/design/IMPL_PLAN_2026-05-06_editorial-design-system.md
+- workbench/2-plan/checks/CHECKLIST_2026-05-06_editorial-design-system.md
+- workbench/1-analyze/ux/UX_DESIGN_2026-05-06_editorial-design-system.md
+- workbench/2-plan/research/LIB_NOTES_2026-05-06_playwright-python.md
 
 ---
 
@@ -166,7 +166,7 @@ Proceed to `/v5-build`.
 return:
 ```
 status: VERIFIED
-artifact: /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench-v6/2-plan/design/PLAN_VERIFIED_2026-05-06_editorial-design-system.md
+artifact: /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench/2-plan/design/PLAN_VERIFIED_2026-05-06_editorial-design-system.md
 traceability: covered=7/7 must-have, missing=0, deferred=0; SC covered=9/9; Scenarios covered=20/20
 hallucinated_files: 0
 hallucinated_symbols: 0

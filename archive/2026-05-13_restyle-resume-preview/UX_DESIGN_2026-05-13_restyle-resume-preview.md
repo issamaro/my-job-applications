@@ -7,7 +7,7 @@ Slice: 4 of 9 — editorial redesign initiative
 Source references:
 - Design: `design-bundle/project/screen-resume.jsx`
 - Tokens: `src/styles/global.css` (slice 1), `design-bundle/project/tokens.css`
-- Prior art: `archive-v6/2026-05-13_restyle-profile-editor/1-analyze/ux/`
+- Prior art: `archive/2026-05-13_restyle-profile-editor/1-analyze/ux/`
 
 ## Screens covered
 

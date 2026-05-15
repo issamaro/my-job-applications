@@ -2,9 +2,9 @@
 
 Date: 2026-05-13
 Ceremony: M
-Source spec: `workbench-v6/1-analyze/spec/FEATURE_SPEC_2026-05-13_restyle-profile-editor.md`
-Source UX: `workbench-v6/1-analyze/ux/UX_DESIGN_2026-05-13_restyle-profile-editor.md`
-Library notes: `workbench-v6/2-plan/research/SVELTE5_NOTES_2026-05-13_restyle-profile-editor.md`
+Source spec: `workbench/1-analyze/spec/FEATURE_SPEC_2026-05-13_restyle-profile-editor.md`
+Source UX: `workbench/1-analyze/ux/UX_DESIGN_2026-05-13_restyle-profile-editor.md`
+Library notes: `workbench/2-plan/research/SVELTE5_NOTES_2026-05-13_restyle-profile-editor.md`
 
 ## Architecture summary
 
@@ -1324,7 +1324,7 @@ function (no fixtures needed).
 - Pattern 9: child `$bindable()` count prop + parent `bind:count` + child
   `$effect(() => { count = items.length; })` — Files 7-11 (six children).
   Validated as canonical idiom; see
-  `workbench-v6/2-plan/research/SVELTE5_BINDABLE_NOTES_2026-05-13_restyle-profile-editor.md`.
+  `workbench/2-plan/research/SVELTE5_BINDABLE_NOTES_2026-05-13_restyle-profile-editor.md`.
   Hazard: never read AND write the same variable inside one `$effect`
   (would trigger `effect_update_depth_exceeded`). The shape above is
   write-only on `count` — safe.

@@ -9,7 +9,7 @@ revision: 1
 
 # Implementation Plan — Onboarding Rewrite
 
-Companion to `workbench-v6/1-analyze/spec/FEATURE_SPEC_2026-05-04_onboarding-rewrite.md` and `workbench-v6/1-analyze/ux/UX_DESIGN_2026-05-04_onboarding-rewrite.md`. Plan is file-by-file; lean-code rules from `CLAUDE.md` apply (verb prefix on shell functions, no abbreviations, two-line file headers when adding new files, no inline comments where the code is self-explanatory).
+Companion to `workbench/1-analyze/spec/FEATURE_SPEC_2026-05-04_onboarding-rewrite.md` and `workbench/1-analyze/ux/UX_DESIGN_2026-05-04_onboarding-rewrite.md`. Plan is file-by-file; lean-code rules from `CLAUDE.md` apply (verb prefix on shell functions, no abbreviations, two-line file headers when adding new files, no inline comments where the code is self-explanatory).
 
 ---
 

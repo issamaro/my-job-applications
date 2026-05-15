@@ -38,7 +38,7 @@
 
 | file | change_type | +lines | −lines |
 |------|-------------|--------|--------|
-| workbench-v6/* | A | — | — |
+| workbench/* | A | — | — |
 
 ---
 
@@ -56,11 +56,11 @@
 ### Files changed but NOT in plan
 
 - `PROJECT_PHASE.md` — phase metadata bump (4-5 lines). Not in IMPL_PLAN spec. Low-risk config artifact.
-- `workbench-v6/*` — planning + build artifacts (planning doc, inspector payloads, test logs). Not part of source delivery. Low-risk workbench record-keeping.
+- `workbench/*` — planning + build artifacts (planning doc, inspector payloads, test logs). Not part of source delivery. Low-risk workbench record-keeping.
 
-**Unplanned files by count:** 2 (PROJECT_PHASE.md, workbench-v6/). **Total planned files touched:** 6. **Drift ratio:** 2 ÷ 8 = 25%.
+**Unplanned files by count:** 2 (PROJECT_PHASE.md, workbench/). **Total planned files touched:** 6. **Drift ratio:** 2 ÷ 8 = 25%.
 
-**Drift assessment:** Both unplanned files are **metadata and artifacts only** — no changes to production source code outside the plan. PROJECT_PHASE.md is a phase-tracking file (config, not source). workbench-v6/ is the feature's workbench folder (by project convention, not delivered). Neither touches sensitive areas (auth, db, API contract, public types). **CLEAN**.
+**Drift assessment:** Both unplanned files are **metadata and artifacts only** — no changes to production source code outside the plan. PROJECT_PHASE.md is a phase-tracking file (config, not source). workbench/ is the feature's workbench folder (by project convention, not delivered). Neither touches sensitive areas (auth, db, API contract, public types). **CLEAN**.
 
 ---
 

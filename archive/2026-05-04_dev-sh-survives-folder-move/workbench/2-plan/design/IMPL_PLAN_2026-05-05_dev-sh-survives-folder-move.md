@@ -3,7 +3,7 @@
 - **slug:** `dev-sh-survives-folder-move`
 - **date:** 2026-05-05
 - **ceremony_level:** S (light plan, no UX, single library)
-- **library notes:** `workbench-v6/2-plan/research/uv-venv-relocation.md`
+- **library notes:** `workbench/2-plan/research/uv-venv-relocation.md`
 
 ## Verified root cause
 

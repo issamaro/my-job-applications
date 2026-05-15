@@ -249,7 +249,7 @@ two App.svelte references that this slice removes.
 | 4 | Legacy `.header` CSS class kept in `global.css` for now. | Any later slice that removes it (cheap to leave). |
 | 5 | Sigil mark is NOT rendered left of the wordmark (Q0.3 decision, 2026-05-11: "wordmark only, match shell.jsx"). The refined doc's "small sigil mark + MyCV wordmark" phrasing is resolved in favor of shell.jsx's actual `Topbar`, which renders only `MyCVLogo`. The `Sigil` component is preserved for company badges elsewhere. | n/a — closed by Q0.3. |
 
-Record these as the slice-2 outputs in `workbench-v6/4-ship/changes/CHANGE_LOG_2026-05-11_topbar-shell.md` (change-logger handles automatically).
+Record these as the slice-2 outputs in `workbench/4-ship/changes/CHANGE_LOG_2026-05-11_topbar-shell.md` (change-logger handles automatically).
 
 ## 7. Risks
 

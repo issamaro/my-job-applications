@@ -3,13 +3,13 @@ date: 2026-05-13
 status: VERIFIED
 reviewer: plan-reviewer
 inputs_reviewed:
-  - workbench-v6/1-analyze/spec/FEATURE_SPEC_2026-05-13_restyle-profile-editor.md
-  - workbench-v6/1-analyze/ux/UX_DESIGN_2026-05-13_restyle-profile-editor.md
-  - workbench-v6/2-plan/design/IMPL_PLAN_2026-05-13_restyle-profile-editor.md
-  - workbench-v6/2-plan/checks/CHECKLIST_2026-05-13_restyle-profile-editor.md
-  - workbench-v6/2-plan/research/SVELTE5_NOTES_2026-05-13_restyle-profile-editor.md
-  - workbench-v6/2-plan/research/SVELTE5_BINDABLE_NOTES_2026-05-13_restyle-profile-editor.md
-  - workbench-v6/2-plan/PLAN_VERIFIED_2026-05-13_restyle-profile-editor.md (prior review, now overwritten)
+  - workbench/1-analyze/spec/FEATURE_SPEC_2026-05-13_restyle-profile-editor.md
+  - workbench/1-analyze/ux/UX_DESIGN_2026-05-13_restyle-profile-editor.md
+  - workbench/2-plan/design/IMPL_PLAN_2026-05-13_restyle-profile-editor.md
+  - workbench/2-plan/checks/CHECKLIST_2026-05-13_restyle-profile-editor.md
+  - workbench/2-plan/research/SVELTE5_NOTES_2026-05-13_restyle-profile-editor.md
+  - workbench/2-plan/research/SVELTE5_BINDABLE_NOTES_2026-05-13_restyle-profile-editor.md
+  - workbench/2-plan/PLAN_VERIFIED_2026-05-13_restyle-profile-editor.md (prior review, now overwritten)
 
 ---
 

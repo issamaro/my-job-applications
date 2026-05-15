@@ -106,4 +106,4 @@ n/a — no library notes; all patterns are Svelte 5 runes already in use.
 
 ## Section 6 — Project-specific
 
-n/a — no project-checks.md found at project root, workbench-v6, or .claude/checks.md.
+n/a — no project-checks.md found at project root, workbench, or .claude/checks.md.

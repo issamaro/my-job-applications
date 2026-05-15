@@ -59,4 +59,4 @@ fix: uvicorn survives project folder move via python -m invocation
 
 ---
 
-*Workbench artifacts acknowledged:* `workbench-v6/2-plan/design/IMPL_PLAN_2026-05-05_dev-sh-survives-folder-move.md`, `workbench-v6/2-plan/research/uv-venv-relocation.md` (planning phase, no drift).
+*Workbench artifacts acknowledged:* `workbench/2-plan/design/IMPL_PLAN_2026-05-05_dev-sh-survives-folder-move.md`, `workbench/2-plan/research/uv-venv-relocation.md` (planning phase, no drift).

@@ -10,7 +10,7 @@ playwright: skipped (no playwright.config.* found at project root)
 ## Playwright
 
 Skipped. `ls playwright.config.*` returned no matches in the project root or `public/`.
-The 251/251 automated test results are recorded in `workbench-v6/3-build/TEST_RESULTS_2026-05-11_topbar-shell.md`.
+The 251/251 automated test results are recorded in `workbench/3-build/TEST_RESULTS_2026-05-11_topbar-shell.md`.
 
 ---
 

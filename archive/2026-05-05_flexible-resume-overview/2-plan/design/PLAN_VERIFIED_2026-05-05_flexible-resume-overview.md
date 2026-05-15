@@ -3,10 +3,10 @@ date: 2026-05-05
 status: ISSUES
 reviewer: plan-reviewer
 inputs_reviewed:
-  - workbench-v6/1-analyze/spec/FEATURE_SPEC_2026-05-05_flexible-resume-overview.md
-  - workbench-v6/1-analyze/ux/UX_DESIGN_2026-05-05_flexible-resume-overview.md
-  - workbench-v6/2-plan/design/IMPL_PLAN_2026-05-05_flexible-resume-overview.md
-  - workbench-v6/2-plan/checklist/CHECKLIST_2026-05-05_flexible-resume-overview.md
+  - workbench/1-analyze/spec/FEATURE_SPEC_2026-05-05_flexible-resume-overview.md
+  - workbench/1-analyze/ux/UX_DESIGN_2026-05-05_flexible-resume-overview.md
+  - workbench/2-plan/design/IMPL_PLAN_2026-05-05_flexible-resume-overview.md
+  - workbench/2-plan/checklist/CHECKLIST_2026-05-05_flexible-resume-overview.md
   - src/components/ResumeView.svelte
   - src/components/ResumeSection.svelte
   - src/components/PdfPreview.svelte

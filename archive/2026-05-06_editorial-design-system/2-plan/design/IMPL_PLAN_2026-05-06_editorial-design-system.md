@@ -8,10 +8,10 @@
 ## Inputs honoured
 
 - `backlog/refined/editorial-design-system.md`
-- `workbench-v6/1-analyze/spec/FEATURE_SPEC_2026-05-06_editorial-design-system.md`
-- `workbench-v6/1-analyze/ux/UX_DESIGN_2026-05-06_editorial-design-system.md`
-- `workbench-v6/1-analyze/spec/ANALYSIS_VERIFIED_2026-05-06_editorial-design-system.md` (status: VERIFIED)
-- `workbench-v6/2-plan/research/LIB_NOTES_2026-05-06_playwright-python.md` (status: PARTIAL — two open questions baked into the plan below)
+- `workbench/1-analyze/spec/FEATURE_SPEC_2026-05-06_editorial-design-system.md`
+- `workbench/1-analyze/ux/UX_DESIGN_2026-05-06_editorial-design-system.md`
+- `workbench/1-analyze/spec/ANALYSIS_VERIFIED_2026-05-06_editorial-design-system.md` (status: VERIFIED)
+- `workbench/2-plan/research/LIB_NOTES_2026-05-06_playwright-python.md` (status: PARTIAL — two open questions baked into the plan below)
 - `design-bundle/project/tokens.css` (rule bodies copied verbatim from here)
 
 ## Pre-implementation re-verification (run at start of build phase)

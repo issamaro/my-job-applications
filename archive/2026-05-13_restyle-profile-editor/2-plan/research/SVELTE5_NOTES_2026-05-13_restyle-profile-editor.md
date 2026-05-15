@@ -176,7 +176,7 @@ Source: `bind.md` — "Basic input value binding"; `bind.md` — "Bind to Compon
 ### 9. Child `$bindable()` count prop + parent `bind:count`, with `$effect` writeback
 
 **Status: VALIDATED canonical idiom.** Full research notes in
-`workbench-v6/2-plan/research/SVELTE5_BINDABLE_NOTES_2026-05-13_restyle-profile-editor.md`.
+`workbench/2-plan/research/SVELTE5_BINDABLE_NOTES_2026-05-13_restyle-profile-editor.md`.
 
 Child:
 

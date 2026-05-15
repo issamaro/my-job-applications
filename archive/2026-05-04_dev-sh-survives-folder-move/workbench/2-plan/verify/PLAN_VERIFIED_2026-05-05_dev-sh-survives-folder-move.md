@@ -6,8 +6,8 @@
 - **reviewer:** plan-reviewer
 - **inputs_reviewed:**
   - `backlog/refined/dev-sh-survives-folder-move.md` (acts as FEATURE_SPEC, ceremony S — analyze skipped)
-  - `workbench-v6/2-plan/design/IMPL_PLAN_2026-05-05_dev-sh-survives-folder-move.md`
-  - `workbench-v6/2-plan/research/uv-venv-relocation.md`
+  - `workbench/2-plan/design/IMPL_PLAN_2026-05-05_dev-sh-survives-folder-move.md`
+  - `workbench/2-plan/research/uv-venv-relocation.md`
   - CHECKLIST not yet generated (parallel agent in flight) — coverage check deferred per caller instruction.
   - No UX_DESIGN (no UI surface).
 
@@ -61,7 +61,7 @@ Note on a flagged research uncertainty: line 118 of the library notes says "Whet
 ## 4. Checklist coverage
 
 CHECKLIST file not present at review time:
-`workbench-v6/2-plan/checklist/CHECKLIST_2026-05-05_dev-sh-survives-folder-move.md` did not exist when this review ran. The caller noted this is acceptable (parallel checklist-builder still in flight).
+`workbench/2-plan/checklist/CHECKLIST_2026-05-05_dev-sh-survives-folder-move.md` did not exist when this review ran. The caller noted this is acceptable (parallel checklist-builder still in flight).
 
 | Plan file/section | Expected checklist items | Status |
 |---|---|---|

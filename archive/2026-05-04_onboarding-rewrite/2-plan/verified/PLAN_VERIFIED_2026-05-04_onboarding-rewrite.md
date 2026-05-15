@@ -5,10 +5,10 @@ status: VERIFIED
 reviewer: plan-reviewer
 revision: 4 (fourth adversarial pass)
 inputs_reviewed:
-  - workbench-v6/1-analyze/spec/FEATURE_SPEC_2026-05-04_onboarding-rewrite.md (unchanged)
-  - workbench-v6/2-plan/design/IMPL_PLAN_2026-05-04_onboarding-rewrite.md (rev 4)
-  - workbench-v6/2-plan/checks/CHECKLIST_2026-05-04_onboarding-rewrite.md (revised)
-  - workbench-v6/1-analyze/ux/UX_DESIGN_2026-05-04_onboarding-rewrite.md (unchanged)
+  - workbench/1-analyze/spec/FEATURE_SPEC_2026-05-04_onboarding-rewrite.md (unchanged)
+  - workbench/2-plan/design/IMPL_PLAN_2026-05-04_onboarding-rewrite.md (rev 4)
+  - workbench/2-plan/checks/CHECKLIST_2026-05-04_onboarding-rewrite.md (revised)
+  - workbench/1-analyze/ux/UX_DESIGN_2026-05-04_onboarding-rewrite.md (unchanged)
 library_notes_paths: none (research skipped per IMPL_PLAN — accepted in pass 1)
 host_bash: GNU bash 3.2.57(1)-release (arm64-apple-darwin24) — same as deployment target
 ---

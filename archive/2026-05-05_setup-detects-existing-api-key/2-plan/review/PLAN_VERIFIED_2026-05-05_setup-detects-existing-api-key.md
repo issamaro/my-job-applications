@@ -5,14 +5,14 @@
 - **status**: ISSUES
 - **reviewer**: plan-reviewer
 - **inputs_reviewed**:
-  - workbench-v6/1-analyze/spec/FEATURE_SPEC_2026-05-05_setup-detects-existing-api-key.md
-  - workbench-v6/2-plan/design/IMPL_PLAN_2026-05-05_setup-detects-existing-api-key.md
-  - workbench-v6/1-analyze/ux/UX_DESIGN_2026-05-05_setup-detects-existing-api-key.md
+  - workbench/1-analyze/spec/FEATURE_SPEC_2026-05-05_setup-detects-existing-api-key.md
+  - workbench/2-plan/design/IMPL_PLAN_2026-05-05_setup-detects-existing-api-key.md
+  - workbench/1-analyze/ux/UX_DESIGN_2026-05-05_setup-detects-existing-api-key.md
   - setup.sh (lines 1-466)
   - tests/test_llm_factory.py (line 1, header style reference)
   - pyproject.toml
 - **inputs_skipped**:
-  - workbench-v6/2-plan/checklist/CHECKLIST_2026-05-05_setup-detects-existing-api-key.md — directory empty, checklist-builder running in parallel; per caller instructions, skipped.
+  - workbench/2-plan/checklist/CHECKLIST_2026-05-05_setup-detects-existing-api-key.md — directory empty, checklist-builder running in parallel; per caller instructions, skipped.
 
 ## 1. Requirement traceability
 
@@ -157,7 +157,7 @@ One MAJOR (M-1, symlinked rc_target false-positive replace warning) plus six MIN
 
 ```
 status: ISSUES
-artifact: /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench-v6/2-plan/review/PLAN_VERIFIED_2026-05-05_setup-detects-existing-api-key.md
+artifact: /Users/aissacasa/Library/CloudStorage/GoogleDrive-aissacasapro@gmail.com/My Drive/My projects/MyCV-2/workbench/2-plan/review/PLAN_VERIFIED_2026-05-05_setup-detects-existing-api-key.md
 traceability: covered=8/8 must-have (incl. 8 BDD), missing=0, deferred=0 (MH6 partial)
 hallucinated_files: 0
 hallucinated_symbols: 0
