@@ -33,15 +33,14 @@ public/build/
 .env
 .env.local
 
-# Claude Code
-.claude/
+# Claude Code (selective — version hooks/agents/settings, ignore local-only)
+.claude/settings.local.json
+.claude/worktrees/
 
 # Temp files
 DONOTUSE_*
 
 # Development documentation (internal)
-archive/
-workbench/
 backlog/
 methodology-improvement/
 design-bundle/
