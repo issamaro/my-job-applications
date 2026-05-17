@@ -43,7 +43,9 @@
     "allow": [
       "Bash(./setup.sh)",
       "Bash(./dev.sh)",
-      "Bash(bash -n dev.sh)"
+      "Bash(bash -n dev.sh)",
+      "Bash(bun run build)",
+      "Bash(mkdir -p *)"
     ]
   }
 }
