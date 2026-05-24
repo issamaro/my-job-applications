@@ -251,3 +251,12 @@ write_invoice_to_file(invoice, "invoice.txt")
 Both examples have: header (2 lines), five functions (one job each), nine permitted verbs only, no comments, no abbreviations, no framework suffixes, no shared helpers. That is Lean Code.
 
 # --- LEAN-CODE END ---
+
+---
+
+## Path discovery
+
+Before searching the tree, read `.claude/CODEMAP.md`. It lists entry points,
+file-pairing conventions, and cross-cutting modules. Anything not in CODEMAP
+is recoverable from `ls` and `grep`.
+
