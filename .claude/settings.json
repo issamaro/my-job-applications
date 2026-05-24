@@ -34,11 +34,6 @@
       }
     ]
   },
-  "enabledPlugins": {
-    "skill-creator@claude-plugins-official": true,
-    "claude-md-management@claude-plugins-official": true,
-    "claude-code-setup@claude-plugins-official": true
-  },
   "permissions": {
     "allow": [
       "Bash(./setup.sh)",
