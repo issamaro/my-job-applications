@@ -15,7 +15,7 @@ class LLMProvider(Protocol):
         job_description: str,
         profile: dict,
         language: str = "en",
-    ) -> dict:
+    ) -> tuple[dict, dict]:
         """Generate resume analysis and content from job description and profile.
 
         Args:
@@ -24,8 +24,12 @@ class LLMProvider(Protocol):
             language: Output language code (en, fr, nl)
 
         Returns:
-            Dictionary containing job_title, company_name, match_score,
-            job_analysis, and resume content
+            A two-element tuple (parsed, breadcrumbs):
+            - parsed: dict with job_title, company_name, match_score,
+              job_analysis, and resume content.
+            - breadcrumbs: dict with the 9 provider-owned fields:
+              provider, model, prompt_path, prompt_hash, raw_output,
+              latency_ms, input_tokens, output_tokens, profile_snapshot.
         """
         ...
 

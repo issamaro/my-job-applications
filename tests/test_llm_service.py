@@ -50,7 +50,7 @@ async def test_analyze_and_generate_success(mock_get_client, sample_profile):
     ]
     mock_client.messages.create = AsyncMock(return_value=mock_response)
 
-    result = await llm_service.analyze_and_generate(
+    result, _ = await llm_service.analyze_and_generate(
         "We are looking for a Python developer...", sample_profile
     )
 
@@ -76,7 +76,7 @@ async def test_analyze_and_generate_extracts_json(mock_get_client, sample_profil
     ]
     mock_client.messages.create = AsyncMock(return_value=mock_response)
 
-    result = await llm_service.analyze_and_generate("JD text...", sample_profile)
+    result, _ = await llm_service.analyze_and_generate("JD text...", sample_profile)
 
     assert result["job_title"] == "Engineer"
 

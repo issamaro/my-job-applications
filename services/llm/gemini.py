@@ -1,8 +1,11 @@
 """Gemini LLM provider implementation."""
 
-import os
+import hashlib
 import json
 import logging
+import os
+import time
+
 from google import genai
 from google.genai import types, errors
 
@@ -42,7 +45,7 @@ class GeminiProvider:
         job_description: str,
         profile: dict,
         language: str = "en",
-    ) -> dict:
+    ) -> tuple[dict, dict]:
         """Generate resume analysis and content using Gemini.
 
         Args:
@@ -51,8 +54,11 @@ class GeminiProvider:
             language: Output language code (en, fr, nl)
 
         Returns:
-            Dictionary containing job_title, company_name, match_score,
-            job_analysis, and resume content
+            A tuple (parsed, breadcrumbs). parsed is the resume dict. breadcrumbs
+            carries provider, model, prompt_path, prompt_hash, raw_output,
+            latency_ms, input_tokens, output_tokens, profile_snapshot.
+            input_tokens and output_tokens may be None if the Gemini SDK does
+            not expose usage_metadata on the response.
 
         Raises:
             ConnectionError: When API connection fails
@@ -75,6 +81,10 @@ class GeminiProvider:
         # Combine system prompt and user prompt for Gemini
         full_prompt = f"{SYSTEM_PROMPT}\n\n{user_prompt}"
 
+        profile_snapshot = json.dumps(profile, sort_keys=True, ensure_ascii=False)
+        prompt_hash = hashlib.sha1(full_prompt.encode("utf-8")).hexdigest()
+
+        start_time = time.monotonic()
         try:
             response = await client.aio.models.generate_content(
                 model=model,
@@ -83,6 +93,7 @@ class GeminiProvider:
                     response_mime_type="application/json",
                 ),
             )
+            latency_ms = int((time.monotonic() - start_time) * 1000)
 
             response_text = response.text
 
@@ -100,7 +111,29 @@ class GeminiProvider:
             json_str = response_text[json_start:json_end]
             result = json.loads(json_str)
 
-            return result
+            usage = getattr(response, "usage_metadata", None)
+            input_tokens = None
+            output_tokens = None
+            if usage is not None:
+                prompt_count = getattr(usage, "prompt_token_count", None)
+                candidate_count = getattr(usage, "candidates_token_count", None)
+                if prompt_count is not None:
+                    input_tokens = prompt_count
+                if candidate_count is not None:
+                    output_tokens = candidate_count
+
+            breadcrumbs = {
+                "provider": "gemini",
+                "model": model,
+                "prompt_path": "services/llm/base.py:SYSTEM_PROMPT",
+                "prompt_hash": prompt_hash,
+                "raw_output": response_text,
+                "latency_ms": latency_ms,
+                "input_tokens": input_tokens,
+                "output_tokens": output_tokens,
+                "profile_snapshot": profile_snapshot,
+            }
+            return result, breadcrumbs
 
         except errors.APIError as e:
             logger.error(f"Gemini API error: {e.code} - {e.message}")

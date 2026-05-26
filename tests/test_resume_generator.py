@@ -1,5 +1,10 @@
+import json
+
 import pytest
 from unittest.mock import patch, AsyncMock
+
+from database import get_db
+from tests.conftest import create_llm_result
 
 
 def _setup_profile(client):
@@ -69,7 +74,7 @@ def test_generate_preserves_personal_info(mock_llm, client):
     """Test that generated resume includes personal info from profile."""
     _setup_profile(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 80,
@@ -81,7 +86,7 @@ def test_generate_preserves_personal_info(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     response = client.post(
         "/api/resumes/generate",
@@ -99,7 +104,7 @@ def test_generate_saves_to_database(mock_llm, client):
     """Test that generated resume is saved to database."""
     _setup_profile(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Python Developer",
         "company_name": "StartupCo",
         "match_score": 92,
@@ -114,7 +119,7 @@ def test_generate_saves_to_database(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     response = client.post(
         "/api/resumes/generate",
@@ -136,7 +141,7 @@ def test_update_preserves_personal_info(mock_llm, client):
     """Test that updating resume preserves personal info."""
     _setup_profile(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Engineer",
         "company_name": "Corp",
         "match_score": 70,
@@ -148,7 +153,7 @@ def test_update_preserves_personal_info(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     create_response = client.post(
         "/api/resumes/generate",
@@ -180,7 +185,7 @@ def test_delete_removes_job_description(mock_llm, client):
     """Test that deleting resume also deletes job description."""
     _setup_profile(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Engineer",
         "company_name": "Corp",
         "match_score": 70,
@@ -192,7 +197,7 @@ def test_delete_removes_job_description(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     create_response = client.post(
         "/api/resumes/generate",
@@ -221,7 +226,7 @@ def test_job_analysis_persists_with_existing_jd(mock_llm, client):
     jd_id = save_response.json()["id"]
 
     # Now generate resume with that existing JD
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Senior Python Developer",
         "company_name": "TechStartup",
         "match_score": 88,
@@ -239,7 +244,7 @@ def test_job_analysis_persists_with_existing_jd(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     response = client.post(
         "/api/resumes/generate",
@@ -286,7 +291,7 @@ def test_job_analysis_updates_on_regenerate(mock_llm, client):
         conn.commit()
 
     # Generate with updated analysis
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Backend Developer",
         "company_name": "Corp",
         "match_score": 75,
@@ -301,7 +306,7 @@ def test_job_analysis_updates_on_regenerate(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     response = client.post(
         "/api/resumes/generate",
@@ -320,3 +325,125 @@ def test_job_analysis_updates_on_regenerate(mock_llm, client):
 
     assert fetched_resume["job_analysis"] is not None
     assert fetched_resume["job_analysis"]["required_skills"][0]["name"] == "Node.js"
+
+
+def read_resume_row_count() -> int:
+    with get_db() as conn:
+        cursor = conn.execute("SELECT COUNT(*) FROM generated_resumes")
+        return cursor.fetchone()[0]
+
+
+@patch("services.resume_generator.llm_service.analyze_and_generate")
+def test_prompt_hash_deterministic_across_runs(mock_llm, client):
+    """Two generations with the same inputs persist identical prompt_hash and profile_snapshot."""
+    _setup_profile(client)
+
+    parsed = {
+        "job_title": "Software Engineer",
+        "company_name": "TechCorp",
+        "match_score": 80,
+        "job_analysis": {"required_skills": [], "preferred_skills": []},
+        "resume": {
+            "summary": "Test",
+            "work_experiences": [],
+            "skills": [],
+            "education": [],
+            "projects": [],
+        },
+    }
+    breadcrumbs_overrides = {
+        "prompt_hash": "b" * 40,
+        "profile_snapshot": '{"deterministic": true}',
+    }
+    mock_llm.return_value = create_llm_result(parsed, **breadcrumbs_overrides)
+
+    long_jd = "A" * 200
+    first_response = client.post("/api/resumes/generate", json={"job_description": long_jd})
+    second_response = client.post("/api/resumes/generate", json={"job_description": long_jd})
+    assert first_response.status_code == 200 and second_response.status_code == 200
+
+    with get_db() as conn:
+        rows = conn.execute(
+            "SELECT prompt_hash, profile_snapshot FROM generated_resumes WHERE id IN (?, ?)",
+            (first_response.json()["id"], second_response.json()["id"]),
+        ).fetchall()
+    assert len(rows) == 2
+    assert rows[0]["prompt_hash"] == rows[1]["prompt_hash"]
+    assert rows[0]["profile_snapshot"] == rows[1]["profile_snapshot"]
+
+
+@patch("services.resume_generator.llm_service.analyze_and_generate")
+def test_profile_snapshot_omits_photo(mock_llm, client):
+    """When the caller passes a profile with a photo, the snapshot the provider
+    captures must not contain it (verifies the photo-strip happens before the call)."""
+    client.put(
+        "/api/users",
+        json={
+            "full_name": "Jane Doe",
+            "email": "jane@example.com",
+        },
+    )
+    client.post(
+        "/api/photo",
+        json={"photo": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkAAIAAAoAAv/lxKUAAAAASUVORK5CYII="},
+    )
+    client.post(
+        "/api/work-experiences",
+        json={
+            "company": "Acme",
+            "title": "Eng",
+            "start_date": "2020-01",
+            "description": "Anchor",
+        },
+    )
+
+    async def create_snapshot_result(job_description, profile, language="en"):
+        snapshot = json.dumps(profile, sort_keys=True, ensure_ascii=False)
+        parsed, breadcrumbs = create_llm_result({
+            "job_title": "Engineer",
+            "company_name": "X",
+            "match_score": 70,
+            "job_analysis": {"required_skills": [], "preferred_skills": []},
+            "resume": {
+                "summary": "S",
+                "work_experiences": [],
+                "skills": [],
+                "education": [],
+                "projects": [],
+            },
+        })
+        breadcrumbs["profile_snapshot"] = snapshot
+        return parsed, breadcrumbs
+
+    mock_llm.side_effect = create_snapshot_result
+
+    response = client.post(
+        "/api/resumes/generate",
+        json={"job_description": "Looking for an engineer. " + "A" * 150},
+    )
+    assert response.status_code == 200
+    resume_id = response.json()["id"]
+
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT profile_snapshot FROM generated_resumes WHERE id = ?",
+            (resume_id,),
+        ).fetchone()
+    snapshot = json.loads(row["profile_snapshot"])
+    assert "photo" not in snapshot.get("personal_info", {})
+
+
+@patch("services.resume_generator.llm_service.analyze_and_generate")
+def test_no_row_inserted_on_llm_exception(mock_llm, client):
+    """Scenario 5: LLM provider raises mid-stream → no breadcrumb row written."""
+    _setup_profile(client)
+
+    initial_count = read_resume_row_count()
+    mock_llm.side_effect = ConnectionError("simulated provider failure")
+
+    response = client.post(
+        "/api/resumes/generate",
+        json={"job_description": "A" * 200},
+    )
+    assert response.status_code >= 500
+    assert read_resume_row_count() == initial_count

@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 from services.llm.base import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
+from tests.conftest import create_llm_result
 
 
 def _create_minimal_profile(client):
@@ -32,7 +33,7 @@ def _create_minimal_profile(client):
 
 
 def _build_llm_result(work_experiences):
-    return {
+    return create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TestCorp",
         "match_score": 80,
@@ -44,7 +45,7 @@ def _build_llm_result(work_experiences):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
 
 @patch("services.resume_generator.llm_service.analyze_and_generate")

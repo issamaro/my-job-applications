@@ -34,8 +34,13 @@ class _LazyLLMService:
         job_description: str,
         profile: dict,
         language: str = "en",
-    ) -> dict:
-        """Delegate to the underlying provider."""
+    ) -> tuple[dict, dict]:
+        """Delegate to the underlying provider.
+
+        Returns:
+            A tuple (parsed, breadcrumbs) — see LLMProvider.analyze_and_generate
+            for the dict shapes.
+        """
         return await self._get_instance().analyze_and_generate(
             job_description, profile, language
         )

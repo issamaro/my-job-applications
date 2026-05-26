@@ -46,7 +46,7 @@ class ResumeGeneratorService:
                 if cursor.fetchone() is None:
                     raise ValueError(f"Job with id {job_id} not found")
 
-        llm_result = await llm_service.analyze_and_generate(job_description, profile_dict, language)
+        llm_result, breadcrumbs = await llm_service.analyze_and_generate(job_description, profile_dict, language)
 
         # Restore photo to profile_dict for use in resume
         if saved_photo and profile_dict.get("personal_info"):
@@ -88,8 +88,10 @@ class ResumeGeneratorService:
             cursor = conn.execute(
                 """
                 INSERT INTO generated_resumes
-                (job_id, job_title, company_name, match_score, resume_content, language, job_analysis)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                (job_id, job_title, company_name, match_score, resume_content, language, job_analysis,
+                 prompt_path, prompt_hash, provider, model, profile_snapshot,
+                 raw_output, latency_ms, input_tokens, output_tokens)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     saved_job_id,
@@ -99,6 +101,15 @@ class ResumeGeneratorService:
                     json.dumps(resume_content),
                     language,
                     job_analysis_json,
+                    breadcrumbs["prompt_path"],
+                    breadcrumbs["prompt_hash"],
+                    breadcrumbs["provider"],
+                    breadcrumbs["model"],
+                    breadcrumbs["profile_snapshot"],
+                    breadcrumbs["raw_output"],
+                    breadcrumbs["latency_ms"],
+                    breadcrumbs["input_tokens"],
+                    breadcrumbs["output_tokens"],
                 ),
             )
             conn.commit()

@@ -1,6 +1,8 @@
 import pytest
 from unittest.mock import patch
 
+from tests.conftest import create_llm_result
+
 
 def _create_work_experience(client):
     """Helper to create a work experience."""
@@ -32,7 +34,7 @@ def _generate_resume(client, mock_llm):
     _create_work_experience(client)
     _create_personal_info(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 85.5,
@@ -60,7 +62,7 @@ def _generate_resume(client, mock_llm):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "We are looking for a Software Engineer with Python experience. " * 5
     response = client.post(

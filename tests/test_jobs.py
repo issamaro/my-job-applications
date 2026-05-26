@@ -1,6 +1,8 @@
 import pytest
 from unittest.mock import patch
 
+from tests.conftest import create_llm_result
+
 
 def _create_job(client, original_text="A" * 150):
     """Helper to create a job."""
@@ -154,7 +156,7 @@ def test_delete_job_cascades_to_resumes(mock_llm, client):
         },
     )
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Engineer",
         "company_name": "Corp",
         "match_score": 70,
@@ -166,7 +168,7 @@ def test_delete_job_cascades_to_resumes(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     # Generate a resume (this creates a job)
     gen_response = client.post(

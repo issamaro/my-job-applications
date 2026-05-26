@@ -1,5 +1,10 @@
+import json
+
 import pytest
 from unittest.mock import patch, AsyncMock
+
+from database import get_db
+from tests.conftest import create_llm_result
 
 
 def test_list_resumes_empty(client):
@@ -53,7 +58,7 @@ def test_generate_resume_success(mock_llm, client):
     """Test successful resume generation."""
     _create_work_experience(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 85.5,
@@ -79,7 +84,7 @@ def test_generate_resume_success(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "We are looking for a Software Engineer with Python experience. " * 5
     response = client.post(
@@ -92,13 +97,28 @@ def test_generate_resume_success(mock_llm, client):
     assert result["match_score"] == 85.5
     assert result["id"] is not None
 
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT * FROM generated_resumes WHERE id = ?", (result["id"],)
+        ).fetchone()
+    assert row["provider"] == "claude"
+    assert row["model"] == "claude-test-model"
+    assert row["prompt_hash"] == "a" * 40
+    assert row["raw_output"] is not None
+    assert row["profile_snapshot"] is not None
+    snapshot = json.loads(row["profile_snapshot"])
+    assert "photo" not in snapshot.get("personal_info", {})
+    assert row["latency_ms"] == 42
+    assert row["input_tokens"] == 1000
+    assert row["output_tokens"] == 500
+
 
 @patch("services.resume_generator.llm_service.analyze_and_generate")
 def test_get_resume_after_generation(mock_llm, client):
     """Test getting a resume by ID after generation."""
     _create_work_experience(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 85.5,
@@ -110,7 +130,7 @@ def test_get_resume_after_generation(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "A" * 150
     create_response = client.post(
@@ -135,7 +155,7 @@ def test_list_resumes_with_history(mock_llm, client):
     """Test listing resumes returns history."""
     _create_work_experience(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 85.5,
@@ -147,7 +167,7 @@ def test_list_resumes_with_history(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "A" * 150
     client.post("/api/resumes/generate", json={"job_description": long_jd})
@@ -164,7 +184,7 @@ def test_update_resume(mock_llm, client):
     """Test updating a resume."""
     _create_work_experience(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 85.5,
@@ -187,7 +207,7 @@ def test_update_resume(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "A" * 150
     create_response = client.post(
@@ -227,7 +247,7 @@ def test_update_resume_skill_excluded(mock_llm, client):
     """Excluding a skill persists included=False without dropping the entry."""
     _create_work_experience(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 80.0,
@@ -254,7 +274,7 @@ def test_update_resume_skill_excluded(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "A" * 150
     create_response = client.post(
@@ -285,7 +305,7 @@ def test_update_resume_skill_renamed(mock_llm, client):
     """Renaming a skill preserves matched and included flags."""
     _create_work_experience(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 80.0,
@@ -310,7 +330,7 @@ def test_update_resume_skill_renamed(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "A" * 150
     create_response = client.post(
@@ -339,7 +359,7 @@ def test_update_resume_summary_empty(mock_llm, client):
     """Saving an empty summary persists as empty string, not None."""
     _create_work_experience(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 80.0,
@@ -362,7 +382,7 @@ def test_update_resume_summary_empty(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "A" * 150
     create_response = client.post(
@@ -403,7 +423,7 @@ def test_delete_resume(mock_llm, client):
     """Test deleting a resume."""
     _create_work_experience(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 85.5,
@@ -415,7 +435,7 @@ def test_delete_resume(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "A" * 150
     create_response = client.post(
@@ -473,7 +493,7 @@ def test_generate_with_job_id_links_to_existing(mock_llm, client):
     jd_response = _create_job(client)
     jd_id = jd_response.json()["id"]
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 85.5,
@@ -485,7 +505,7 @@ def test_generate_with_job_id_links_to_existing(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "A" * 150
     response = client.post(
@@ -507,7 +527,7 @@ def test_generate_without_job_id_creates_new(mock_llm, client):
     """Test generating resume without job_id creates new JD."""
     _create_work_experience(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 85.5,
@@ -519,7 +539,7 @@ def test_generate_without_job_id_creates_new(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "A" * 150
     response = client.post(
@@ -547,7 +567,7 @@ def test_generate_updates_untitled_job_title(mock_llm, client):
     # Update the title to "Untitled Job"
     client.put(f"/api/jobs/{jd_id}", json={"title": "Untitled Job"})
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Senior Developer",
         "company_name": "NewCorp",
         "match_score": 90.0,
@@ -559,7 +579,7 @@ def test_generate_updates_untitled_job_title(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "A" * 150
     response = client.post(
@@ -587,7 +607,7 @@ def test_generate_preserves_custom_title(mock_llm, client):
     custom_title = "My Dream Job"
     client.put(f"/api/jobs/{jd_id}", json={"title": custom_title})
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Different Title",
         "company_name": "OtherCorp",
         "match_score": 80.0,
@@ -599,7 +619,7 @@ def test_generate_preserves_custom_title(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "A" * 150
     response = client.post(
@@ -635,7 +655,7 @@ def test_job_analysis_stored_in_resume(mock_llm, client):
     """Test that job_analysis is stored directly in the resume record."""
     _create_work_experience(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 85.5,
@@ -650,7 +670,7 @@ def test_job_analysis_stored_in_resume(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "A" * 150
     response = client.post(
@@ -671,7 +691,7 @@ def test_job_analysis_persists_on_page_refresh(mock_llm, client):
     """Test that job_analysis persists when retrieving resume by ID (page refresh)."""
     _create_work_experience(client)
 
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 85.5,
@@ -686,7 +706,7 @@ def test_job_analysis_persists_on_page_refresh(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "A" * 150
     create_response = client.post(
@@ -715,7 +735,7 @@ def test_two_resumes_same_jd_independent_job_analysis(mock_llm, client):
     jd_id = jd_response.json()["id"]
 
     # First resume generation - Python skills matched
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 85.5,
@@ -730,7 +750,7 @@ def test_two_resumes_same_jd_independent_job_analysis(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     long_jd = "A" * 150
     response1 = client.post(
@@ -740,7 +760,7 @@ def test_two_resumes_same_jd_independent_job_analysis(mock_llm, client):
     resume1_id = response1.json()["id"]
 
     # Second resume generation - Java skills matched (different analysis)
-    mock_llm.return_value = {
+    mock_llm.return_value = create_llm_result({
         "job_title": "Software Engineer",
         "company_name": "TechCorp",
         "match_score": 75.0,
@@ -755,7 +775,7 @@ def test_two_resumes_same_jd_independent_job_analysis(mock_llm, client):
             "education": [],
             "projects": [],
         },
-    }
+    })
 
     response2 = client.post(
         "/api/resumes/generate",

@@ -217,6 +217,15 @@ def _migrate_generated_resumes_fk_cascade(conn):
             language TEXT DEFAULT 'en',
             job_analysis TEXT,
             user_id INTEGER DEFAULT 1,
+            prompt_path TEXT,
+            prompt_hash TEXT,
+            provider TEXT,
+            model TEXT,
+            profile_snapshot TEXT,
+            raw_output TEXT,
+            latency_ms INTEGER,
+            input_tokens INTEGER,
+            output_tokens INTEGER,
             FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
         )
     """)
@@ -228,10 +237,16 @@ def _migrate_generated_resumes_fk_cascade(conn):
             INSERT INTO generated_resumes_new
             (id, job_id, job_title, company_name, match_score,
              resume_content, created_at, updated_at, jd_version_id, language,
-             job_analysis, user_id)
+             job_analysis, user_id,
+             prompt_path, prompt_hash, provider, model,
+             profile_snapshot, raw_output, latency_ms,
+             input_tokens, output_tokens)
             SELECT id, {source_column}, job_title, company_name, match_score,
                    resume_content, created_at, updated_at, jd_version_id, language,
-                   job_analysis, user_id
+                   job_analysis, user_id,
+                   prompt_path, prompt_hash, provider, model,
+                   profile_snapshot, raw_output, latency_ms,
+                   input_tokens, output_tokens
             FROM generated_resumes
         """)
 
@@ -345,6 +360,15 @@ def init_db():
                 resume_content TEXT NOT NULL,
                 created_at TEXT DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                prompt_path TEXT,
+                prompt_hash TEXT,
+                provider TEXT,
+                model TEXT,
+                profile_snapshot TEXT,
+                raw_output TEXT,
+                latency_ms INTEGER,
+                input_tokens INTEGER,
+                output_tokens INTEGER,
                 FOREIGN KEY (job_description_id) REFERENCES job_descriptions(id)
             );
 
@@ -373,6 +397,15 @@ def init_db():
             "ALTER TABLE education ADD COLUMN user_id INTEGER DEFAULT 1",
             "ALTER TABLE projects ADD COLUMN user_id INTEGER DEFAULT 1",
             "ALTER TABLE languages ADD COLUMN user_id INTEGER DEFAULT 1",
+            "ALTER TABLE generated_resumes ADD COLUMN prompt_path TEXT",
+            "ALTER TABLE generated_resumes ADD COLUMN prompt_hash TEXT",
+            "ALTER TABLE generated_resumes ADD COLUMN provider TEXT",
+            "ALTER TABLE generated_resumes ADD COLUMN model TEXT",
+            "ALTER TABLE generated_resumes ADD COLUMN profile_snapshot TEXT",
+            "ALTER TABLE generated_resumes ADD COLUMN raw_output TEXT",
+            "ALTER TABLE generated_resumes ADD COLUMN latency_ms INTEGER",
+            "ALTER TABLE generated_resumes ADD COLUMN input_tokens INTEGER",
+            "ALTER TABLE generated_resumes ADD COLUMN output_tokens INTEGER",
         ]
         for sql in migrations:
             try:

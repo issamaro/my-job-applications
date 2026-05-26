@@ -40,7 +40,10 @@
       "Bash(./dev.sh)",
       "Bash(bash -n dev.sh)",
       "Bash(bun run build)",
-      "Bash(mkdir -p *)"
+      "Bash(mkdir -p *)",
+      "Bash(sqlite3 app.db:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)"
     ]
   }
 }

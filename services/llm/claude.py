@@ -1,8 +1,11 @@
 """Claude LLM provider implementation."""
 
-import os
+import hashlib
 import json
 import logging
+import os
+import time
+
 import anthropic
 from anthropic import AsyncAnthropic
 
@@ -42,7 +45,7 @@ class ClaudeProvider:
         job_description: str,
         profile: dict,
         language: str = "en",
-    ) -> dict:
+    ) -> tuple[dict, dict]:
         """Generate resume analysis and content using Claude.
 
         Args:
@@ -51,8 +54,9 @@ class ClaudeProvider:
             language: Output language code (en, fr, nl)
 
         Returns:
-            Dictionary containing job_title, company_name, match_score,
-            job_analysis, and resume content
+            A tuple (parsed, breadcrumbs). parsed is the resume dict. breadcrumbs
+            carries provider, model, prompt_path, prompt_hash, raw_output,
+            latency_ms, input_tokens, output_tokens, profile_snapshot.
 
         Raises:
             ConnectionError: When API connection fails
@@ -71,13 +75,20 @@ class ClaudeProvider:
             language_instruction=language_instruction,
         )
 
+        profile_snapshot = json.dumps(profile, sort_keys=True, ensure_ascii=False)
+        prompt_text = SYSTEM_PROMPT + "\n\n" + user_prompt
+        prompt_hash = hashlib.sha1(prompt_text.encode("utf-8")).hexdigest()
+        model_id = _get_model()
+
+        start_time = time.monotonic()
         try:
             message = await client.messages.create(
-                model=_get_model(),
+                model=model_id,
                 max_tokens=8192,
                 system=SYSTEM_PROMPT,
                 messages=[{"role": "user", "content": user_prompt}],
             )
+            latency_ms = int((time.monotonic() - start_time) * 1000)
 
             response_text = message.content[0].text
 
@@ -94,7 +105,18 @@ class ClaudeProvider:
             json_str = response_text[json_start:json_end]
             result = json.loads(json_str)
 
-            return result
+            breadcrumbs = {
+                "provider": "claude",
+                "model": model_id,
+                "prompt_path": "services/llm/base.py:SYSTEM_PROMPT",
+                "prompt_hash": prompt_hash,
+                "raw_output": response_text,
+                "latency_ms": latency_ms,
+                "input_tokens": message.usage.input_tokens,
+                "output_tokens": message.usage.output_tokens,
+                "profile_snapshot": profile_snapshot,
+            }
+            return result, breadcrumbs
 
         except anthropic.APIConnectionError as e:
             logger.error(f"API connection error: {e}")

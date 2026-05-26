@@ -1,9 +1,14 @@
 """Tests for the Claude LLM provider."""
 
+import hashlib
+import json
+import re
+
 import pytest
 from unittest.mock import patch, AsyncMock, MagicMock
 import anthropic
 
+from services.llm.base import SYSTEM_PROMPT
 from services.llm.claude import ClaudeProvider
 
 
@@ -65,7 +70,7 @@ class TestClaudeProviderSuccess:
         ]
         mock_client.messages.create = AsyncMock(return_value=mock_response)
 
-        result = await claude_provider.analyze_and_generate(
+        result, _ = await claude_provider.analyze_and_generate(
             "Looking for Python developer...", sample_profile
         )
 
@@ -90,7 +95,7 @@ class TestClaudeProviderSuccess:
         ]
         mock_client.messages.create = AsyncMock(return_value=mock_response)
 
-        result = await claude_provider.analyze_and_generate("JD...", sample_profile)
+        result, _ = await claude_provider.analyze_and_generate("JD...", sample_profile)
 
         assert result["job_title"] == "Engineer"
         assert result["match_score"] == 75
@@ -108,7 +113,7 @@ class TestClaudeProviderSuccess:
         ]
         mock_client.messages.create = AsyncMock(return_value=mock_response)
 
-        result = await claude_provider.analyze_and_generate(
+        result, _ = await claude_provider.analyze_and_generate(
             "JD...", sample_profile, language="fr"
         )
 
@@ -116,6 +121,43 @@ class TestClaudeProviderSuccess:
         call_args = mock_client.messages.create.call_args
         user_content = call_args.kwargs["messages"][0]["content"]
         assert "French" in user_content
+
+    @pytest.mark.asyncio
+    @patch("services.llm.claude._get_client")
+    async def test_breadcrumbs_populated_on_success(self, mock_get_client, claude_provider, sample_profile):
+        """Provider returns (parsed, breadcrumbs); breadcrumbs carry full provenance."""
+        mock_client = AsyncMock()
+        mock_get_client.return_value = mock_client
+
+        raw_text = '{"job_title": "Engineer", "match_score": 70, "resume": {}}'
+        mock_response = MagicMock()
+        mock_response.content = [MagicMock(text=raw_text)]
+        mock_response.usage = MagicMock(input_tokens=1234, output_tokens=567)
+        mock_client.messages.create = AsyncMock(return_value=mock_response)
+
+        result, breadcrumbs = await claude_provider.analyze_and_generate(
+            "Looking for an Engineer", sample_profile
+        )
+
+        assert result["job_title"] == "Engineer"
+        assert breadcrumbs["provider"] == "claude"
+        assert breadcrumbs["model"]
+        assert breadcrumbs["prompt_path"] == "services/llm/base.py:SYSTEM_PROMPT"
+        assert re.fullmatch(r"[0-9a-f]{40}", breadcrumbs["prompt_hash"])
+        assert breadcrumbs["raw_output"] == raw_text
+        assert breadcrumbs["latency_ms"] >= 0
+        assert breadcrumbs["input_tokens"] == 1234
+        assert breadcrumbs["output_tokens"] == 567
+
+        snapshot = json.loads(breadcrumbs["profile_snapshot"])
+        assert snapshot == sample_profile
+
+        call_args = mock_client.messages.create.call_args
+        user_content = call_args.kwargs["messages"][0]["content"]
+        expected_hash = hashlib.sha1(
+            (SYSTEM_PROMPT + "\n\n" + user_content).encode("utf-8")
+        ).hexdigest()
+        assert breadcrumbs["prompt_hash"] == expected_hash
 
 
 class TestClaudeProviderErrors:
