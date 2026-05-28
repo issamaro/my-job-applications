@@ -1,6 +1,9 @@
+import logging
 from fastapi import APIRouter, HTTPException
 from database import get_db
 from schemas import ProfileImport, ProfileImportResponse
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/profile", tags=["profile-import"])
 
@@ -147,4 +150,5 @@ async def import_profile(profile: ProfileImport):
             )
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Import failed. Please try again.")
+        logger.exception("Profile import failed")
+        raise HTTPException(status_code=500, detail="Import failed. Please try again.") from e

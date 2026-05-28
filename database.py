@@ -201,9 +201,9 @@ def fetch_one(conn, table: str, id: int, model_class):
 @contextmanager
 def get_db():
     conn = sqlite3.connect(DATABASE)
-    conn.execute("PRAGMA foreign_keys = ON")
-    conn.row_factory = sqlite3.Row
     try:
+        conn.execute("PRAGMA foreign_keys = ON")
+        conn.row_factory = sqlite3.Row
         yield conn
     finally:
         conn.close()

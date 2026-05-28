@@ -1,9 +1,11 @@
 # Lean Code — BSD 3-Clause License — Vivian Voss, 2026
 # Scope: Tests for database.py — recreate helpers, MIGRATIONS runner, schema_versions, dead-table absence, source-tolerance.
 
+import shutil
 import sqlite3
 import traceback
 from contextlib import contextmanager
+from pathlib import Path
 
 import pytest
 
@@ -72,6 +74,45 @@ def _check_pragma_equivalent(db_a_path, db_b_path):
         for table in tables_a:
             cols_a = _read_table_info(conn_a, table)
             cols_b = _read_table_info(conn_b, table)
+            if cols_a != cols_b:
+                return False, f"columns differ on {table}: {cols_a ^ cols_b}"
+            idx_a = _read_explicit_indexes(conn_a, table)
+            idx_b = _read_explicit_indexes(conn_b, table)
+            if idx_a != idx_b:
+                return False, f"indexes differ on {table}: {idx_a ^ idx_b}"
+            for index_name, _ in idx_a:
+                cols_idx_a = _read_index_columns(conn_a, index_name)
+                cols_idx_b = _read_index_columns(conn_b, index_name)
+                if cols_idx_a != cols_idx_b:
+                    return False, f"index columns differ on {index_name}"
+            fks_a = _read_foreign_keys(conn_a, table)
+            fks_b = _read_foreign_keys(conn_b, table)
+            if fks_a != fks_b:
+                return False, f"FKs differ on {table}: {fks_a ^ fks_b}"
+        return True, "equivalent"
+    finally:
+        conn_a.close()
+        conn_b.close()
+
+
+def _read_table_shape(conn, table):
+    return {
+        (row[1], row[2], row[3], row[5])
+        for row in conn.execute(f"PRAGMA table_info({table})").fetchall()
+    }
+
+
+def _check_schema_shape_equivalent(db_a_path, db_b_path):
+    conn_a = sqlite3.connect(db_a_path)
+    conn_b = sqlite3.connect(db_b_path)
+    try:
+        tables_a = _read_table_names(conn_a)
+        tables_b = _read_table_names(conn_b)
+        if tables_a != tables_b:
+            return False, f"tables differ: {tables_a ^ tables_b}"
+        for table in tables_a:
+            cols_a = _read_table_shape(conn_a, table)
+            cols_b = _read_table_shape(conn_b, table)
             if cols_a != cols_b:
                 return False, f"columns differ on {table}: {cols_a ^ cols_b}"
             idx_a = _read_explicit_indexes(conn_a, table)
@@ -608,5 +649,58 @@ def test_personal_info_helper_tolerates_missing_photo(tmp_path, monkeypatch):
         assert row[0] == "Bob NoPhoto"
         assert row[1] == "bob@example.com"
         assert row[6] is None
+    finally:
+        conn.close()
+
+
+def test_recreate_drops_check_constraints(tmp_path, monkeypatch):
+    db_path = tmp_path / "check.db"
+    monkeypatch.setattr(database, "DATABASE", str(db_path))
+
+    conn = sqlite3.connect(db_path)
+    conn.executescript("""
+        CREATE TABLE jobs (id INTEGER PRIMARY KEY AUTOINCREMENT, original_text TEXT NOT NULL);
+        INSERT INTO jobs (id, original_text) VALUES (1, 'job');
+        CREATE TABLE generated_resumes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            job_id INTEGER NOT NULL,
+            resume_content TEXT NOT NULL,
+            language TEXT CHECK(language IN ('en', 'fr', 'nl')),
+            FOREIGN KEY (job_id) REFERENCES jobs(id)
+        );
+    """)
+    conn.commit()
+
+    database._migrate_generated_resumes_fk_cascade(conn)
+
+    table_sql = conn.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='generated_resumes'"
+    ).fetchone()[0]
+    assert "CHECK" not in table_sql
+    conn.close()
+
+
+def test_live_app_db_upgrades_cleanly(tmp_path, monkeypatch):
+    live_path = Path(__file__).resolve().parent.parent / "app.db"
+    if not live_path.exists():
+        pytest.skip("No app.db in project root")
+
+    live_copy = tmp_path / "live_copy.db"
+    shutil.copy(live_path, live_copy)
+
+    monkeypatch.setattr(database, "DATABASE", str(live_copy))
+    database.init_db()
+
+    fresh = tmp_path / "fresh.db"
+    monkeypatch.setattr(database, "DATABASE", str(fresh))
+    database.init_db()
+
+    equivalent, message = _check_schema_shape_equivalent(str(live_copy), str(fresh))
+    assert equivalent, message
+
+    conn = sqlite3.connect(live_copy)
+    try:
+        count = conn.execute("SELECT COUNT(*) FROM schema_versions").fetchone()[0]
+        assert count == len(database.MIGRATIONS)
     finally:
         conn.close()
