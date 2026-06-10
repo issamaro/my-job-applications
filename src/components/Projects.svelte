@@ -133,7 +133,7 @@
 
 {#if confirmDelete}
   <ConfirmDialog
-    message="Delete this project?"
+    title="Delete this project?"
     onConfirm={confirmDeleteAction}
     onCancel={() => confirmDelete = null}
   />
@@ -152,9 +152,9 @@
         <div class="proj-edit-block">
           <form class="form" onsubmit={(e) => e.preventDefault()}>
             <div class="form-row">
-              <label for="name" class="required">Name</label>
+              <label for="proj_name" class="required">Name</label>
               <input
-                id="name"
+                id="proj_name"
                 class="input"
                 type="text"
                 bind:value={formData.name}
@@ -233,9 +233,9 @@
   <div class="proj-add-block">
     <form class="form" onsubmit={(e) => e.preventDefault()}>
       <div class="form-row">
-        <label for="new_name" class="required">Name</label>
+        <label for="new_proj_name" class="required">Name</label>
         <input
-          id="new_name"
+          id="new_proj_name"
           class="input"
           type="text"
           bind:value={formData.name}

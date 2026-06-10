@@ -136,7 +136,7 @@
 
 {#if confirmDelete}
   <ConfirmDialog
-    message="Delete this education entry?"
+    title="Delete this education entry?"
     onConfirm={confirmDeleteAction}
     onCancel={() => confirmDelete = null}
   />

@@ -1,5 +1,8 @@
+<!-- Lean Code — BSD 3-Clause License — Vivian Voss, 2026 -->
+<!-- Scope: Editorial confirm dialog — title, message body, confirm/cancel actions. -->
+
 <script>
-  let { message = "Are you sure?", onConfirm, onCancel } = $props();
+  let { title = 'Are you sure?', message = '', onConfirm, onCancel } = $props();
   let dialogRef = $state(null);
 
   $effect(() => {
@@ -33,7 +36,10 @@
     aria-modal="true"
     aria-labelledby="dialog-title"
   >
-    <h3 id="dialog-title" class="dialog-title">{message}</h3>
+    <h3 id="dialog-title" class="dialog-title">{title}</h3>
+    {#if message}
+      <p class="dialog-message">{message}</p>
+    {/if}
     <div class="dialog-actions">
       <button class="btn" onclick={onCancel}>Cancel</button>
       <button class="btn btn-primary" onclick={onConfirm}>Delete</button>
@@ -69,11 +75,18 @@
   }
 
   .dialog-title {
-    margin: 0 0 18px;
+    margin: 0;
     font-size: 16px;
     font-weight: 600;
     line-height: 1.4;
     color: var(--ink);
+  }
+
+  .dialog-message {
+    margin: 10px 0 0;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink-2);
   }
 
   .dialog-actions {

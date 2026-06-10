@@ -82,7 +82,7 @@
 
 {#if confirmDelete}
   <ConfirmDialog
-    message="Remove this skill?"
+    title="Remove this skill?"
     onConfirm={confirmDeleteAction}
     onCancel={() => confirmDelete = null}
   />

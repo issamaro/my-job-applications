@@ -17,6 +17,7 @@ export const store = $state({
   saving: false,
   saved: false,
   error: null,
+  saveError: null,
 });
 
 let _pending = null;
@@ -58,10 +59,11 @@ export async function writeProfile() {
     store.saving = true;
     await updateUser(store.profile);
     store.saved = true;
+    store.saveError = null;
     if (_savedTimeout) clearTimeout(_savedTimeout);
     _savedTimeout = setTimeout(() => { store.saved = false; }, 2000);
   } catch (e) {
-    store.error = 'Could not save. Please try again.';
+    store.saveError = 'Could not save. Please try again.';
   } finally {
     store.saving = false;
   }

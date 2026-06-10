@@ -158,7 +158,7 @@
 
 {#if confirmDelete}
   <ConfirmDialog
-    message="Delete this work experience?"
+    title="Delete this work experience?"
     onConfirm={confirmDeleteAction}
     onCancel={() => confirmDelete = null}
   />

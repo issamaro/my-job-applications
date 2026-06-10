@@ -27,6 +27,7 @@
   let confirmDelete = $state(null);
   let fieldErrors = $state({});
   let draggedIndex = $state(null);
+  let itemsBeforeDrag = null;
 
   const emptyForm = {
     name: '',
@@ -46,6 +47,7 @@
     try {
       loading = true;
       items = await getLanguages();
+      error = null;
     } catch (e) {
       error = 'Could not load profile. Please refresh.';
     } finally {
@@ -138,12 +140,13 @@
     }
   }
 
-  function handleDragStart(e, index) {
+  function updateDraggedIndex(e, index) {
     draggedIndex = index;
+    itemsBeforeDrag = [...items];
     e.dataTransfer.effectAllowed = 'move';
   }
 
-  function handleDragOver(e, index) {
+  function updateOrderOnHover(e, index) {
     e.preventDefault();
     if (draggedIndex === null || draggedIndex === index) return;
 
@@ -155,10 +158,12 @@
     draggedIndex = index;
   }
 
-  async function handleDrop(e) {
+  async function writeReorderedOrder(e) {
     e.preventDefault();
     if (draggedIndex === null) return;
 
+    draggedIndex = null;
+    itemsBeforeDrag = null;
     const reorderData = items.map((item, index) => ({
       id: item.id,
       display_order: index
@@ -167,20 +172,22 @@
     try {
       await reorderLanguages(reorderData);
     } catch (err) {
-      error = 'Could not save order. Please try again.';
       await loadData();
     }
-    draggedIndex = null;
   }
 
-  function handleDragEnd() {
+  function deleteDraggedIndex() {
+    if (draggedIndex !== null && itemsBeforeDrag) {
+      items = itemsBeforeDrag;
+    }
     draggedIndex = null;
+    itemsBeforeDrag = null;
   }
 </script>
 
 {#if confirmDelete}
   <ConfirmDialog
-    message="Delete this language?"
+    title="Delete this language?"
     onConfirm={confirmDeleteAction}
     onCancel={() => confirmDelete = null}
   />
@@ -200,19 +207,19 @@
           <form class="form" onsubmit={(e) => e.preventDefault()}>
             <div class="form-row-inline">
               <div class="form-row">
-                <label for="name" class="required">Language</label>
+                <label for="lang_name" class="required">Language</label>
                 <input
-                  id="name"
+                  id="lang_name"
                   class="input"
                   type="text"
                   bind:value={formData.name}
                   class:error={fieldErrors.name}
                   aria-required="true"
                   aria-invalid={!!fieldErrors.name}
-                  aria-describedby={fieldErrors.name ? 'name-error' : undefined}
+                  aria-describedby={fieldErrors.name ? 'lang-name-error' : undefined}
                 />
                 {#if fieldErrors.name}
-                  <span id="name-error" class="error-message" role="alert">{fieldErrors.name}</span>
+                  <span id="lang-name-error" class="error-message" role="alert">{fieldErrors.name}</span>
                 {/if}
               </div>
 
@@ -252,10 +259,10 @@
           class="lang-card"
           class:dragging={draggedIndex === index}
           draggable="true"
-          ondragstart={(e) => handleDragStart(e, index)}
-          ondragover={(e) => handleDragOver(e, index)}
-          ondrop={handleDrop}
-          ondragend={handleDragEnd}
+          ondragstart={(e) => updateDraggedIndex(e, index)}
+          ondragover={(e) => updateOrderOnHover(e, index)}
+          ondrop={writeReorderedOrder}
+          ondragend={deleteDraggedIndex}
         >
           <div class="lang-label">
             <div class="lang-name">{item.name}</div>
@@ -274,19 +281,19 @@
     <form class="form" onsubmit={(e) => e.preventDefault()}>
       <div class="form-row-inline">
         <div class="form-row">
-          <label for="new_name" class="required">Language</label>
+          <label for="new_lang_name" class="required">Language</label>
           <input
-            id="new_name"
+            id="new_lang_name"
             class="input"
             type="text"
             bind:value={formData.name}
             class:error={fieldErrors.name}
             aria-required="true"
             aria-invalid={!!fieldErrors.name}
-            aria-describedby={fieldErrors.name ? 'new-name-error' : undefined}
+            aria-describedby={fieldErrors.name ? 'new-lang-name-error' : undefined}
           />
           {#if fieldErrors.name}
-            <span id="new-name-error" class="error-message" role="alert">{fieldErrors.name}</span>
+            <span id="new-lang-name-error" class="error-message" role="alert">{fieldErrors.name}</span>
           {/if}
         </div>
 

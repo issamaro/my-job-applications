@@ -13,8 +13,7 @@
     return () => { if (saveTimeout) clearTimeout(saveTimeout); };
   });
 
-  function handleBlur() {
-    if (!store.profile.full_name || !store.profile.email) return;
+  function writeProfileOnBlur() {
     if (saveTimeout) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(checkAndWrite, 500);
   }
@@ -51,7 +50,7 @@
           class="input"
           type="text"
           bind:value={store.profile.full_name}
-          onblur={handleBlur}
+          onblur={writeProfileOnBlur}
           class:error={fieldErrors.full_name}
           aria-required="true"
           aria-describedby={fieldErrors.full_name ? 'full_name_error' : undefined}
@@ -68,7 +67,7 @@
           class="input"
           type="email"
           bind:value={store.profile.email}
-          onblur={handleBlur}
+          onblur={writeProfileOnBlur}
           class:error={fieldErrors.email}
           aria-required="true"
           aria-describedby={fieldErrors.email ? 'email_error' : undefined}
@@ -85,7 +84,7 @@
           class="input"
           type="tel"
           bind:value={store.profile.phone}
-          onblur={handleBlur}
+          onblur={writeProfileOnBlur}
         />
       </div>
 
@@ -96,7 +95,7 @@
           class="input"
           type="text"
           bind:value={store.profile.location}
-          onblur={handleBlur}
+          onblur={writeProfileOnBlur}
         />
       </div>
 
@@ -107,13 +106,16 @@
           class="input"
           type="url"
           bind:value={store.profile.linkedin_url}
-          onblur={handleBlur}
+          onblur={writeProfileOnBlur}
         />
       </div>
     </div>
   </div>
   {#if store.saved}
     <span class="saved-indicator" class:fading={!store.saving}>Saved</span>
+  {/if}
+  {#if store.saveError}
+    <span class="error-message" role="alert">{store.saveError}</span>
   {/if}
 {/if}
 
