@@ -1,6 +1,9 @@
 # Diagnosed Bugs
 
 Tracked bugs surfaced by codebase audit. Status as of 2026-04-19 — all 4 bugs fixed as of 2026-04-20.
+A second batch (#5–#12) was surfaced by the 2026-06-10 design-migration
+consolidation audit (slices 1–4 review; see `design-bundle/SLICE_INDEX.md`,
+"Consolidation pass — 2026-06-10") and fixed the same day.
 
 ---
 
@@ -73,9 +76,137 @@ as a separator, not a connector word.
 
 ---
 
+### #5 — Resume section toggles never persisted; preview lied about the PDF
+
+**Commit:** `6dd8aa3`
+**File:** [src/components/ResumeView.svelte:310](src/components/ResumeView.svelte:310)
+
+Only the `skills` branch of `toggleSection` called `updateResume`;
+work/education/projects/languages mutated local state only. The A4 preview
+updated while Download PDF re-rendered the stored resume server-side, so an
+unchecked section still appeared in the downloaded file. First click was
+also a no-op when `included` was `undefined` (`!undefined === true`).
+
+**Fix:** Replaced with `updateSectionInclusion(section, included)` driven
+by the rail row's current state — every section persists, with a scoped
+rollback and error toast on failure.
+
+**Verified:** Full pytest suite green; live smoke against the running app.
+
+---
+
+### #6 — Edit/Preview tabs unreachable by keyboard
+
+**Commit:** `6dd8aa3`
+**File:** [src/components/ResumeView.svelte:476](src/components/ResumeView.svelte:476)
+
+The ARIA tablist used roving `tabindex` (inactive tab at `-1`) with no
+arrow-key handler anywhere, so keyboard users could never switch modes —
+despite the slice-4 retrospective claiming "strict ARIA APG semantics".
+
+**Fix:** APG keyboard support on the tabs — ArrowLeft/ArrowRight/Home/End
+switch `editMode` and focus the now-active tab.
+
+---
+
+### #7 — Error reverts wiped prior saves
+
+**Commit:** `6dd8aa3`
+**File:** [src/components/ResumeView.svelte](src/components/ResumeView.svelte)
+
+Failure paths in skill rename, skill inclusion, and drag reorder reset
+`resumeData` to the original generation snapshot (`resume.resume`),
+discarding every previously persisted edit from the UI.
+
+**Fix:** Scoped reverts — only the failed field or order is restored. Drag
+state is captured and cleared synchronously so `dragend` cannot race the
+async drop save.
+
+---
+
+### #8 — Required-field validation unreachable; a failed save replaced the form
+
+**Commit:** `ca9df79`
+**Files:** [src/components/UserProfile.svelte:16](src/components/UserProfile.svelte:16),
+[src/lib/profileStore.svelte.js:56](src/lib/profileStore.svelte.js:56)
+
+`handleBlur` early-returned when `full_name`/`email` was empty, so
+`checkAndWrite`'s `'Required'` errors could only fire for whitespace-only
+input. Separately, a failed `writeProfile` set `store.error`, which the
+template treats as a load failure — the entire identity card was swapped
+for an error box, losing the user's editing context.
+
+**Fix:** Blur always debounces into `checkAndWrite` (which already refuses
+to write while errors exist); save failures set a new `store.saveError`,
+rendered inline beside the saved indicator.
+
+---
+
+### #9 — ConfirmDialog silently dropped the `title` prop
+
+**Commit:** `ca9df79`
+**File:** [src/components/ConfirmDialog.svelte:2](src/components/ConfirmDialog.svelte:2)
+
+`SavedJobsList` and `SavedJobItem` passed `title="Delete Job?"` /
+`"Delete Resume?"`, but the component only destructured
+`message/onConfirm/onCancel` — the heading never rendered.
+
+**Fix:** `title` renders as the dialog heading, `message` as the body
+line; the six short-question callers migrated from `message` to `title`.
+
+---
+
+### #10 — Duplicate DOM ids across simultaneously-mounted forms
+
+**Commit:** `ca9df79`
+**Files:** [src/components/Languages.svelte](src/components/Languages.svelte),
+[src/components/Projects.svelte](src/components/Projects.svelte)
+
+Both components rendered `id="name"` and `id="new_name"` on the same
+profile page — invalid HTML with broken label and `aria-describedby`
+association.
+
+**Fix:** Domain-prefixed ids (`lang_name` / `new_lang_name` /
+`lang-name-error`, `proj_name` / `new_proj_name`), matching Projects' own
+`proj_url` convention.
+
+---
+
+### #11 — Cancelled drag desynced the UI order from the server
+
+**Commits:** `ca9df79` (Languages), `6dd8aa3` (ResumeView work list)
+**File:** [src/components/Languages.svelte:141](src/components/Languages.svelte:141)
+
+Drag-over reordered the list optimistically; a cancelled drag (Escape or
+drop outside) hit only `dragend`, which neither persisted nor reverted —
+the UI order diverged from the server until reload. Languages' failed
+reorder also left a sticky `error` that permanently replaced the grid.
+
+**Fix:** Order snapshot at dragstart, restored on cancelled dragend (drop
+clears the drag state synchronously first); `loadData` clears `error` on
+success.
+
+---
+
+### #12 — "Saved" indicator faded out the instant it appeared
+
+**Commit:** `91440cb`
+**File:** [src/styles/global.css](src/styles/global.css)
+
+`class:fading={!saving}` is true the moment `saved` flips on (saving has
+already returned to false), so the 0.5 s `fadeOut` ran immediately and the
+indicator was invisible for 1.5 s of its 2 s lifetime — across all six
+components using the pattern.
+
+**Fix:** `animation: fadeOut 0.5s ease-out 1.5s forwards` — visible
+~1.5 s, fades 0.5 s, unmounts at 2 s. CSS-only; no component changes.
+
+---
+
 ## Outstanding
 
-None. All diagnosed bugs fixed as of commit `26c9670`.
+None. Batch 1 (#1–#4) fixed as of commit `26c9670`; batch 2 (#5–#12) fixed
+as of commits `6dd8aa3`–`91440cb` (2026-06-10).
 
 ---
 

@@ -6,6 +6,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [2026-06-10] - Design-Migration Consolidation Pass
+
+Audit of editorial-redesign slices 1–4 (four parallel review agents + direct
+verification) before starting slice 5; all fixes shipped same day. Full
+record: `design-bundle/SLICE_INDEX.md` ("Consolidation pass — 2026-06-10")
+and `BUGS.md` #5–#12.
+
+### Fixed
+- Resume section toggles persist — preview and downloaded PDF no longer diverge (BUGS #5)
+- Edit/Preview tabs keyboard-operable per ARIA APG (BUGS #6)
+- Error reverts scoped — prior saves survive a failed save (BUGS #7)
+- Profile required-field validation reachable; save failures render inline instead of replacing the form (BUGS #8)
+- ConfirmDialog renders the `title` prop it silently dropped (BUGS #9)
+- Duplicate DOM ids across profile forms (BUGS #10)
+- Cancelled drag no longer desyncs list order (BUGS #11)
+- "Saved" indicator visible before fading (BUGS #12)
+
+### Changed
+- Toast, LanguageSelector, PhotoUpload tokenized to the editorial palette (LanguageSelector had referenced nonexistent tokens, leaving Tailwind hex fallbacks live)
+- ImportModal fully restyled with editorial primitives (pulled forward by user decision)
+- Profile summary textarea regains the design's display-italic treatment
+- Resume preview renders a single page surface (inner border/shadow/width-cap stripped)
+
+### Added
+- Global `.btn`/`.pill` focus-visible accent ring; editorial input focus wins over the legacy outline
+- `::-webkit-scrollbar` styling ported from the design bundle (missed in slice 1)
+- 4 design-system tests (bundle rules, token-bypass guard, live summary-serif check)
+
+### Decisions (recorded in SLICE_INDEX + amended `backlog/refined/*.md`)
+- Pipeline-stage enum locked for slices 7/8: `saved, tailored, applied, screening, interview, offer, closed`
+- Triage `status` field (`new | reviewing | archived`) now owned by slice 5
+- Cover-letter pane descoped from slice 6 (no producing backend; tracked in `backlog/raw/cover-letter.md`)
+- Editorial print template closed as won't-build (existing Classic template covers the design's page)
+- Company sigil colors derive from the support hues (`--aqua/--violet/--lime/--magenta`), never the JSX hexes
+
+---
+
 ## [2026-01-18] - Gemini API Integration
 
 ### Added
