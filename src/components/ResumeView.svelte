@@ -73,11 +73,14 @@
   });
 
   let editMode = $state('edit');
+  let editTabRef = $state(null);
+  let previewTabRef = $state(null);
   let selectedTemplate = $state('classic');
   let isExporting = $state(false);
   let toastMessage = $state(null);
   let toastType = $state('success');
   let draggedIndex = $state(null);
+  let orderBeforeDrag = null;
 
   let sectionRows = $derived.by(() => {
     if (!resumeData) return [];
@@ -159,7 +162,17 @@
 
   function updateSectionFromRail(row) {
     if (row.disabled || !row.key) return;
-    toggleSection(row.key);
+    void updateSectionInclusion(row.key, !row.included);
+  }
+
+  function updateModeOnKey(e) {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'Home' && e.key !== 'End') return;
+    e.preventDefault();
+    if (e.key === 'Home') editMode = 'edit';
+    else if (e.key === 'End') editMode = 'preview';
+    else editMode = editMode === 'edit' ? 'preview' : 'edit';
+    const target = editMode === 'edit' ? editTabRef : previewTabRef;
+    target?.focus();
   }
 
   function formatDate(dateStr) {
@@ -262,13 +275,14 @@
       throw new Error('Cannot save: resume ID is missing');
     }
     savingSkillIndex = skillIndex;
+    const previous = resumeData.skills[skillIndex].name;
     try {
       resumeData.skills[skillIndex].name = skillDraft.trim();
       await updateResume(resume.id, resumeData);
       toastType = 'success';
       toastMessage = 'Saved';
     } catch (err) {
-      resumeData = JSON.parse(JSON.stringify(resume.resume));
+      resumeData.skills[skillIndex].name = previous;
       toastType = 'error';
       toastMessage = 'Could not save skills. Try again.';
     } finally {
@@ -293,13 +307,14 @@
       throw new Error('Cannot save: resume ID is missing');
     }
     savingSkillIndex = skillIndex;
+    const previous = resumeData.skills[skillIndex].included;
     try {
       resumeData.skills[skillIndex].included = included;
       await updateResume(resume.id, resumeData);
       toastType = 'success';
       toastMessage = 'Saved';
     } catch (err) {
-      resumeData = JSON.parse(JSON.stringify(resume.resume));
+      resumeData.skills[skillIndex].included = previous;
       toastType = 'error';
       toastMessage = 'Could not save skills. Try again.';
     } finally {
@@ -307,43 +322,36 @@
     }
   }
 
-  async function toggleSection(section) {
-    if (section === 'work') {
-      resumeData.work_experiences = resumeData.work_experiences.map(we => ({
-        ...we,
-        included: !resumeData.work_experiences[0]?.included
-      }));
-    } else if (section === 'skills') {
-      const previous = JSON.parse(JSON.stringify(resumeData.skills));
-      const anyExcluded = resumeData.skills.some(s => s.included === false);
-      resumeData.skills = resumeData.skills.map(s => ({ ...s, included: anyExcluded }));
-      try {
-        await updateResume(resume.id, resumeData);
-      } catch (err) {
-        resumeData.skills = previous;
-        toastType = 'error';
-        toastMessage = 'Could not save skills. Try again.';
-      }
-    } else if (section === 'education') {
-      resumeData.education = resumeData.education.map(e => ({
-        ...e,
-        included: !resumeData.education[0]?.included
-      }));
-    } else if (section === 'projects') {
-      resumeData.projects = resumeData.projects.map(p => ({
-        ...p,
-        included: !resumeData.projects[0]?.included
-      }));
-    } else if (section === 'languages') {
-      resumeData.languages = resumeData.languages.map(lang => ({
-        ...lang,
-        included: !resumeData.languages[0]?.included
-      }));
+  const sectionListKeys = {
+    work: 'work_experiences',
+    education: 'education',
+    skills: 'skills',
+    languages: 'languages',
+    projects: 'projects'
+  };
+
+  async function updateSectionInclusion(section, included) {
+    const key = sectionListKeys[section];
+    if (!key || !resumeData?.[key]?.length) return;
+    if (!resume?.id) {
+      throw new Error('Cannot save: resume ID is missing');
+    }
+    const previous = resumeData[key];
+    resumeData[key] = resumeData[key].map(item => ({ ...item, included }));
+    try {
+      await updateResume(resume.id, resumeData);
+      toastType = 'success';
+      toastMessage = 'Saved';
+    } catch (err) {
+      resumeData[key] = previous;
+      toastType = 'error';
+      toastMessage = 'Could not save sections. Try again.';
     }
   }
 
   function updateDraggedIndex(e, index) {
     draggedIndex = index;
+    orderBeforeDrag = [...resumeData.work_experiences];
     e.dataTransfer.effectAllowed = 'move';
   }
 
@@ -363,6 +371,9 @@
     e.preventDefault();
     if (draggedIndex === null) return;
 
+    const previous = orderBeforeDrag;
+    draggedIndex = null;
+    orderBeforeDrag = null;
     try {
       await updateResume(resume.id, resumeData);
       toastType = 'success';
@@ -370,13 +381,16 @@
     } catch (err) {
       toastType = 'error';
       toastMessage = 'Could not save order. Reverting.';
-      resumeData = JSON.parse(JSON.stringify(resume.resume));
+      if (previous) resumeData.work_experiences = previous;
     }
-    draggedIndex = null;
   }
 
   function deleteDraggedIndex() {
+    if (draggedIndex !== null && orderBeforeDrag) {
+      resumeData.work_experiences = orderBeforeDrag;
+    }
     draggedIndex = null;
+    orderBeforeDrag = null;
   }
 
   async function writeDownloadedPdf() {
@@ -481,7 +495,9 @@
           role="tab"
           aria-selected={editMode === 'edit'}
           tabindex={editMode === 'edit' ? 0 : -1}
+          bind:this={editTabRef}
           onclick={() => editMode = 'edit'}
+          onkeydown={updateModeOnKey}
         >Edit</button>
         <button
           type="button"
@@ -490,7 +506,9 @@
           role="tab"
           aria-selected={editMode === 'preview'}
           tabindex={editMode === 'preview' ? 0 : -1}
+          bind:this={previewTabRef}
           onclick={() => editMode = 'preview'}
+          onkeydown={updateModeOnKey}
         >Preview</button>
       </div>
 
@@ -966,6 +984,12 @@
     background: white;
     box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04), 0 24px 48px -16px rgba(0, 0, 0, 0.18);
     overflow: auto;
+  }
+
+  .resume-page :global(.pdf-preview) {
+    border: none;
+    box-shadow: none;
+    max-width: none;
   }
 
   .resume-pane-actions {
