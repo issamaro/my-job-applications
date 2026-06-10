@@ -78,3 +78,15 @@ def test_body_renders_editorial_tokens(public_url):
     assert "cv11" in styles["fontFeatureSettings"]
     if styles["webkitFontSmoothing"]:
         assert styles["webkitFontSmoothing"] == "antialiased"
+
+
+def test_bundle_carries_consolidation_rules():
+    bundle = PUBLIC_DIR / "build" / "bundle.css"
+    if not bundle.exists():
+        pytest.skip("public/build/bundle.css missing — run `bun run build` first")
+    css = bundle.read_text()
+
+    assert ".btn:focus-visible" in css
+    assert ".pill:focus-visible" in css
+    assert "::-webkit-scrollbar" in css
+    assert "animation: fadeOut 0.5s ease-out 1.5s forwards" in css

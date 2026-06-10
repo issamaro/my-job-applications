@@ -295,3 +295,62 @@ def test_no_legacy_color_tokens_in_components():
         content = (repo_root / f).read_text()
         matches = forbidden.findall(content)
         assert matches == [], f"{f} contains legacy color tokens: {matches}"
+
+
+def test_no_token_bypass_in_overlay_components():
+    forbidden = re.compile(
+        r'#008800|#cc0000|#aa0000|#f0f0f0|rgb\(204 102 0'
+        r'|--color-text-secondary|--color-bg,'
+    )
+    repo_root = Path(__file__).parent.parent
+    files = [
+        "src/components/Toast.svelte",
+        "src/components/LanguageSelector.svelte",
+        "src/components/PhotoUpload.svelte",
+        "src/components/ImportModal.svelte",
+        "src/components/ConfirmDialog.svelte",
+    ]
+    for f in files:
+        content = (repo_root / f).read_text()
+        matches = forbidden.findall(content)
+        assert matches == [], f"{f} bypasses editorial tokens: {matches}"
+
+
+def test_overlay_styles_reach_bundle():
+    bundle = PUBLIC_DIR / "build" / "bundle.css"
+    if not bundle.exists():
+        pytest.skip("public/build/bundle.css missing — run `bun run build` first")
+    css = bundle.read_text()
+
+    assert re.search(r"\.toast-success[^{}]*\{[^}]*var\(--positive\)", css)
+    assert re.search(r"\.toast-error[^{}]*\{[^}]*var\(--negative\)", css)
+    assert re.search(r"\.warning-box[^{}]*\{[^}]*var\(--warn-soft\)", css)
+    assert "#008800" not in css
+    assert "rgb(204 102 0" not in css
+    assert "--color-text-secondary" not in css
+
+
+def test_summary_textarea_renders_serif_treatment(public_url):
+    with sync_playwright() as playwright:
+        browser, context, page = open_editor(playwright, public_url)
+        try:
+            styles = page.evaluate(
+                """() => {
+                    const el = document.querySelector('.summary-textarea');
+                    if (!el) return null;
+                    const computed = window.getComputedStyle(el);
+                    return {
+                        fontFamily: computed.fontFamily,
+                        fontStyle: computed.fontStyle,
+                        fontSize: computed.fontSize,
+                    };
+                }"""
+            )
+        finally:
+            context.close()
+            browser.close()
+
+    assert styles is not None, "summary textarea not found"
+    assert styles["fontStyle"] == "italic"
+    assert styles["fontSize"] == "18px"
+    assert "Instrument Serif" in styles["fontFamily"]
