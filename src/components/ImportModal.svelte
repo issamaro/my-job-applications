@@ -1,3 +1,6 @@
+<!-- Lean Code — BSD 3-Clause License — Vivian Voss, 2026 -->
+<!-- Scope: JSON profile import modal — drop zone, validation, preview, import. -->
+
 <script>
   import { importProfile } from '../lib/api.js';
 
@@ -234,8 +237,11 @@
     bind:this={dialogRef}
   >
     <div class="modal-header">
-      <h2 id="import-modal-title" class="dialog-title">Import JSON Profile</h2>
-      <button class="close-btn" onclick={closeModal} aria-label="Close">
+      <div>
+        <div class="eyebrow modal-eyebrow">Profile · import</div>
+        <h2 id="import-modal-title" class="modal-title">Import <span class="serif-italic">JSON</span> profile</h2>
+      </div>
+      <button class="modal-close" onclick={closeModal} aria-label="Close">
         &times;
       </button>
     </div>
@@ -291,12 +297,12 @@
     {#if state === 'preview'}
       <div class="preview-state">
         <div class="preview-counts">
-          <h3>Data to import:</h3>
+          <h3 class="eyebrow preview-heading">Data to import</h3>
           <ul>
-            <li>Work Experiences: {counts.work_experiences}</li>
-            <li>Education: {counts.education}</li>
-            <li>Skills: {counts.skills}</li>
-            <li>Projects: {counts.projects}</li>
+            <li><span>Work experiences</span><span class="num">{counts.work_experiences}</span></li>
+            <li><span>Education</span><span class="num">{counts.education}</span></li>
+            <li><span>Skills</span><span class="num">{counts.skills}</span></li>
+            <li><span>Projects</span><span class="num">{counts.projects}</span></li>
           </ul>
         </div>
         <div class="warning-box">
@@ -345,55 +351,60 @@
   .modal-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-grid);
-
-    .dialog-title {
-      margin: 0;
-    }
+    align-items: flex-start;
+    margin-bottom: 20px;
   }
 
-  .close-btn {
+  .modal-eyebrow {
+    margin-bottom: 6px;
+  }
+
+  .modal-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  .modal-close {
     background: none;
     border: none;
     font-size: 24px;
     cursor: pointer;
-    color: rgb(var(--color-text-rgb) / 0.6);
+    color: var(--ink-3);
     padding: 0;
     line-height: 1;
-
-    &:hover {
-      color: var(--color-text);
-    }
-
-    &:focus {
-      outline: 2px solid var(--color-primary);
-      outline-offset: 2px;
-    }
+  }
+  .modal-close:hover {
+    color: var(--ink);
+  }
+  .modal-close:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 
   .drop-zone {
-    border: 2px dashed var(--color-border);
-    border-radius: 2px;
+    border: 2px dashed var(--rule);
+    border-radius: var(--r-sm);
     padding: 32px;
     text-align: center;
     cursor: pointer;
     transition: border-color 0.2s, background-color 0.2s;
-
-    &:hover,
-    &.dragging {
-      border-color: var(--color-primary);
-      background: rgb(var(--color-primary-rgb) / 0.02);
-    }
-
-    &:focus {
-      outline: 2px solid var(--color-primary);
-      outline-offset: 2px;
-    }
-
-    &.error {
-      border-color: var(--color-error);
-    }
+  }
+  .drop-zone:hover,
+  .drop-zone.dragging {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .drop-zone:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .drop-zone.error {
+    border-color: var(--negative);
   }
 
   .file-input {
@@ -402,30 +413,28 @@
 
   .drop-text {
     margin: 0;
-    color: rgb(var(--color-text-rgb) / 0.7);
+    font-size: 13px;
+    color: var(--ink-3);
   }
 
   .error-messages {
-    margin-top: var(--spacing-grid);
+    margin-top: 16px;
   }
 
   .sample-link {
-    margin-top: var(--spacing-grid);
+    margin-top: 16px;
     text-align: center;
-
-    a {
-      color: var(--color-primary);
-      font-size: 14px;
-
-      &:hover {
-        text-decoration: none;
-      }
-
-      &:focus {
-        outline: 2px solid var(--color-primary);
-        outline-offset: 2px;
-      }
-    }
+  }
+  .sample-link a {
+    color: var(--accent);
+    font-size: 13px;
+  }
+  .sample-link a:hover {
+    text-decoration: none;
+  }
+  .sample-link a:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 
   .validating-state,
@@ -434,15 +443,17 @@
     flex-direction: column;
     align-items: center;
     padding: 32px;
-    gap: var(--spacing-grid);
+    gap: 16px;
+    font-size: 13px;
+    color: var(--ink-2);
   }
 
   .spinner {
     display: inline-block;
     width: 32px;
     height: 32px;
-    border: 3px solid rgb(var(--color-primary-rgb) / 0.3);
-    border-top-color: var(--color-primary);
+    border: 3px solid var(--accent-soft);
+    border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
   }
@@ -451,8 +462,8 @@
     display: inline-block;
     width: 14px;
     height: 14px;
-    border: 2px solid rgb(255 255 255 / 0.3);
-    border-top-color: #fff;
+    border: 2px solid oklch(1 0 0 / 0.3);
+    border-top-color: var(--paper);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
     margin-right: 8px;
@@ -460,45 +471,50 @@
   }
 
   .preview-state {
-    padding: var(--spacing-grid) 0;
+    padding: 4px 0;
   }
 
-  .preview-counts {
-    h3 {
-      margin: 0 0 var(--spacing-field);
-      font-size: var(--font-size-body);
-    }
+  .preview-heading {
+    margin: 0;
+  }
 
-    ul {
-      margin: 0;
-      padding-left: var(--spacing-section);
-      font-size: 14px;
-    }
-
-    li {
-      margin: 4px 0;
-    }
+  .preview-counts ul {
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .preview-counts li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    font-size: 13px;
+    color: var(--ink-2);
+  }
+  .preview-counts li:last-child {
+    border-bottom: none;
   }
 
   .warning-box {
-    margin-top: var(--spacing-grid);
-    padding: var(--spacing-field);
-    background: rgb(204 102 0 / 0.05);
-    border: 1px solid rgb(204 102 0 / 0.2);
-    border-radius: 2px;
+    margin-top: 16px;
+    padding: 12px 14px;
+    background: var(--warn-soft);
+    border: 1px solid var(--warn);
+    border-radius: var(--r-sm);
   }
 
   .warning-text {
     margin: 0;
-    color: #c60;
+    color: var(--warn);
     font-weight: 500;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .photo-note {
-    margin: 8px 0 0;
-    color: rgb(var(--color-text-rgb) / 0.7);
-    font-size: 14px;
+    margin: 6px 0 0;
+    color: var(--ink-2);
+    font-size: 13px;
   }
 
   .dialog-backdrop {
@@ -507,25 +523,28 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgb(0 0 0 / 0.5);
+    background: oklch(0 0 0 / 0.5);
     z-index: 1000;
   }
 
   .dialog {
-    padding: var(--spacing-section);
-    background: var(--color-background);
-    border-radius: 2px;
+    padding: 24px 28px;
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    border-radius: var(--r-md);
+    box-shadow: 0 12px 36px oklch(0 0 0 / 0.18);
   }
 
-  .dialog-title {
-    margin: 0 0 var(--spacing-grid);
-    font-size: var(--font-size-heading);
+  .dialog:focus {
+    outline: 1px solid var(--accent);
+    outline-offset: 2px;
   }
 
   .dialog-actions {
     display: flex;
-    gap: var(--spacing-grid);
+    gap: 10px;
     justify-content: flex-end;
-    margin-top: var(--spacing-section);
+    margin-top: 20px;
   }
 </style>
