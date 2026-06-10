@@ -1,3 +1,6 @@
+<!-- Lean Code — BSD 3-Clause License — Vivian Voss, 2026 -->
+<!-- Scope: Profile photo upload — crop, preview, overlay actions, delete confirm. -->
+
 <script>
   import { uploadPhoto, deletePhoto } from '../lib/api.js';
   import ConfirmDialog from './ConfirmDialog.svelte';
@@ -195,7 +198,7 @@
 
 {#if showDeleteConfirm}
   <ConfirmDialog
-    message="Delete your profile photo?"
+    title="Delete your profile photo?"
     onConfirm={handleDeleteConfirm}
     onCancel={() => showDeleteConfirm = false}
   />
@@ -304,15 +307,16 @@
   .overlay-btn {
     padding: 6px 12px;
     font-size: 12px;
-    background: white;
+    background: var(--card);
+    color: var(--ink);
     border: none;
-    border-radius: 4px;
+    border-radius: var(--r-md);
     cursor: pointer;
     min-width: 70px;
   }
 
   .overlay-btn:hover {
-    background: #f0f0f0;
+    background: var(--paper-2);
   }
 
   .overlay-btn:disabled {
@@ -321,12 +325,13 @@
   }
 
   .overlay-btn-danger {
-    background: #cc0000;
-    color: white;
+    background: var(--negative);
+    color: var(--card);
   }
 
   .overlay-btn-danger:hover {
-    background: #aa0000;
+    background: var(--negative);
+    opacity: 0.9;
   }
 
   .saving-overlay {
@@ -345,15 +350,9 @@
   .spinner {
     width: 24px;
     height: 24px;
-    border: 2px solid #ccc;
-    border-top-color: #333;
+    border: 2px solid var(--rule);
+    border-top-color: var(--ink-2);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
-  }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
   }
 </style>

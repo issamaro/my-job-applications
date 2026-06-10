@@ -215,7 +215,7 @@ p {
 }
 
 .saved-indicator.fading {
-  animation: fadeOut 0.5s ease-out forwards;
+  animation: fadeOut 0.5s ease-out 1.5s forwards;
 }
 
 .empty-state {
@@ -280,6 +280,12 @@ p {
 .btn-add {
   padding: 4px 8px;
   font-size: 14px;
+}
+
+.btn:focus-visible,
+.pill:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* ============================================
@@ -389,7 +395,7 @@ select {
   border-radius: var(--r-sm);
   outline: none;
 }
-.input:focus, .textarea:focus { border-color: var(--ink); }
+.input:focus, .textarea:focus { border-color: var(--ink); outline: none; }
 .textarea { resize: vertical; }
 
 textarea {
@@ -529,3 +535,10 @@ textarea {
     transform: translateX(100%);
   }
 }
+
+/* ============================================
+   Scrollbar — editorial
+   ============================================ */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 4px; }
+::-webkit-scrollbar-track { background: transparent; }

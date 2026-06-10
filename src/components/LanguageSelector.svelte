@@ -1,3 +1,6 @@
+<!-- Lean Code — BSD 3-Clause License — Vivian Voss, 2026 -->
+<!-- Scope: Resume language picker — labelled select for en/fr/nl. -->
+
 <script>
   let { value = 'en', onchange } = $props();
 
@@ -28,27 +31,34 @@
   .language-selector {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 8px;
   }
 
   label {
-    font-size: 0.875rem;
-    color: var(--color-text-secondary, #6b7280);
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-3);
   }
 
   select {
-    padding: 0.375rem 0.75rem;
-    border: 1px solid var(--color-border, #d1d5db);
-    border-radius: 0.375rem;
-    background-color: var(--color-bg, #fff);
-    color: var(--color-text, #111827);
-    font-size: 0.875rem;
+    padding: 6px 10px;
+    border: 1px solid var(--rule);
+    border-radius: var(--r-sm);
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-ui);
+    font-size: 13px;
     cursor: pointer;
   }
 
   select:focus {
     outline: none;
-    border-color: var(--color-primary, #3b82f6);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    border-color: var(--ink);
+  }
+
+  select:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 </style>

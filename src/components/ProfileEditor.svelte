@@ -79,7 +79,7 @@
           <label for="summary" class="eyebrow">Summary</label>
           <textarea
             id="summary"
-            class="textarea"
+            class="textarea summary-textarea"
             bind:value={store.profile.summary}
             onblur={handleSummaryBlur}
           ></textarea>
@@ -139,5 +139,20 @@
     display: flex;
     flex-direction: column;
     gap: 36px;
+  }
+  .summary-textarea {
+    padding: 16px;
+    background: var(--paper-2);
+    border-color: var(--rule-soft);
+    border-radius: var(--r-sm);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.45;
+    color: var(--ink-2);
+    min-height: 110px;
+  }
+  .summary-textarea:focus {
+    border-color: var(--ink);
   }
 </style>

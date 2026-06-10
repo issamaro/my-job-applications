@@ -1,3 +1,6 @@
+<!-- Lean Code — BSD 3-Clause License — Vivian Voss, 2026 -->
+<!-- Scope: Transient status toast — success and error variants, auto-dismiss. -->
+
 <script>
   let { message = $bindable(null), type = 'success' } = $props();
 
@@ -34,15 +37,15 @@
   }
 
   .toast-success {
-    color: #008800;
-    background: rgba(0, 136, 0, 0.1);
-    border: 1px solid rgba(0, 136, 0, 0.3);
+    color: var(--positive);
+    background: var(--positive-soft);
+    border: 1px solid var(--positive);
   }
 
   .toast-error {
-    color: #cc0000;
-    background: rgba(204, 0, 0, 0.1);
-    border: 1px solid rgba(204, 0, 0, 0.3);
+    color: var(--negative);
+    background: var(--negative-soft);
+    border: 1px solid var(--negative);
   }
 
   @keyframes slideIn {
