@@ -1,6 +1,7 @@
 # Lean Code — BSD 3-Clause License — Vivian Voss, 2026
 # Scope: Smoke-test the editorial body restyle reaches the served bundle.
 
+import re
 import socket
 import threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -90,3 +91,29 @@ def test_bundle_carries_consolidation_rules():
     assert ".pill:focus-visible" in css
     assert "::-webkit-scrollbar" in css
     assert "animation: fadeOut 0.5s ease-out 1.5s forwards" in css
+
+
+TOKEN_DEFINITION = re.compile(r"(--[a-zA-Z0-9-]+)\s*:")
+TOKEN_REFERENCE = re.compile(r"var\(\s*(--[a-zA-Z0-9-]+)")
+
+
+def read_token_sources():
+    repo_root = Path(__file__).parent.parent
+    sources = [repo_root / "src" / "styles" / "global.css", repo_root / "src" / "App.svelte"]
+    sources += sorted((repo_root / "src" / "components").glob("*.svelte"))
+    return sources
+
+
+def test_all_token_references_resolve():
+    sources = read_token_sources()
+    defined = set()
+    for source in sources:
+        defined.update(TOKEN_DEFINITION.findall(source.read_text()))
+
+    unresolved = {}
+    for source in sources:
+        for name in set(TOKEN_REFERENCE.findall(source.read_text())):
+            if name not in defined:
+                unresolved.setdefault(name, []).append(source.name)
+
+    assert unresolved == {}, f"token references with no definition anywhere in src/: {unresolved}"
