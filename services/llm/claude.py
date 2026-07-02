@@ -3,11 +3,12 @@
 import hashlib
 import json
 import logging
-import os
 import time
 
 import anthropic
 from anthropic import AsyncAnthropic
+
+import settings
 
 from .base import (
     LANGUAGE_INSTRUCTIONS,
@@ -25,7 +26,7 @@ def _get_client() -> AsyncAnthropic:
     """Get or create the Anthropic async client singleton."""
     global _client
     if _client is None:
-        api_key = os.environ.get("ANTHROPIC_API_KEY")
+        api_key = settings.ANTHROPIC_API_KEY
         if not api_key:
             raise ValueError("ANTHROPIC_API_KEY environment variable is not set")
         _client = AsyncAnthropic(api_key=api_key)
@@ -34,7 +35,7 @@ def _get_client() -> AsyncAnthropic:
 
 def _get_model() -> str:
     """Get the Claude model name from environment or default."""
-    return os.environ.get("CLAUDE_MODEL", "claude-sonnet-4-20250514")
+    return settings.CLAUDE_MODEL
 
 
 class ClaudeProvider:

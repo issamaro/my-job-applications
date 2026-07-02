@@ -4,8 +4,9 @@ This module provides factory functions for creating LLM provider instances
 based on environment configuration.
 """
 
-import os
 import logging
+
+import settings
 
 from .base import LLMProvider
 from .claude import ClaudeProvider
@@ -30,7 +31,7 @@ def get_provider(provider_name: str | None = None) -> LLMProvider:
         ValueError: If provider name is invalid or required API key is missing
     """
     if provider_name is None:
-        provider_name = os.environ.get("LLM_PROVIDER", "claude")
+        provider_name = settings.LLM_PROVIDER
 
     provider_name = provider_name.lower()
 

@@ -8,6 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import database
+import settings
 from main import app
 
 
@@ -16,11 +17,11 @@ def setup_test_db():
     """Create a fresh database for each test using a temp file."""
     fd, path = tempfile.mkstemp(suffix=".db")
     os.close(fd)
-    original_db = database.DATABASE
-    database.DATABASE = path
+    original_db = settings.DATABASE
+    settings.DATABASE = path
     database.init_db()
     yield
-    database.DATABASE = original_db
+    settings.DATABASE = original_db
     os.unlink(path)
 
 

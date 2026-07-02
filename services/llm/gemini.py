@@ -3,11 +3,12 @@
 import hashlib
 import json
 import logging
-import os
 import time
 
 from google import genai
 from google.genai import types, errors
+
+import settings
 
 from .base import (
     LANGUAGE_INSTRUCTIONS,
@@ -25,7 +26,7 @@ def _get_client() -> genai.Client:
     """Get or create the Gemini client singleton."""
     global _client
     if _client is None:
-        api_key = os.environ.get("GEMINI_API_KEY")
+        api_key = settings.GEMINI_API_KEY
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable is not set")
         _client = genai.Client(api_key=api_key)
@@ -34,7 +35,7 @@ def _get_client() -> genai.Client:
 
 def _get_model() -> str:
     """Get the Gemini model name from environment or default."""
-    return os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+    return settings.GEMINI_MODEL
 
 
 class GeminiProvider:

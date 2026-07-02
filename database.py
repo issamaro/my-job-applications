@@ -7,7 +7,7 @@ from contextlib import contextmanager
 
 from fastapi import HTTPException
 
-DATABASE = "app.db"
+import settings
 
 VALID_TABLES = frozenset({
     "users", "work_experiences", "education", "skills",
@@ -200,7 +200,7 @@ def fetch_one(conn, table: str, id: int, model_class):
 
 @contextmanager
 def get_db():
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(settings.DATABASE)
     try:
         conn.execute("PRAGMA foreign_keys = ON")
         conn.row_factory = sqlite3.Row

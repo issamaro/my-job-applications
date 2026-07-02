@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 import database
+import settings
 
 
 _BREADCRUMB_COLUMNS = (
@@ -228,7 +229,7 @@ def _write_legacy_2024(db_path):
 
 def test_fresh_install_includes_breadcrumb_columns(tmp_path, monkeypatch):
     db_path = tmp_path / "fresh.db"
-    monkeypatch.setattr(database, "DATABASE", str(db_path))
+    monkeypatch.setattr(settings, "DATABASE", str(db_path))
 
     database.init_db()
 
@@ -245,7 +246,7 @@ def test_fresh_install_includes_breadcrumb_columns(tmp_path, monkeypatch):
 
 def test_init_db_idempotent_with_breadcrumb_columns(tmp_path, monkeypatch):
     db_path = tmp_path / "idempotent.db"
-    monkeypatch.setattr(database, "DATABASE", str(db_path))
+    monkeypatch.setattr(settings, "DATABASE", str(db_path))
 
     database.init_db()
     conn = sqlite3.connect(db_path)
@@ -264,7 +265,7 @@ def test_init_db_idempotent_with_breadcrumb_columns(tmp_path, monkeypatch):
 
 def test_recreate_path_preserves_breadcrumb_columns(tmp_path, monkeypatch):
     db_path = tmp_path / "legacy.db"
-    monkeypatch.setattr(database, "DATABASE", str(db_path))
+    monkeypatch.setattr(settings, "DATABASE", str(db_path))
 
     conn = sqlite3.connect(db_path)
     conn.executescript("""
@@ -320,7 +321,7 @@ def test_recreate_path_preserves_breadcrumb_columns(tmp_path, monkeypatch):
 
 def test_fresh_install_skips_recreates_and_seeds_versions(tmp_path, monkeypatch):
     db_path = tmp_path / "fresh.db"
-    monkeypatch.setattr(database, "DATABASE", str(db_path))
+    monkeypatch.setattr(settings, "DATABASE", str(db_path))
 
     skills_counter = _count_calls(monkeypatch, "_migrate_skills_unique_constraint")
     gr_counter = _count_calls(monkeypatch, "_migrate_generated_resumes_fk_cascade")
@@ -354,10 +355,10 @@ def test_upgrade_path_matches_fresh_install(tmp_path, monkeypatch):
 
     _write_legacy_2024(legacy_path)
 
-    monkeypatch.setattr(database, "DATABASE", str(legacy_path))
+    monkeypatch.setattr(settings, "DATABASE", str(legacy_path))
     database.init_db()
 
-    monkeypatch.setattr(database, "DATABASE", str(fresh_path))
+    monkeypatch.setattr(settings, "DATABASE", str(fresh_path))
     database.init_db()
 
     equivalent, message = _check_pragma_equivalent(str(legacy_path), str(fresh_path))
@@ -366,7 +367,7 @@ def test_upgrade_path_matches_fresh_install(tmp_path, monkeypatch):
 
 def test_init_db_idempotent(tmp_path, monkeypatch):
     db_path = tmp_path / "idempotent.db"
-    monkeypatch.setattr(database, "DATABASE", str(db_path))
+    monkeypatch.setattr(settings, "DATABASE", str(db_path))
 
     database.init_db()
 
@@ -376,7 +377,7 @@ def test_init_db_idempotent(tmp_path, monkeypatch):
 
     conn_for_trace = sqlite3.connect(db_path)
     captured = []
-    monkeypatch.setattr(database, "DATABASE", str(db_path))
+    monkeypatch.setattr(settings, "DATABASE", str(db_path))
 
     original_get_db = database.get_db
 
@@ -407,7 +408,7 @@ def test_init_db_idempotent(tmp_path, monkeypatch):
 
 def test_recreate_preserves_extra_columns(tmp_path, monkeypatch):
     db_path = tmp_path / "extra.db"
-    monkeypatch.setattr(database, "DATABASE", str(db_path))
+    monkeypatch.setattr(settings, "DATABASE", str(db_path))
 
     conn = sqlite3.connect(db_path)
     conn.executescript("""
@@ -450,7 +451,7 @@ def test_recreate_preserves_extra_columns(tmp_path, monkeypatch):
 
 def test_failing_migration_fails_loud(tmp_path, monkeypatch):
     db_path = tmp_path / "broken.db"
-    monkeypatch.setattr(database, "DATABASE", str(db_path))
+    monkeypatch.setattr(settings, "DATABASE", str(db_path))
 
     broken_migrations = list(database.MIGRATIONS) + [
         ("20999999_broken", "ALTER TABLE doesnotexist ADD COLUMN x TEXT"),
@@ -477,7 +478,7 @@ def test_failing_migration_fails_loud(tmp_path, monkeypatch):
 
 def test_seeds_schema_versions_for_upgraded_db(tmp_path, monkeypatch):
     db_path = tmp_path / "upgraded.db"
-    monkeypatch.setattr(database, "DATABASE", str(db_path))
+    monkeypatch.setattr(settings, "DATABASE", str(db_path))
 
     database.init_db()
 
@@ -516,7 +517,7 @@ def test_seeds_schema_versions_for_upgraded_db(tmp_path, monkeypatch):
 
 def test_dead_tables_absent_after_init(tmp_path, monkeypatch):
     db_path = tmp_path / "dead.db"
-    monkeypatch.setattr(database, "DATABASE", str(db_path))
+    monkeypatch.setattr(settings, "DATABASE", str(db_path))
 
     database.init_db()
 
@@ -537,7 +538,7 @@ def test_dead_tables_absent_after_init(tmp_path, monkeypatch):
 
 def test_personal_info_data_migrates_to_users(tmp_path, monkeypatch):
     db_path = tmp_path / "personal.db"
-    monkeypatch.setattr(database, "DATABASE", str(db_path))
+    monkeypatch.setattr(settings, "DATABASE", str(db_path))
 
     conn = sqlite3.connect(db_path)
     conn.executescript("""
@@ -576,7 +577,7 @@ def test_personal_info_data_migrates_to_users(tmp_path, monkeypatch):
 
 def test_legacy_job_description_versions_data_preserved(tmp_path, monkeypatch):
     db_path = tmp_path / "legacy_jdv.db"
-    monkeypatch.setattr(database, "DATABASE", str(db_path))
+    monkeypatch.setattr(settings, "DATABASE", str(db_path))
 
     conn = sqlite3.connect(db_path)
     conn.executescript("""
@@ -622,7 +623,7 @@ def test_legacy_job_description_versions_data_preserved(tmp_path, monkeypatch):
 
 def test_personal_info_helper_tolerates_missing_photo(tmp_path, monkeypatch):
     db_path = tmp_path / "no_photo.db"
-    monkeypatch.setattr(database, "DATABASE", str(db_path))
+    monkeypatch.setattr(settings, "DATABASE", str(db_path))
 
     conn = sqlite3.connect(db_path)
     conn.executescript("""
@@ -655,7 +656,7 @@ def test_personal_info_helper_tolerates_missing_photo(tmp_path, monkeypatch):
 
 def test_recreate_drops_check_constraints(tmp_path, monkeypatch):
     db_path = tmp_path / "check.db"
-    monkeypatch.setattr(database, "DATABASE", str(db_path))
+    monkeypatch.setattr(settings, "DATABASE", str(db_path))
 
     conn = sqlite3.connect(db_path)
     conn.executescript("""
@@ -688,11 +689,11 @@ def test_live_app_db_upgrades_cleanly(tmp_path, monkeypatch):
     live_copy = tmp_path / "live_copy.db"
     shutil.copy(live_path, live_copy)
 
-    monkeypatch.setattr(database, "DATABASE", str(live_copy))
+    monkeypatch.setattr(settings, "DATABASE", str(live_copy))
     database.init_db()
 
     fresh = tmp_path / "fresh.db"
-    monkeypatch.setattr(database, "DATABASE", str(fresh))
+    monkeypatch.setattr(settings, "DATABASE", str(fresh))
     database.init_db()
 
     equivalent, message = _check_schema_shape_equivalent(str(live_copy), str(fresh))
