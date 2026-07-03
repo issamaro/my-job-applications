@@ -1,6 +1,7 @@
 """Tests for the settings module's .env + process-env layering."""
 
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -84,3 +85,27 @@ def test_database_overridable_via_env(tmp_path):
         tmp_path, extra_env={"DATABASE": "/tmp/probe.db"}
     )
     assert values["DATABASE"] == "/tmp/probe.db"
+
+
+ENV_EXAMPLE_KEY = re.compile(r"^([A-Z_][A-Z0-9_]*)=")
+SETTINGS_KEY = re.compile(r'os\.environ\.get\(\s*["\']([A-Z_][A-Z0-9_]*)["\']')
+
+
+def test_env_example_matches_settings_keys():
+    """.env.example and settings.py must declare the same variable names."""
+    example_keys = set()
+    for line in (PROJECT_ROOT / ".env.example").read_text().splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        match = ENV_EXAMPLE_KEY.match(stripped)
+        if match:
+            example_keys.add(match.group(1))
+
+    settings_keys = set(SETTINGS_KEY.findall((PROJECT_ROOT / "settings.py").read_text()))
+
+    assert example_keys == settings_keys, (
+        "drift between .env.example and settings.py: "
+        f"only in .env.example={example_keys - settings_keys}, "
+        f"only in settings.py={settings_keys - example_keys}"
+    )

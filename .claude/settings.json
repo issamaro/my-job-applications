@@ -38,7 +38,9 @@
     "allow": [
       "Bash(./setup.sh)",
       "Bash(./dev.sh)",
+      "Bash(./run.sh)",
       "Bash(bash -n dev.sh)",
+      "Bash(bash -n run.sh)",
       "Bash(bun run build)",
       "Bash(mkdir -p *)",
       "Bash(sqlite3 app.db:*)",

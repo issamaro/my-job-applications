@@ -1,18 +1,14 @@
 #!/bin/bash
-
-# MyCV Development Server
-# Runs FastAPI backend + Svelte frontend concurrently
+# MyCV — Develop
+# Scope: Run the Svelte watch build and the auto-reloading FastAPI backend together.
 
 set -e
 
-# Colors for output
-RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
@@ -22,7 +18,6 @@ echo -e "${BLUE}╔════════════════════�
 echo -e "${BLUE}║       MyCV Development Server            ║${NC}"
 echo -e "${BLUE}╚══════════════════════════════════════════╝${NC}"
 
-# Cleanup function
 cleanup() {
     echo -e "\n${YELLOW}Shutting down servers...${NC}"
     kill $BACKEND_PID 2>/dev/null || true
@@ -34,28 +29,18 @@ cleanup() {
 
 trap cleanup SIGINT SIGTERM
 
-# Sync Python dependencies with uv
 echo -e "${BLUE}Syncing Python dependencies...${NC}"
 uv sync --quiet 2>/dev/null || uv sync
 
-echo -e "${GREEN}Using LLM provider: ${YELLOW}${LLM_PROVIDER:-claude (default)}${NC}"
+if lsof -ti:8000 > /dev/null 2>&1; then
+    echo -e "${YELLOW}Killing existing process on port 8000...${NC}"
+    lsof -ti:8000 | xargs kill -9 2>/dev/null || true
+fi
 
-# Start Rollup/Svelte watcher in background (CSS is bundled automatically)
 echo -e "${GREEN}Starting Svelte build watcher...${NC}"
 bun run dev &
 FRONTEND_PID=$!
 
-# Give frontend a moment to start
-sleep 2
-
-# Kill any existing process on port 8000
-if lsof -ti:8000 > /dev/null 2>&1; then
-    echo -e "${YELLOW}Killing existing process on port 8000...${NC}"
-    lsof -ti:8000 | xargs kill -9 2>/dev/null || true
-    sleep 1
-fi
-
-# Start FastAPI backend
 echo -e "${GREEN}Starting FastAPI backend...${NC}"
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${GREEN}App running at: ${YELLOW}http://localhost:8000${NC}"
@@ -67,5 +52,4 @@ echo ""
 uv run python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 
-# Wait for all background processes
 wait

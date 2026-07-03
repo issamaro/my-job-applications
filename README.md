@@ -64,35 +64,29 @@ This installs all remaining dependencies and walks you through choosing an AI pr
 ### 5. Start the app
 
 ```bash
-./dev.sh
+./run.sh
 ```
 
 Then open [http://localhost:8000](http://localhost:8000) in your browser.
 
-If the backend fails to start with a message like `ANTHROPIC_API_KEY environment variable is not set` (or the Gemini equivalent) and you just ran `setup.sh`, your current Terminal window still has the old environment — open a new Terminal window or run `source ~/.zshrc`, then `./dev.sh` again. See section 6 for more recovery paths.
+`run.sh` builds the frontend once (if it isn't built yet) and serves the app as a single process. If the backend complains that a key is not set, jump to section 6. While editing code, use `./dev.sh` instead for live reload — see [Develop vs run](#develop-vs-run).
 
 ### 6. If something goes wrong
 
-**App says `ANTHROPIC_API_KEY environment variable is not set` but I chose Gemini (or vice versa).**
-Open a new Terminal window, or run `source ~/.zshrc`. Then check what's actually set:
-
-```bash
-env | grep -E 'LLM_PROVIDER|API_KEY'
-```
-
-If `LLM_PROVIDER` and your chosen provider's key don't match, re-run `./setup.sh`.
+**App says `ANTHROPIC_API_KEY environment variable is not set` (or the Gemini equivalent), or it uses the wrong provider.**
+Check your `.env` — it should have `LLM_PROVIDER` set to your provider and the matching key filled in. Re-run `./setup.sh` to rewrite it. One subtlety: if you separately `export`ed a key or `LLM_PROVIDER` in your shell config (`~/.zshrc`, `direnv`, …), that exported value wins over `.env` — remove it if it disagrees with what you chose.
 
 **`Failed to spawn: uvicorn` (or `uvicorn: command not found`) after I moved the project folder.**
-`dev.sh` launches uvicorn through `uv run python -m uvicorn`, which goes through the still-valid Python symlink in `.venv/bin/` and bypasses the `.venv/bin/uvicorn` shim that breaks on a folder move — so this case is handled automatically. If you still see this error (rare; usually means the uv-managed Python interpreter was uninstalled separately), recover with:
+Both `run.sh` and `dev.sh` launch uvicorn through `uv run python -m uvicorn`, which goes through the still-valid Python symlink in `.venv/bin/` and bypasses the `.venv/bin/uvicorn` shim that breaks on a folder move — so this case is handled automatically. If you still see this error (rare; usually means the uv-managed Python interpreter was uninstalled separately), recover with:
 
 ```bash
 rm -rf .venv && uv sync
 ```
 
-Then `./dev.sh` again.
+Then start the app again.
 
 **Port 8000 already in use.**
-`dev.sh` handles this automatically (kills the existing process). If it doesn't, find and kill the offender:
+Both scripts handle this automatically (they kill the existing process). If that doesn't work, find and kill the offender:
 
 ```bash
 lsof -ti:8000
@@ -100,8 +94,10 @@ lsof -ti:8000
 
 Then `kill -9 <pid>`.
 
-**I had `LLM_PROVIDER` exported manually in my shell-rc from before.**
-The new `setup.sh` always overwrites `LLM_PROVIDER` on each run, so it self-heals. Just re-run `./setup.sh` once.
+### Develop vs run
+
+- **`./run.sh`** — build the frontend once, then serve a single process on `127.0.0.1:8000`. This is the everyday "just use the app" command; a fresh `./setup.sh` already builds the bundle for you.
+- **`./dev.sh`** — run the Rollup watcher and the auto-reloading backend together on `0.0.0.0:8000`. Use this while editing code: `.svelte` changes rebuild the bundle and `.py` changes reload the server.
 
 ---
 
@@ -145,27 +141,29 @@ bun install
 
 ### API key
 
-The app reads the provider and key from environment variables. Add one of these to your `~/.zshrc`:
+The app reads its config from a project-local `.env`. Copy the template:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` — set `LLM_PROVIDER` and paste the matching key:
 
 **Anthropic (Claude):**
 
-```bash
-export LLM_PROVIDER="claude"
 ```
-
-```bash
-export ANTHROPIC_API_KEY="sk-ant-..."
+LLM_PROVIDER=claude
+ANTHROPIC_API_KEY=sk-ant-...
 ```
 
 **Google (Gemini):**
 
-```bash
-export LLM_PROVIDER="gemini"
+```
+LLM_PROVIDER=gemini
+GEMINI_API_KEY=AIza...
 ```
 
-```bash
-export GEMINI_API_KEY="AIza..."
-```
+`.env` is gitignored, so the key never gets committed. If you'd rather keep the key in your environment (e.g. via `direnv` or `pass`), export `LLM_PROVIDER` and the key there instead — the reader honours process-env over `.env`, so an exported value always wins. `./setup.sh` automates all of this (and can pull the key straight from `pass`).
 
 ### Run
 

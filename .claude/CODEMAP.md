@@ -10,8 +10,9 @@ update when shape changes. Everything not listed here is recoverable from `ls`.
 ## Entry points
 
 - `main.py` — FastAPI app: mounts `routes/*`, serves `public/build/`.
-- `dev.sh` — `bun run dev` (Rollup watcher) + `uv run uvicorn main:app --reload` on :8000.
-- `setup.sh` — Install deps + write LLM provider + API key to shell-rc atomically.
+- `dev.sh` — develop (watch): `bun run dev` (Rollup watcher) + `uv run uvicorn main:app --reload` on :8000.
+- `run.sh` — run (serve): `bun run build` once if missing + `uv run uvicorn main:app` on 127.0.0.1:8000.
+- `setup.sh` — Install deps, build bundle, write LLM provider + API key to `.env`.
 - `rollup.config.js` — Bundles `src/main.js` → `public/build/bundle.{js,css}`.
 
 ## Pairing conventions
