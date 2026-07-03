@@ -26,6 +26,7 @@ templates/resume_{variant}.html  →  consumed by services/pdf_generator.py
 
 ## Cross-cutting modules
 
+- `settings.py` — Single config reader: process-env → `.env` → defaults (`LLM_PROVIDER`, API keys, models, `DATABASE`). Written by `setup.sh`.
 - `schemas.py` — Pydantic shapes shared by every route.
 - `database.py` — SQLite engine + session shared by every service.
 - `services/llm/{provider}.py` — LLM provider implementations (`claude`, `gemini`); selection via `services/llm/factory.py`.
