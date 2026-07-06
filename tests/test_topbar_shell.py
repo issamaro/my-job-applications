@@ -99,15 +99,16 @@ def test_topbar_renders_at_top(public_url):
     with sync_playwright() as playwright:
         browser, context, page = create_loaded_page(playwright, public_url)
         try:
+            page.wait_for_selector(".editor-main")
             topbar_parent_tag = page.evaluate(
                 """() => document.querySelector('header.topbar').parentElement.tagName"""
             )
-            topbar_precedes_container = page.evaluate(
+            topbar_precedes_screen = page.evaluate(
                 """() => {
                     const topbar = document.querySelector('header.topbar');
-                    const container = document.querySelector('.container');
-                    if (!topbar || !container) return false;
-                    return topbar.compareDocumentPosition(container) & Node.DOCUMENT_POSITION_FOLLOWING;
+                    const screen = document.querySelector('.editor-main');
+                    if (!topbar || !screen) return false;
+                    return topbar.compareDocumentPosition(screen) & Node.DOCUMENT_POSITION_FOLLOWING;
                 }"""
             )
             wordmark_present = page.evaluate("() => !!document.querySelector('.topbar-wordmark')")
@@ -119,7 +120,7 @@ def test_topbar_renders_at_top(public_url):
             browser.close()
 
     assert topbar_parent_tag == "BODY"
-    assert topbar_precedes_container
+    assert topbar_precedes_screen
     assert wordmark_present is True
     assert slot_labels == SLOT_LABELS
 

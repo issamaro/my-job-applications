@@ -172,17 +172,6 @@ p {
 /* ============================================
    Layout
    ============================================ */
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: var(--spacing-section);
-}
-
-.container-wide {
-  max-width: none;
-  padding: 0;
-}
-
 .header {
   display: flex;
   justify-content: space-between;

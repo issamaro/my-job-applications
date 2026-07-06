@@ -91,6 +91,7 @@ def test_bundle_carries_consolidation_rules():
     assert ".pill:focus-visible" in css
     assert "::-webkit-scrollbar" in css
     assert "animation: fadeOut 0.5s ease-out 1.5s forwards" in css
+    assert re.search(r"\.resume-preview[^{]*\{[^}]*padding:\s*var\(--d-pad\)", css)
 
 
 TOKEN_DEFINITION = re.compile(r"(--[a-zA-Z0-9-]+)\s*:")
@@ -117,3 +118,21 @@ def test_all_token_references_resolve():
                 unresolved.setdefault(name, []).append(source.name)
 
     assert unresolved == {}, f"token references with no definition anywhere in src/: {unresolved}"
+
+
+SHELL_CONTAINER_CLASS = re.compile(r"(?<![\w-])container(?:-wide)?(?![\w-])")
+
+
+def test_no_shell_container_classes_in_src():
+    repo_root = Path(__file__).parent.parent
+    sources = sorted(
+        path for path in (repo_root / "src").rglob("*")
+        if path.suffix in {".svelte", ".js", ".css"}
+    )
+    offenders = {}
+    for source in sources:
+        for number, line in enumerate(source.read_text().splitlines(), 1):
+            if SHELL_CONTAINER_CLASS.search(line):
+                offenders.setdefault(str(source.relative_to(repo_root)), []).append(number)
+
+    assert offenders == {}, f"shell container class reintroduced (screens self-frame): {offenders}"

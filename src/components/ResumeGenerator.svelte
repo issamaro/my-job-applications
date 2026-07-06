@@ -81,7 +81,6 @@
         error = 'AI service is busy. Please try again in a moment.';
         view = 'input';
       } else {
-        // Show actual error message for debugging
         error = e.message || 'Could not generate resume. Please try again.';
         console.error('Resume generation error:', e);
         view = 'input';
@@ -167,75 +166,83 @@
 </script>
 
 <div class="resume-generator">
-  {#if profileIncomplete && view === 'input'}
-    <div class="profile-incomplete">
-      <p>Your profile needs work experience before you can generate a tailored resume.</p>
-      <button class="btn btn-primary" onclick={goToProfile}>
-        Go to Profile
-      </button>
-    </div>
-  {:else if view === 'input'}
-    <JobInput
-      value={jobDescription}
-      {error}
-      {saving}
-      {loadedJobId}
-      {loadedJobTitle}
-      onInput={(val) => {
-        jobDescription = val;
-        error = null;
-      }}
-      onSave={handleSaveJob}
-      onClear={handleClearLoaded}
-    />
-
-    <div class="generator-actions">
-      <LanguageSelector
-        value={selectedLanguage}
-        onchange={(val) => selectedLanguage = val}
-      />
-      <button
-        class="btn btn-primary"
-        onclick={handleGenerate}
-        disabled={jobDescription.trim().length < 100 || saving}
-      >
-        Generate Resume
-      </button>
-    </div>
-
-    <SavedJobsList
-      bind:this={savedJobsRef}
-      onLoad={handleLoadJob}
-      onSelectResume={handleSelectResume}
-      selectedId={loadedJobId}
-    />
-
-  {:else if view === 'loading'}
-    <JobInput
-      value={jobDescription}
-      disabled={true}
-    />
-
-    <ProgressBar status={loadingStatus} />
-
-    <div class="loading-actions">
-      <button class="btn" onclick={handleCancel}>
-        Cancel
-      </button>
-    </div>
-
-  {:else if view === 'preview' && currentResume}
+  {#if view === 'preview' && currentResume}
     <ResumeView
       resume={currentResume}
       onBack={handleBack}
       onRegenerate={handleRegenerate}
     />
+  {:else if view === 'input' || view === 'loading'}
+    <div class="generator-frame">
+      {#if profileIncomplete && view === 'input'}
+        <div class="profile-incomplete">
+          <p>Your profile needs work experience before you can generate a tailored resume.</p>
+          <button class="btn btn-primary" onclick={goToProfile}>
+            Go to Profile
+          </button>
+        </div>
+      {:else if view === 'input'}
+        <JobInput
+          value={jobDescription}
+          {error}
+          {saving}
+          {loadedJobId}
+          {loadedJobTitle}
+          onInput={(val) => {
+            jobDescription = val;
+            error = null;
+          }}
+          onSave={handleSaveJob}
+          onClear={handleClearLoaded}
+        />
+
+        <div class="generator-actions">
+          <LanguageSelector
+            value={selectedLanguage}
+            onchange={(val) => selectedLanguage = val}
+          />
+          <button
+            class="btn btn-primary"
+            onclick={handleGenerate}
+            disabled={jobDescription.trim().length < 100 || saving}
+          >
+            Generate Resume
+          </button>
+        </div>
+
+        <SavedJobsList
+          bind:this={savedJobsRef}
+          onLoad={handleLoadJob}
+          onSelectResume={handleSelectResume}
+          selectedId={loadedJobId}
+        />
+      {:else}
+        <JobInput
+          value={jobDescription}
+          disabled={true}
+        />
+
+        <ProgressBar status={loadingStatus} />
+
+        <div class="loading-actions">
+          <button class="btn" onclick={handleCancel}>
+            Cancel
+          </button>
+        </div>
+      {/if}
+    </div>
   {/if}
 </div>
 
 <style>
   .resume-generator {
     padding: 0;
+  }
+
+  .generator-frame {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--spacing-section);
   }
 
   .profile-incomplete {
