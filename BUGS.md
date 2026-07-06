@@ -203,10 +203,34 @@ components using the pattern.
 
 ---
 
+### #13 — Escape never closed the ConfirmDialog
+
+**Commit:** `069d857`
+**File:** [src/components/ConfirmDialog.svelte](src/components/ConfirmDialog.svelte)
+
+The mount effect focuses the dialog card, and the card's
+`onkeydown={(e) => e.stopPropagation()}` swallowed every keystroke before
+it could bubble to the backdrop — the only place the Escape handler
+lived. Since focus always started inside the card, Escape was dead in
+every delete flow app-wide (Education, Languages, Projects, Skills,
+PhotoUpload, WorkExperience, SavedJobsList, SavedJobItem). Cancel button
+and backdrop click were unaffected. ImportModal never had the bug — its
+card has no keydown stopper, so Escape bubbles to the backdrop handler.
+
+**Fix:** Escape is handled by a `svelte:window` listener while the dialog
+is mounted, so it also works after tabbing focus out of the dialog (no
+focus trap exists — a known, separate APG gap shared with ImportModal).
+The card's keydown stopper is gone; click behavior is unchanged.
+Regression tests: `tests/test_confirm_dialog.py` (Escape focused,
+Escape after tab-out, backdrop click cancels, in-card click doesn't).
+
+---
+
 ## Outstanding
 
 None. Batch 1 (#1–#4) fixed as of commit `26c9670`; batch 2 (#5–#12) fixed
-as of commits `6dd8aa3`–`91440cb` (2026-06-10).
+as of commits `6dd8aa3`–`91440cb` (2026-06-10); #13 fixed as of commit
+`069d857` (2026-07-06).
 
 ---
 
