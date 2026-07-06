@@ -10,26 +10,22 @@
       dialogRef.focus();
     }
   });
-
-  function handleKeydown(e) {
-    if (e.key === 'Escape') {
-      onCancel();
-    }
-  }
 </script>
+
+<svelte:window onkeydown={(e) => { if (e.key === 'Escape') onCancel(); }} />
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
   class="dialog-backdrop"
   onclick={onCancel}
-  onkeydown={handleKeydown}
   role="presentation"
 >
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="dialog"
     onclick={(e) => e.stopPropagation()}
-    onkeydown={(e) => e.stopPropagation()}
     bind:this={dialogRef}
     tabindex="-1"
     role="dialog"
