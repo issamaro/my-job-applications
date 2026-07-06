@@ -254,6 +254,29 @@ Both examples have: header (2 lines), five functions (one job each), nine permit
 
 ---
 
+## Lean-code application in this repo
+
+- **Headers follow compliance, not touch.** The two-line Lean Code header is
+  earned at a file's editorial/restyle pass, when the file actually satisfies
+  the 9-point self-check — never stamped on a legacy file just because a diff
+  touched it. A header on a non-compliant file is an over-claim (caught by
+  lean review, 2026-07-06). Legacy generator-screen files stay headerless
+  until their owning slice rebuilds them.
+
+## Testing
+
+- Playwright browsers are vendored into the package via
+  `PLAYWRIGHT_BROWSERS_PATH=0` (set in `tests/conftest.py`). Any ad hoc
+  browser script — inspector smoke passes included — must export the same
+  var or Playwright falsely reports "browser not installed".
+- Browser tests exercise `public/build/`, not `src/`. Rebuild
+  (`bun run build`) after every `src/` edit before running them, or they
+  silently green-light the previous bundle.
+- Browser test files self-serve `public/` on a free port (fixture trio
+  cloned per file — deliberate scope separation); no dev server needed.
+
+---
+
 ## Path discovery
 
 Before searching the tree, read `.claude/CODEMAP.md`. It lists entry points,
